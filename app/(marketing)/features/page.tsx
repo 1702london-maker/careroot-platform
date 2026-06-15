@@ -187,18 +187,6 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Integrations strip */}
-      <section className="bg-cr-ivory py-14">
-        <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <p className="text-center text-xs font-body font-semibold text-cr-slate uppercase tracking-widest mb-8">Works with</p>
-          <div className="flex flex-wrap justify-center gap-8 items-center text-cr-slate font-body text-sm font-medium">
-            {["NHS Spine (planned)", "Anthropic Claude AI", "OpenAI Whisper", "Twilio SMS", "Resend Email", "Stripe Billing"].map((i) => (
-              <span key={i} className="px-4 py-2 bg-white rounded-lg border border-gray-200 text-xs">{i}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CQC callout */}
       <section className="max-w-6xl mx-auto px-4 md:px-6 py-16">
         <div className="bg-cr-forest rounded-2xl p-10 md:p-14 text-white">
