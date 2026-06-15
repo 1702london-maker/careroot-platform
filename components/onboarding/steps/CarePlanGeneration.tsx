@@ -189,7 +189,7 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
           <CRAIBadge />
         </div>
         <p className="text-sm font-body text-cr-slate mb-6">
-          Claude AI will analyse all information you&apos;ve provided and draft a comprehensive care plan. A manager must approve it before carers can see it.
+          Careroot AI will analyse all information you&apos;ve provided and draft a comprehensive care plan. A manager must approve it before carers can see it.
         </p>
 
         {!carePlanSections && (

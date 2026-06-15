@@ -147,8 +147,8 @@ export function SettingsTabs({ organisation }: Props) {
               {[
                 { name: "CQC Provider Portal", status: "connected", desc: "Compliance data synced" },
                 { name: "NHS Spine / Summary Care Records", status: "coming_soon", desc: "Coming Q3 2026" },
-                { name: "Twilio SMS", status: "connected", desc: "Emergency SMS enabled" },
-                { name: "Stripe Billing", status: "connected", desc: "Subscription active" },
+                { name: "SMS Alerts", status: "connected", desc: "Emergency SMS enabled" },
+                { name: "Billing", status: "connected", desc: "Subscription active" },
                 { name: "GP Connect", status: "coming_soon", desc: "Coming Q4 2026" },
               ].map(({ name, status, desc }) => (
                 <div key={name} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">

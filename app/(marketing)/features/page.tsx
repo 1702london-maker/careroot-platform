@@ -12,7 +12,7 @@ const features = [
     icon: Brain,
     category: "AI-Powered Care",
     title: "AI care planning and risk analysis",
-    desc: "Claude AI reads your carers' visit notes and generates structured care plans, spots deterioration patterns before they become crises, and flags safeguarding concerns in real time.",
+    desc: "Careroot AI reads your carers' visit notes and generates structured care plans, spots deterioration patterns before they become crises, and flags safeguarding concerns in real time.",
     bullets: [
       "Automatic note structuring from free-text carer entries",
       "Risk flags for falls, nutrition decline, social isolation, medication concerns",
@@ -137,7 +137,7 @@ export default function FeaturesPage() {
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-4 md:px-6 pt-20 pb-16">
         <div className="max-w-3xl">
-          <CRAIBadge label="Powered by Claude AI" className="mb-6" />
+          <CRAIBadge label="AI-powered care management" className="mb-6" />
           <h1 className="font-display text-5xl md:text-6xl font-semibold text-cr-charcoal leading-tight mb-6">
             Everything a care agency needs.<br />
             <span className="text-cr-forest">Nothing it doesn't.</span>
