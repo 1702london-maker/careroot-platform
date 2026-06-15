@@ -549,190 +549,169 @@ returns text language sql stable security definer as $$
   select role from users where id = auth.uid()
 $$;
 
--- ORGANISATIONS — members see their own org
-create policy "org_select" on organisations for select
-  using (id = get_my_org_id());
+-- ORGANISATIONS
+drop policy if exists "org_select" on organisations;
+drop policy if exists "org_update" on organisations;
+create policy "org_select" on organisations for select using (id = get_my_org_id());
+create policy "org_update" on organisations for update using (id = get_my_org_id() and get_my_role() in ('owner','admin'));
 
-create policy "org_update" on organisations for update
-  using (id = get_my_org_id() and get_my_role() in ('owner','admin'));
+-- USERS
+drop policy if exists "users_select" on users;
+drop policy if exists "users_insert" on users;
+drop policy if exists "users_update" on users;
+create policy "users_select" on users for select using (organisation_id = get_my_org_id());
+create policy "users_insert" on users for insert with check (organisation_id = get_my_org_id());
+create policy "users_update" on users for update using (id = auth.uid() or get_my_role() in ('owner','manager','admin'));
 
--- USERS — same org
-create policy "users_select" on users for select
-  using (organisation_id = get_my_org_id());
-
-create policy "users_insert" on users for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "users_update" on users for update
-  using (id = auth.uid() or get_my_role() in ('owner','manager','admin'));
-
--- CLIENTS — same org
-create policy "clients_select" on clients for select
-  using (organisation_id = get_my_org_id());
-
-create policy "clients_insert" on clients for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "clients_update" on clients for update
-  using (organisation_id = get_my_org_id());
+-- CLIENTS
+drop policy if exists "clients_select" on clients;
+drop policy if exists "clients_insert" on clients;
+drop policy if exists "clients_update" on clients;
+create policy "clients_select" on clients for select using (organisation_id = get_my_org_id());
+create policy "clients_insert" on clients for insert with check (organisation_id = get_my_org_id());
+create policy "clients_update" on clients for update using (organisation_id = get_my_org_id());
 
 -- CARE PLANS
-create policy "care_plans_select" on care_plans for select
-  using (organisation_id = get_my_org_id());
-
-create policy "care_plans_insert" on care_plans for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "care_plans_update" on care_plans for update
-  using (organisation_id = get_my_org_id());
+drop policy if exists "care_plans_select" on care_plans;
+drop policy if exists "care_plans_insert" on care_plans;
+drop policy if exists "care_plans_update" on care_plans;
+create policy "care_plans_select" on care_plans for select using (organisation_id = get_my_org_id());
+create policy "care_plans_insert" on care_plans for insert with check (organisation_id = get_my_org_id());
+create policy "care_plans_update" on care_plans for update using (organisation_id = get_my_org_id());
 
 -- CARE PLAN VIEWS
+drop policy if exists "care_plan_views_select" on care_plan_views;
+drop policy if exists "care_plan_views_insert" on care_plan_views;
 create policy "care_plan_views_select" on care_plan_views for select
   using (exists (select 1 from care_plans cp where cp.id = care_plan_id and cp.organisation_id = get_my_org_id()));
-
-create policy "care_plan_views_insert" on care_plan_views for insert
-  with check (carer_id = auth.uid());
+create policy "care_plan_views_insert" on care_plan_views for insert with check (carer_id = auth.uid());
 
 -- MEDICATIONS
-create policy "medications_select" on medications for select
-  using (organisation_id = get_my_org_id());
-
-create policy "medications_insert" on medications for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "medications_update" on medications for update
-  using (organisation_id = get_my_org_id());
+drop policy if exists "medications_select" on medications;
+drop policy if exists "medications_insert" on medications;
+drop policy if exists "medications_update" on medications;
+create policy "medications_select" on medications for select using (organisation_id = get_my_org_id());
+create policy "medications_insert" on medications for insert with check (organisation_id = get_my_org_id());
+create policy "medications_update" on medications for update using (organisation_id = get_my_org_id());
 
 -- MEDICATION RECORDS
+drop policy if exists "medication_records_select" on medication_records;
+drop policy if exists "medication_records_insert" on medication_records;
 create policy "medication_records_select" on medication_records for select
   using (exists (select 1 from clients c where c.id = client_id and c.organisation_id = get_my_org_id()));
-
 create policy "medication_records_insert" on medication_records for insert
   with check (exists (select 1 from clients c where c.id = client_id and c.organisation_id = get_my_org_id()));
 
 -- VISITS
-create policy "visits_select" on visits for select
-  using (organisation_id = get_my_org_id());
-
-create policy "visits_insert" on visits for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "visits_update" on visits for update
-  using (organisation_id = get_my_org_id());
+drop policy if exists "visits_select" on visits;
+drop policy if exists "visits_insert" on visits;
+drop policy if exists "visits_update" on visits;
+create policy "visits_select" on visits for select using (organisation_id = get_my_org_id());
+create policy "visits_insert" on visits for insert with check (organisation_id = get_my_org_id());
+create policy "visits_update" on visits for update using (organisation_id = get_my_org_id());
 
 -- VISIT NOTES
+drop policy if exists "visit_notes_select" on visit_notes;
+drop policy if exists "visit_notes_insert" on visit_notes;
 create policy "visit_notes_select" on visit_notes for select
   using (exists (select 1 from visits v where v.id = visit_id and v.organisation_id = get_my_org_id()));
-
 create policy "visit_notes_insert" on visit_notes for insert
   with check (exists (select 1 from visits v where v.id = visit_id and v.organisation_id = get_my_org_id()));
 
 -- RISK ASSESSMENTS
-create policy "risk_assessments_select" on risk_assessments for select
-  using (organisation_id = get_my_org_id());
-
-create policy "risk_assessments_insert" on risk_assessments for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "risk_assessments_update" on risk_assessments for update
-  using (organisation_id = get_my_org_id());
+drop policy if exists "risk_assessments_select" on risk_assessments;
+drop policy if exists "risk_assessments_insert" on risk_assessments;
+drop policy if exists "risk_assessments_update" on risk_assessments;
+create policy "risk_assessments_select" on risk_assessments for select using (organisation_id = get_my_org_id());
+create policy "risk_assessments_insert" on risk_assessments for insert with check (organisation_id = get_my_org_id());
+create policy "risk_assessments_update" on risk_assessments for update using (organisation_id = get_my_org_id());
 
 -- AI RISK FLAGS
-create policy "ai_risk_flags_select" on ai_risk_flags for select
-  using (organisation_id = get_my_org_id());
-
-create policy "ai_risk_flags_insert" on ai_risk_flags for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "ai_risk_flags_update" on ai_risk_flags for update
-  using (organisation_id = get_my_org_id());
+drop policy if exists "ai_risk_flags_select" on ai_risk_flags;
+drop policy if exists "ai_risk_flags_insert" on ai_risk_flags;
+drop policy if exists "ai_risk_flags_update" on ai_risk_flags;
+create policy "ai_risk_flags_select" on ai_risk_flags for select using (organisation_id = get_my_org_id());
+create policy "ai_risk_flags_insert" on ai_risk_flags for insert with check (organisation_id = get_my_org_id());
+create policy "ai_risk_flags_update" on ai_risk_flags for update using (organisation_id = get_my_org_id());
 
 -- INCIDENTS
-create policy "incidents_select" on incidents for select
-  using (organisation_id = get_my_org_id());
-
-create policy "incidents_insert" on incidents for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "incidents_update" on incidents for update
-  using (organisation_id = get_my_org_id());
+drop policy if exists "incidents_select" on incidents;
+drop policy if exists "incidents_insert" on incidents;
+drop policy if exists "incidents_update" on incidents;
+create policy "incidents_select" on incidents for select using (organisation_id = get_my_org_id());
+create policy "incidents_insert" on incidents for insert with check (organisation_id = get_my_org_id());
+create policy "incidents_update" on incidents for update using (organisation_id = get_my_org_id());
 
 -- COMPLAINTS
-create policy "complaints_select" on complaints for select
-  using (organisation_id = get_my_org_id());
+drop policy if exists "complaints_select" on complaints;
+drop policy if exists "complaints_insert" on complaints;
+drop policy if exists "complaints_update" on complaints;
+create policy "complaints_select" on complaints for select using (organisation_id = get_my_org_id());
+create policy "complaints_insert" on complaints for insert with check (organisation_id = get_my_org_id());
+create policy "complaints_update" on complaints for update using (organisation_id = get_my_org_id());
 
-create policy "complaints_insert" on complaints for insert
-  with check (organisation_id = get_my_org_id());
+-- EMERGENCY ACCESS TOKENS
+drop policy if exists "emergency_tokens_public_select" on emergency_access_tokens;
+drop policy if exists "emergency_tokens_org_insert" on emergency_access_tokens;
+create policy "emergency_tokens_public_select" on emergency_access_tokens for select using (true);
+create policy "emergency_tokens_org_insert" on emergency_access_tokens for insert with check (organisation_id = get_my_org_id());
 
-create policy "complaints_update" on complaints for update
-  using (organisation_id = get_my_org_id());
-
--- EMERGENCY ACCESS TOKENS — public select by token (for paramedics)
-create policy "emergency_tokens_public_select" on emergency_access_tokens for select
-  using (true);
-
-create policy "emergency_tokens_org_insert" on emergency_access_tokens for insert
-  with check (organisation_id = get_my_org_id());
-
--- EMERGENCY EVENTS — public insert (paramedic logs access without auth)
-create policy "emergency_events_insert" on emergency_events for insert
-  with check (true);
-
+-- EMERGENCY EVENTS
+drop policy if exists "emergency_events_insert" on emergency_events;
+drop policy if exists "emergency_events_select" on emergency_events;
+create policy "emergency_events_insert" on emergency_events for insert with check (true);
 create policy "emergency_events_select" on emergency_events for select
   using (exists (select 1 from emergency_access_tokens t where t.id = token_id and t.organisation_id = get_my_org_id()));
 
 -- FAMILY ACCESS
-create policy "family_access_select" on family_access for select
-  using (organisation_id = get_my_org_id() or user_id = auth.uid());
-
-create policy "family_access_insert" on family_access for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "family_access_update" on family_access for update
-  using (organisation_id = get_my_org_id() or user_id = auth.uid());
+drop policy if exists "family_access_select" on family_access;
+drop policy if exists "family_access_insert" on family_access;
+drop policy if exists "family_access_update" on family_access;
+create policy "family_access_select" on family_access for select using (organisation_id = get_my_org_id() or user_id = auth.uid());
+create policy "family_access_insert" on family_access for insert with check (organisation_id = get_my_org_id());
+create policy "family_access_update" on family_access for update using (organisation_id = get_my_org_id() or user_id = auth.uid());
 
 -- FAMILY BRIEFINGS
+drop policy if exists "family_briefings_select" on family_briefings;
+drop policy if exists "family_briefings_insert" on family_briefings;
 create policy "family_briefings_select" on family_briefings for select
   using (organisation_id = get_my_org_id() or
     exists (select 1 from family_access fa where fa.client_id = family_briefings.client_id and fa.user_id = auth.uid() and fa.is_active));
-
-create policy "family_briefings_insert" on family_briefings for insert
-  with check (organisation_id = get_my_org_id());
+create policy "family_briefings_insert" on family_briefings for insert with check (organisation_id = get_my_org_id());
 
 -- NUTRITION PROFILES
-create policy "nutrition_select" on nutrition_profiles for select
-  using (organisation_id = get_my_org_id());
-
-create policy "nutrition_insert" on nutrition_profiles for insert
-  with check (organisation_id = get_my_org_id());
-
-create policy "nutrition_update" on nutrition_profiles for update
-  using (organisation_id = get_my_org_id());
+drop policy if exists "nutrition_select" on nutrition_profiles;
+drop policy if exists "nutrition_insert" on nutrition_profiles;
+drop policy if exists "nutrition_update" on nutrition_profiles;
+create policy "nutrition_select" on nutrition_profiles for select using (organisation_id = get_my_org_id());
+create policy "nutrition_insert" on nutrition_profiles for insert with check (organisation_id = get_my_org_id());
+create policy "nutrition_update" on nutrition_profiles for update using (organisation_id = get_my_org_id());
 
 -- MEAL PREFERENCES
+drop policy if exists "meal_pref_select" on meal_preferences;
+drop policy if exists "meal_pref_insert" on meal_preferences;
 create policy "meal_pref_select" on meal_preferences for select
   using (exists (select 1 from clients c where c.id = client_id and c.organisation_id = get_my_org_id()));
-
 create policy "meal_pref_insert" on meal_preferences for insert
   with check (exists (select 1 from clients c where c.id = client_id and c.organisation_id = get_my_org_id()));
 
 -- MEAL RECORDS
+drop policy if exists "meal_records_select" on meal_records;
+drop policy if exists "meal_records_insert" on meal_records;
 create policy "meal_records_select" on meal_records for select
   using (exists (select 1 from clients c where c.id = client_id and c.organisation_id = get_my_org_id()));
-
 create policy "meal_records_insert" on meal_records for insert
   with check (exists (select 1 from clients c where c.id = client_id and c.organisation_id = get_my_org_id()));
 
 -- COMPLIANCE EVIDENCE
-create policy "compliance_select" on compliance_evidence for select
-  using (organisation_id = get_my_org_id());
+drop policy if exists "compliance_select" on compliance_evidence;
+drop policy if exists "compliance_insert" on compliance_evidence;
+create policy "compliance_select" on compliance_evidence for select using (organisation_id = get_my_org_id());
+create policy "compliance_insert" on compliance_evidence for insert with check (organisation_id = get_my_org_id());
 
-create policy "compliance_insert" on compliance_evidence for insert
-  with check (organisation_id = get_my_org_id());
-
--- DEMO REQUESTS — anyone can insert, only service role reads
-create policy "demo_requests_insert" on demo_requests for insert
-  with check (true);
+-- DEMO REQUESTS
+drop policy if exists "demo_requests_insert" on demo_requests;
+create policy "demo_requests_insert" on demo_requests for insert with check (true);
 
 -- ============================================================
 -- AUTH TRIGGER — auto-create user row on signup
@@ -768,6 +747,17 @@ begin
   return new;
 end;
 $$;
+
+drop trigger if exists touch_organisations on organisations;
+drop trigger if exists touch_users on users;
+drop trigger if exists touch_clients on clients;
+drop trigger if exists touch_care_plans on care_plans;
+drop trigger if exists touch_medications on medications;
+drop trigger if exists touch_visits on visits;
+drop trigger if exists touch_risk_assessments on risk_assessments;
+drop trigger if exists touch_incidents on incidents;
+drop trigger if exists touch_complaints on complaints;
+drop trigger if exists touch_nutrition_profiles on nutrition_profiles;
 
 create trigger touch_organisations before update on organisations for each row execute function touch_updated_at();
 create trigger touch_users before update on users for each row execute function touch_updated_at();
