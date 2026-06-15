@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Users, Calendar, Clock, Pill,
+  LayoutDashboard, Users, Calendar, Clock,
   UserCheck, Heart, Sparkles, TrendingUp, BookOpen,
   Shield, FileCheck, FolderOpen, MessageSquare,
   AlertTriangle, BarChart3, Settings, LogOut,

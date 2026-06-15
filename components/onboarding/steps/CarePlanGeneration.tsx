@@ -19,8 +19,9 @@ interface Props {
   onBack: () => void;
 }
 
+const supabase = createClient();
+
 export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, onBack }: Props) {
-  const supabase = createClient();
   const [generating, setGenerating] = useState(false);
   const [carePlanSections, setCarePlanSections] = useState<CarePlanSection[] | null>(null);
   const [error, setError] = useState("");
@@ -33,8 +34,6 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
   useEffect(() => {
     supabase.from("clients").select("first_name, last_name").eq("id", clientId).single()
       .then(({ data }) => setClient(data));
-  // supabase client is stable — safe to omit
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
   const generateCarePlan = async () => {

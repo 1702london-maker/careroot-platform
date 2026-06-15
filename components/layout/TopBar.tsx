@@ -16,7 +16,6 @@ interface TopBarProps {
 
 export function TopBar({
   orgName,
-  orgLogoUrl: _orgLogoUrl,
   userFirstName,
   userLastName,
   userAvatarUrl,

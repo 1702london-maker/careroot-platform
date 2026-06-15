@@ -5,8 +5,8 @@ import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRAvatar } from "@/components/ui/CRAvatar";
 import { CRAIBadge } from "@/components/ui/CRAIBadge";
-import { formatDateUK, formatDateTimeUK, formatTimeUK } from "@/lib/utils";
-import { Heart, CheckCircle, Clock, Phone, MessageCircle, AlertTriangle } from "lucide-react";
+import { formatDateUK, formatDateTimeUK } from "@/lib/utils";
+import { Heart, CheckCircle, Phone, MessageCircle, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Props {
