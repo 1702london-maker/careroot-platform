@@ -349,11 +349,12 @@ create table if not exists emergency_access_tokens (
 create table if not exists emergency_events (
   id uuid primary key default uuid_generate_v4(),
   client_id uuid not null references clients(id) on delete cascade,
-  token_id uuid references emergency_access_tokens(id),
+  token_id uuid,
   accessed_at timestamptz default now(),
   accessor_ip text,
   notes text
 );
+alter table emergency_events add column if not exists token_id uuid references emergency_access_tokens(id);
 
 -- ============================================================
 -- FAMILY ACCESS
@@ -661,7 +662,7 @@ drop policy if exists "emergency_events_insert" on emergency_events;
 drop policy if exists "emergency_events_select" on emergency_events;
 create policy "emergency_events_insert" on emergency_events for insert with check (true);
 create policy "emergency_events_select" on emergency_events for select
-  using (exists (select 1 from emergency_access_tokens t where t.id = emergency_events.token_id and t.organisation_id = get_my_org_id()));
+  using (exists (select 1 from clients c where c.id = emergency_events.client_id and c.organisation_id = get_my_org_id()));
 
 -- FAMILY ACCESS
 drop policy if exists "family_access_select" on family_access;
