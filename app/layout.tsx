@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   title: "Careroot — Care Management Platform",
   description: "The complete platform for UK care providers — from care plans to CQC compliance, all in one place.",
   keywords: ["care management", "CQC compliance", "domiciliary care", "care planning", "UK care software"],
+  manifest: "/manifest.json",
+  themeColor: "#1A3C2E",
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Careroot" },
 };
 
 export default function RootLayout({
