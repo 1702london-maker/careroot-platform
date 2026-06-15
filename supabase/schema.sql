@@ -135,7 +135,7 @@ create table if not exists care_plans (
 create table if not exists care_plan_views (
   id uuid primary key default uuid_generate_v4(),
   care_plan_id uuid not null references care_plans(id) on delete cascade,
-  user_id uuid references users(id),
+  carer_id uuid references users(id),
   viewed_at timestamptz default now()
 );
 
@@ -591,7 +591,7 @@ create policy "care_plan_views_select" on care_plan_views for select
   using (exists (select 1 from care_plans cp where cp.id = care_plan_id and cp.organisation_id = get_my_org_id()));
 
 create policy "care_plan_views_insert" on care_plan_views for insert
-  with check (user_id = auth.uid());
+  with check (carer_id = auth.uid());
 
 -- MEDICATIONS
 create policy "medications_select" on medications for select

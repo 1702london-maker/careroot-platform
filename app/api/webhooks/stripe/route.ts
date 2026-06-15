@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import { createServiceClient } from "@/lib/supabase/server";
+import { getStripe } from "@/lib/stripe";
+import { createServiceClientSync } from "@/lib/supabase/server";
 import Stripe from "stripe";
 
 const PLAN_MAP: Record<string, string> = {
@@ -10,10 +10,15 @@ const PLAN_MAP: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Stripe not configured" }, { status: 503 });
+  }
+
+  const stripe = getStripe();
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
 
-  if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
+  if (!sig) {
     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
 
@@ -24,11 +29,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const supabase = createServiceClient();
+  const supabase = createServiceClientSync();
 
   switch (event.type) {
     case "checkout.session.completed": {
-      const session = event.data.object as Stripe.CheckoutSession;
+      const session = event.data.object as Stripe.Checkout.Session;
       const orgId = session.metadata?.organisation_id;
       if (orgId && session.subscription) {
         const sub = await stripe.subscriptions.retrieve(String(session.subscription));
@@ -69,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     case "invoice.payment_failed": {
-      const invoice = event.data.object as Stripe.Invoice;
+      const invoice = event.data.object as Stripe.Invoice & { subscription?: string };
       if (invoice.subscription) {
         await supabase.from("organisations").update({
           subscription_status: "past_due",
