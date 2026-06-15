@@ -661,7 +661,7 @@ drop policy if exists "emergency_events_insert" on emergency_events;
 drop policy if exists "emergency_events_select" on emergency_events;
 create policy "emergency_events_insert" on emergency_events for insert with check (true);
 create policy "emergency_events_select" on emergency_events for select
-  using (exists (select 1 from emergency_access_tokens t where t.id = token_id and t.organisation_id = get_my_org_id()));
+  using (exists (select 1 from emergency_access_tokens t where t.id = emergency_events.token_id and t.organisation_id = get_my_org_id()));
 
 -- FAMILY ACCESS
 drop policy if exists "family_access_select" on family_access;
