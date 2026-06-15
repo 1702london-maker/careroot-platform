@@ -14,9 +14,8 @@ interface Props {
   visits: Record<string, unknown>[];
 }
 
-const supabase = createClient();
-
 export function ClientNotesTab({ client, visits }: Props) {
+  const supabase = createClient();
   const [notes, setNotes] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
