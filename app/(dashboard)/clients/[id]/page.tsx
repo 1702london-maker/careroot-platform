@@ -50,7 +50,7 @@ export default async function ClientProfilePage({ params }: Props) {
   return (
     <div>
       {/* DNR banner — always first if set */}
-      {client.dnr_status && (
+      {Boolean(client.dnr_status) && (
         <CRAlertBanner
           variant="red"
           title="⚠️ DNR ORDER IN PLACE — Do Not Resuscitate"

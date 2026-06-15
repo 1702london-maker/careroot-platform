@@ -114,7 +114,7 @@ export default async function ClientsPage({
                     lastName={client.last_name}
                     size="md"
                   />
-                  {client.dnr_status && (
+                  {Boolean(client.dnr_status) && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 bg-cr-red rounded-full border-2 border-white" title="DNR" />
                   )}
                 </div>
@@ -124,7 +124,7 @@ export default async function ClientsPage({
                     <p className="text-sm font-body font-semibold text-cr-charcoal group-hover:text-cr-forest transition-colors">
                       {client.first_name} {client.last_name}
                     </p>
-                    {client.dnr_status && (
+                    {Boolean(client.dnr_status) && (
                       <CRBadge variant="red" size="sm">DNR</CRBadge>
                     )}
                   </div>

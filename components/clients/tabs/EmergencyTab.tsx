@@ -40,7 +40,7 @@ export function ClientEmergencyTab({ client, emergencyToken }: Props) {
 
   return (
     <div className="space-y-6">
-      {client.dnr_status && (
+      {Boolean(client.dnr_status) && (
         <CRAlertBanner
           variant="red"
           title="DNR ORDER IN PLACE"

@@ -1,5 +1,11 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY!);
+let _resend: Resend | null = null;
 
-export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "noreply@careroot.care";
+export function getResend(): Resend {
+  if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY not set");
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
+
+export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "noreply@careroot.care";

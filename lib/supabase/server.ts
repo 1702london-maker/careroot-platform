@@ -52,3 +52,15 @@ export async function createServiceClient() {
     }
   );
 }
+
+// Sync version for webhooks and edge cases that can't use cookies
+export function createServiceClientSync() {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: { getAll: () => [], setAll: () => {} },
+      auth: { autoRefreshToken: false, persistSession: false },
+    }
+  );
+}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendSMS } from "@/lib/twilio";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { getResend, FROM_EMAIL } from "@/lib/resend";
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     for (const manager of managers || []) {
       if (manager.email) {
-        await resend.emails.send({
+        await getResend().emails.send({
           from: FROM_EMAIL,
           to: manager.email,
           subject: `🚨 Emergency record accessed — ${clientName}`,

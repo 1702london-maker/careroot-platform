@@ -135,7 +135,7 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
   return (
     <div className="pb-4">
       {/* DNR banner */}
-      {client.dnr_status && (
+      {Boolean(client.dnr_status) && (
         <div className="-mx-4 -mt-4 mb-4">
           <CRAlertBanner
             variant="red"

@@ -770,3 +770,74 @@ create trigger touch_risk_assessments before update on risk_assessments for each
 create trigger touch_incidents before update on incidents for each row execute function touch_updated_at();
 create trigger touch_complaints before update on complaints for each row execute function touch_updated_at();
 create trigger touch_nutrition_profiles before update on nutrition_profiles for each row execute function touch_updated_at();
+
+-- ============================================================
+-- COLUMN ADDITIONS (idempotent — safe to re-run)
+-- ============================================================
+
+-- visit_notes
+alter table visit_notes add column if not exists ai_structured jsonb;
+alter table visit_notes add column if not exists sentiment text check (sentiment in ('positive','neutral','concerning','urgent'));
+alter table visit_notes add column if not exists is_family_visible boolean default true;
+alter table visit_notes add column if not exists is_internal boolean default false;
+
+-- meal_records
+alter table meal_records add column if not exists meal_name text;
+alter table meal_records add column if not exists consumption_level text check (consumption_level in ('all','most','half','little','refused'));
+alter table meal_records add column if not exists fluid_intake_ml int;
+
+-- incidents
+alter table incidents add column if not exists reported_at timestamptz default now();
+alter table incidents add column if not exists category text;
+alter table incidents add column if not exists is_family_visible boolean default false;
+alter table incidents add column if not exists reported_by uuid references users(id);
+
+-- emergency_events
+alter table emergency_events add column if not exists triggered_by uuid references users(id);
+alter table emergency_events add column if not exists trigger_source text;
+alter table emergency_events add column if not exists visit_id uuid references visits(id);
+alter table emergency_events add column if not exists lat numeric(10,7);
+alter table emergency_events add column if not exists lng numeric(10,7);
+alter table emergency_events add column if not exists address text;
+alter table emergency_events add column if not exists notifications_sent jsonb default '[]';
+alter table emergency_events add column if not exists status text default 'active';
+alter table emergency_events add column if not exists organisation_id uuid references organisations(id);
+
+-- family_briefings
+alter table family_briefings add column if not exists content text;
+alter table family_briefings add column if not exists ai_generated boolean default true;
+
+-- ai_risk_flags
+alter table ai_risk_flags add column if not exists status text default 'open' check (status in ('open','acknowledged','resolved','false_positive'));
+alter table ai_risk_flags add column if not exists acknowledged_by uuid references users(id);
+alter table ai_risk_flags add column if not exists acknowledged_at timestamptz;
+alter table ai_risk_flags add column if not exists flag_type text;
+
+-- organisations
+alter table organisations add column if not exists on_call_phone text;
+alter table organisations add column if not exists plan text default 'seed';
+alter table organisations add column if not exists max_staff int default 10;
+
+-- complaints
+alter table complaints add column if not exists reference_number text;
+alter table complaints add column if not exists submitted_by uuid references users(id);
+alter table complaints add column if not exists manager_response text;
+alter table complaints add column if not exists is_anonymous boolean default false;
+
+-- emergency_access_tokens
+alter table emergency_access_tokens add column if not exists last_access_ip text;
+alter table emergency_access_tokens add column if not exists accessed_by_role text;
+alter table emergency_access_tokens add column if not exists accessed_at timestamptz;
+alter table emergency_access_tokens add column if not exists pin text;
+alter table emergency_access_tokens add column if not exists qr_code_url text;
+
+-- users / staff
+alter table users add column if not exists on_call_phone text;
+alter table users add column if not exists burnout_risk text;
+alter table users add column if not exists qualifications jsonb default '[]';
+alter table users add column if not exists training_records jsonb default '[]';
+
+-- compliance_evidence
+alter table compliance_evidence add column if not exists framework text default 'cqc';
+alter table compliance_evidence add column if not exists status text default 'compliant';
+alter table compliance_evidence add column if not exists statement_ref text;

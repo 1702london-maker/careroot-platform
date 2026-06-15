@@ -61,7 +61,7 @@ export function CarerDashboard({ visits, user }: Props) {
                     isCurrent ? "border-cr-forest ring-2 ring-cr-forest" : "",
                     isCompleted ? "opacity-60" : "hover:shadow-md"
                   )}>
-                    {client?.dnr_status && (
+                    {Boolean(client?.dnr_status) && (
                       <div className="mb-3 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg">
                         <p className="text-xs font-body font-bold text-cr-red">⚠️ DNR ORDER IN PLACE</p>
                       </div>

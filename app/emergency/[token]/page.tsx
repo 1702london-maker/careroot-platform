@@ -113,7 +113,7 @@ export default function EmergencyAccessPage({ params }: { params: Promise<{ toke
 
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
           {/* DNR — ALWAYS FIRST */}
-          {patient.dnr_status && (
+          {Boolean(patient.dnr_status) && (
             <div className="bg-cr-red text-white p-5 rounded-xl border-2 border-red-800">
               <div className="flex items-center gap-3">
                 <AlertTriangle size={28} strokeWidth={2.5} />

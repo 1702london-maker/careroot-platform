@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendSMS } from "@/lib/twilio";
-import { resend, FROM_EMAIL } from "@/lib/resend";
+import { getResend, FROM_EMAIL } from "@/lib/resend";
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     // Email to GP
     const gpEmail = (client?.gp_details as Record<string, string>)?.email;
     if (gpEmail) {
-      await resend.emails.send({
+      await getResend().emails.send({
         from: FROM_EMAIL,
         to: gpEmail,
         subject: `🚨 Emergency alert — ${clientName}`,

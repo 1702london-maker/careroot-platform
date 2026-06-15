@@ -8,6 +8,7 @@ interface CRAvatarProps {
   src?: string | null;
   firstName?: string;
   lastName?: string;
+  name?: string;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }
@@ -21,8 +22,9 @@ const sizeClasses = {
 
 const imgSizes = { sm: 28, md: 36, lg: 48, xl: 64 };
 
-export function CRAvatar({ src, firstName, lastName, size = "md", className }: CRAvatarProps) {
-  const initials = getInitials(firstName, lastName);
+export function CRAvatar({ src, firstName, lastName, name, size = "md", className }: CRAvatarProps) {
+  const [derivedFirst, derivedLast] = name ? name.split(" ") : [firstName, lastName];
+  const initials = getInitials(derivedFirst, derivedLast);
   const px = imgSizes[size];
 
   return (

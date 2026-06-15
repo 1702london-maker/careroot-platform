@@ -83,7 +83,7 @@ export default async function VisitsPage() {
                             name={`${client?.first_name} ${client?.last_name}`}
                             size="md"
                           />
-                          {client?.dnr_status && (
+                          {Boolean(client?.dnr_status) && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-cr-red rounded-full" title="DNR" />
                           )}
                         </div>
