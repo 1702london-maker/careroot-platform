@@ -3,6 +3,7 @@ import { getStripe } from "@/lib/stripe";
 import { createServiceClientSync } from "@/lib/supabase/server";
 import Stripe from "stripe";
 import { Resend } from "resend";
+import { subscriptionWelcomeEmail, subscriptionCancelledEmail, paymentFailedEmail } from "@/lib/emails";
 
 const PLAN_MAP: Record<string, string> = {
   [process.env.STRIPE_SEED_PRICE_ID ?? "__seed"]: "seed",
@@ -53,21 +54,8 @@ export async function POST(req: NextRequest) {
         const { data: org } = await supabase.from("organisations").select("email, name").eq("id", orgId).single();
         if (org?.email) {
           const resend = new Resend(process.env.RESEND_API_KEY);
-          await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL ?? "noreply@careroot.care",
-            to: org.email,
-            subject: "Welcome to Careroot — your subscription is active",
-            html: `<div style="font-family:sans-serif;max-width:600px">
-              <div style="background:#1A3C2E;padding:24px;border-radius:8px 8px 0 0">
-                <h2 style="color:white;margin:0">Careroot</h2>
-              </div>
-              <div style="padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">
-                <p>Hi ${org.name},</p>
-                <p>Your <strong>${plan}</strong> subscription is now active. You're all set.</p>
-                <p><a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care"}/dashboard" style="background:#1A3C2E;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">Go to dashboard →</a></p>
-              </div>
-            </div>`,
-          });
+          const tpl = subscriptionWelcomeEmail(org.name, org.name, plan);
+          await resend.emails.send({ from: process.env.RESEND_FROM_EMAIL ?? "noreply@careroot.care", to: org.email, ...tpl });
         }
       }
       break;
@@ -102,12 +90,8 @@ export async function POST(req: NextRequest) {
         const { data: org } = await supabase.from("organisations").select("email, name").eq("stripe_subscription_id", sub.id).single();
         if (org?.email) {
           const resend = new Resend(process.env.RESEND_API_KEY);
-          await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL ?? "noreply@careroot.care",
-            to: org.email,
-            subject: "Your Careroot subscription has been cancelled",
-            html: `<p>Hi ${org.name}, your Careroot subscription has been cancelled. You have been moved to the free Seed plan (up to 10 staff). To reactivate, visit <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care"}/pricing">careroot.care/pricing</a>.</p>`,
-          });
+          const tpl = subscriptionCancelledEmail(org.name, org.name);
+          await resend.emails.send({ from: process.env.RESEND_FROM_EMAIL ?? "noreply@careroot.care", to: org.email, ...tpl });
         }
       }
       break;

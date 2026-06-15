@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { Resend } from "resend";
+import { missedVisitEmail } from "@/lib/emails";
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -48,23 +49,12 @@ export async function GET(req: NextRequest) {
       .eq("is_active", true);
 
     if (resend && managers?.length) {
+      const { data: carerRecord } = await supabase.from("users").select("first_name, last_name").eq("id", visit.carer_id).single();
+      const carerName = carerRecord ? `${carerRecord.first_name} ${carerRecord.last_name}` : "Unknown carer";
+      const tpl = missedVisitEmail({ clientName, carerName, scheduledStart: startTime, visitId: visit.id });
       for (const mgr of managers) {
         if (!mgr.email) continue;
-        await resend.emails.send({
-          from,
-          to: mgr.email,
-          subject: `⚠️ Missed visit — ${clientName} — due ${startTime}`,
-          html: `<div style="font-family:sans-serif;max-width:600px">
-            <div style="background:#1A3C2E;padding:20px;border-radius:8px 8px 0 0">
-              <h2 style="color:white;margin:0">Missed Visit Alert</h2>
-            </div>
-            <div style="padding:20px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">
-              <p><strong>${clientName}</strong> had a visit scheduled for <strong>${startTime}</strong> that has not been started.</p>
-              <p>Address: ${Object.values(client?.address ? JSON.parse(String(client.address)) : {}).join(", ")}</p>
-              <p><a href="${appUrl}/visits/${visit.id}" style="background:#1A3C2E;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">View visit →</a></p>
-            </div>
-          </div>`,
-        });
+        await resend.emails.send({ from, to: mgr.email, ...tpl });
       }
     }
   }
