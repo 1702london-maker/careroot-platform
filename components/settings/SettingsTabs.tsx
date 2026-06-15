@@ -26,7 +26,7 @@ interface Props {
   organisation: Record<string, unknown> | null;
 }
 
-export function SettingsTabs({ user, organisation }: Props) {
+export function SettingsTabs({ user: _user, organisation }: Props) {
   const [activeTab, setActiveTab] = useState("org");
   const plan = String(organisation?.plan || "seed") as keyof typeof PLAN_DETAILS;
   const planInfo = PLAN_DETAILS[plan] || PLAN_DETAILS.seed;

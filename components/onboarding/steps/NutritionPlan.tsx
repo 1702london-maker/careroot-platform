@@ -6,7 +6,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
-import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
 import { CRStepList } from "@/components/ui/CRStepList";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 

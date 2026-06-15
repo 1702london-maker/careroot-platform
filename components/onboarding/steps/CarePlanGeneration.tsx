@@ -33,6 +33,8 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
   useEffect(() => {
     supabase.from("clients").select("first_name, last_name").eq("id", clientId).single()
       .then(({ data }) => setClient(data));
+  // supabase client is stable — safe to omit
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
   const generateCarePlan = async () => {
@@ -70,7 +72,7 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
 
       const status = userRecord?.role === "carer" ? "draft" : "draft";
 
-      const { data: carePlan } = await supabase.from("care_plans").insert({
+      await supabase.from("care_plans").insert({
         client_id: clientId,
         organisation_id: userRecord?.organisation_id,
         created_by: userRecord?.id,
