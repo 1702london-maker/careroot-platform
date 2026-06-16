@@ -99,11 +99,9 @@ export function MarketingFooter() {
           <p className="text-sm font-body text-[#6B7280]">
             &copy; 2026 Careroot Ltd &middot; All rights reserved
           </p>
-          <div className="flex items-center gap-3 text-sm font-body text-[#6B7280]">
-            <Link href="/privacy" className="hover:text-[#1A3C2E] transition-colors duration-150">Privacy</Link>
-            <span>&middot;</span>
-            <Link href="/terms" className="hover:text-[#1A3C2E] transition-colors duration-150">Terms</Link>
-          </div>
+          <Link href="/cookies" className="text-sm font-body text-[#6B7280] hover:text-[#1A3C2E] transition-colors duration-150">
+            Cookies
+          </Link>
         </div>
       </div>
     </footer>
