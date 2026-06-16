@@ -25,10 +25,11 @@ export function MarketingNav() {
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
   const NAV_LINKS = [
-    { label: "Features", href: "/features" },
-    { label: "Pricing", href: "/pricing" },
-    { label: "Custom App", href: "/custom-app" },
-    { label: "Contact", href: "/contact" },
+    { label: "ABOUT", href: "/about" },
+    { label: "FEATURES", href: "/features" },
+    { label: "PRICING", href: "/pricing" },
+    { label: "CUSTOM APP", href: "/custom-app" },
+    { label: "CONTACT", href: "/contact" },
   ];
 
   return (
@@ -57,7 +58,7 @@ export function MarketingNav() {
               <Link
                 key={href}
                 href={href}
-                className={`text-sm font-medium transition-colors duration-150 ${
+                className={`text-xs font-semibold font-body uppercase tracking-wide transition-colors duration-150 ${
                   isActive(href) ? "text-[#1A3C2E]" : "text-[#1C1C1E] hover:text-[#1A3C2E]"
                 }`}
               >
@@ -101,7 +102,7 @@ export function MarketingNav() {
           <div className="flex-1 flex flex-col justify-center px-8 gap-2">
             {NAV_LINKS.map(({ label, href }) => (
               <Link key={href} href={href} onClick={() => setMobileOpen(false)}
-                className="py-4 text-2xl font-display font-semibold text-white border-b border-white/10">
+                className="py-4 text-xl font-body font-semibold uppercase tracking-wide text-white border-b border-white/10">
                 {label}
               </Link>
             ))}

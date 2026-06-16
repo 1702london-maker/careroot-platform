@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   "/signup",
   "/forgot-password",
   "/family/login",
+  "/about",
   "/custom-app",
   "/white-label",
   "/contact",
