@@ -79,16 +79,16 @@ export default function CustomAppPage() {
       <MarketingNav />
 
       {/* Hero */}
-      <section className="bg-[#1C1C1E] py-24 px-4">
+      <section className="bg-cr-ivory py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-block px-3 py-1 rounded-full text-sm font-body bg-white/10 text-white mb-6">Custom App</span>
-          <h1 className="font-display text-5xl md:text-6xl font-semibold text-white mb-5 leading-tight">Your care platform. Your name. Your brand.</h1>
-          <p className="text-lg text-white/70 font-body max-w-2xl mx-auto mb-8 leading-relaxed">
+          <span className="inline-block px-3 py-1 rounded-full text-sm font-body bg-cr-gold/10 text-cr-gold border border-cr-gold/20 mb-6">Custom App</span>
+          <h1 className="font-display text-5xl md:text-6xl font-semibold text-cr-charcoal mb-5 leading-tight">Your care platform. Your name. Your brand.</h1>
+          <p className="text-lg text-cr-slate font-body max-w-2xl mx-auto mb-8 leading-relaxed">
             Large care organisations, NHS teams, and franchise agencies run Careroot completely under their own brand. Your staff and the families you serve only ever see your name.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" className="bg-white text-[#1C1C1E] font-medium rounded-lg px-6 py-3 hover:bg-white/90 transition-colors">Talk to our team</Link>
-            <a href="#pricing" className="border border-white/60 text-white font-medium rounded-lg px-6 py-3 hover:bg-white/10 transition-colors">See pricing</a>
+            <Link href="/contact" className="bg-cr-forest text-white font-medium rounded-lg px-6 py-3 hover:bg-cr-sage transition-colors">Talk to our team</Link>
+            <a href="#pricing" className="border border-[#1A3C2E] text-[#1A3C2E] font-medium rounded-lg px-6 py-3 hover:bg-cr-mint transition-colors">See pricing</a>
           </div>
         </div>
       </section>

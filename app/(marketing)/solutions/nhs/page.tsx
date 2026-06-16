@@ -27,26 +27,26 @@ export default function NHSPage() {
     <div className="min-h-screen bg-cr-ivory font-body">
       <MarketingNav />
 
-      <section className="bg-[#1C1C1E] py-24 px-4">
+      <section className="bg-cr-ivory py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-block px-3 py-1 rounded-full text-sm font-body bg-white/10 text-white mb-6">NHS Community Care</span>
-          <h1 className="font-display text-5xl md:text-6xl font-semibold text-white mb-5 leading-tight">NHS-grade care management. Under your brand.</h1>
-          <p className="text-lg text-white/70 font-body max-w-2xl mx-auto mb-8 leading-relaxed">
+          <span className="inline-block px-3 py-1 rounded-full text-sm font-body bg-cr-gold/10 text-cr-gold border border-cr-gold/20 mb-6">NHS Community Care</span>
+          <h1 className="font-display text-5xl md:text-6xl font-semibold text-cr-charcoal mb-5 leading-tight">NHS-grade care management. Under your brand.</h1>
+          <p className="text-lg text-cr-slate font-body max-w-2xl mx-auto mb-8 leading-relaxed">
             NHS community care teams need software that meets their security requirements, integrates with existing systems, and carries their brand. Careroot Enterprise delivers that.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" className="bg-white text-[#1C1C1E] font-medium rounded-lg px-6 py-3 hover:bg-white/90 transition-colors">Talk to our team</Link>
-            <Link href="/custom-app" className="border border-white/60 text-white font-medium rounded-lg px-6 py-3 hover:bg-white/10 transition-colors">See Custom App options</Link>
+            <Link href="/contact" className="bg-cr-forest text-white font-medium rounded-lg px-6 py-3 hover:bg-cr-sage transition-colors">Talk to our team</Link>
+            <Link href="/custom-app" className="border border-[#1A3C2E] text-[#1A3C2E] font-medium rounded-lg px-6 py-3 hover:bg-cr-mint transition-colors">See Custom App options</Link>
           </div>
         </div>
       </section>
 
       {/* Need cards */}
-      <section className="bg-[#1C1C1E] py-8 px-4 pb-20">
+      <section className="bg-white py-8 px-4 pb-20">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {NEED_CARDS.map((c) => (
-              <div key={c.headline} className="bg-white rounded-xl p-6 border border-white/10">
+              <div key={c.headline} className="bg-cr-ivory rounded-xl p-6 border border-gray-100">
                 <h3 className="font-body font-semibold text-lg text-[#1C1C1E] mb-2">{c.headline}</h3>
                 <p className="text-sm text-[#6B7280] leading-relaxed">{c.body}</p>
               </div>

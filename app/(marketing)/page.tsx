@@ -15,7 +15,7 @@ export default function HomePage() {
       {/* ── HERO ── */}
       <section className="bg-cr-ivory py-20">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cr-mint text-cr-forest text-xs font-body font-semibold mb-7 border border-cr-sage/20">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cr-gold/10 text-cr-gold text-xs font-body font-semibold mb-7 border border-cr-gold/20">
             <Shield size={12} />
             Built for CQC 2026 Single Assessment Framework
           </div>

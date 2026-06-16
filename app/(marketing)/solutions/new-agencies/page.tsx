@@ -39,18 +39,18 @@ export default function NewAgenciesPage() {
     <div className="min-h-screen bg-cr-ivory font-body">
       <MarketingNav />
 
-      <section className="bg-[#1A3C2E] py-24 px-4">
+      <section className="bg-cr-ivory py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-block px-3 py-1 rounded-full text-sm font-body bg-white/10 text-white mb-6">New Care Agencies</span>
-          <h1 className="font-display text-5xl md:text-6xl font-semibold text-white mb-5 leading-tight">From zero to CQC registered.</h1>
-          <p className="text-lg text-white/80 font-body max-w-2xl mx-auto mb-8 leading-relaxed">
+          <span className="inline-block px-3 py-1 rounded-full text-sm font-body bg-cr-gold/10 text-cr-gold border border-cr-gold/20 mb-6">New Care Agencies</span>
+          <h1 className="font-display text-5xl md:text-6xl font-semibold text-cr-charcoal mb-5 leading-tight">From zero to CQC registered.</h1>
+          <p className="text-lg text-cr-slate font-body max-w-2xl mx-auto mb-8 leading-relaxed">
             Starting a care agency is one of the most complex regulatory journeys in UK business. Careroot was built by people who went through it — and designed to make it easier for you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup" className="bg-white text-[#1A3C2E] font-medium rounded-lg px-6 py-3 hover:bg-white/90 transition-colors">Start free trial</Link>
-            <Link href="/demo" className="border border-white/60 text-white font-medium rounded-lg px-6 py-3 hover:bg-white/10 transition-colors">Book a demo</Link>
+            <Link href="/signup" className="bg-cr-forest text-white font-medium rounded-lg px-6 py-3 hover:bg-cr-sage transition-colors">Start free trial</Link>
+            <Link href="/demo" className="border border-[#1A3C2E] text-[#1A3C2E] font-medium rounded-lg px-6 py-3 hover:bg-cr-mint transition-colors">Book a demo</Link>
           </div>
-          <p className="text-white/60 text-sm mt-4">30 days free · No credit card required</p>
+          <p className="text-cr-slate text-sm mt-4">30 days free · No credit card required</p>
         </div>
       </section>
 

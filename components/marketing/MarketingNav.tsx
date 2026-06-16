@@ -33,6 +33,14 @@ export function MarketingNav() {
 
   return (
     <>
+      {/* Gold announcement bar */}
+      <div className="bg-cr-gold text-white text-center text-xs font-body font-semibold py-2 px-4">
+        CQC 2026 Single Assessment Framework is live —{" "}
+        <Link href="/solutions/cqc-registration" className="underline underline-offset-2 hover:no-underline">
+          See how Careroot keeps you compliant →
+        </Link>
+      </div>
+
       <nav className="sticky top-0 z-50 bg-white border-b border-[#F3F4F6]">
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between h-[68px]">
           {/* Logo */}
