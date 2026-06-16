@@ -2,280 +2,175 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import {
-  Brain, Shield, AlertTriangle, Heart,
-  UtensilsCrossed, Globe,
-} from "lucide-react";
+import { Brain, Shield, AlertTriangle, Heart, UtensilsCrossed, Globe, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About Careroot — Our Mission, Our Team, Our Future",
-  description:
-    "Careroot is built by people who believe care workers deserve better tools and the people they support deserve better care. Our story, our mission, and where we are heading.",
+  description: "Careroot is built by people who believe care workers deserve better tools and the people they support deserve better care.",
 };
-
-const PLATFORM_CARDS = [
-  {
-    Icon: Brain,
-    colour: "text-cr-forest",
-    headline: "AI that works for care",
-    body: "Not AI for its own sake. AI that drafts care plans, spots deterioration patterns, and flags concerns — so coordinators can focus on people, not paperwork.",
-  },
-  {
-    Icon: Shield,
-    colour: "text-cr-forest",
-    headline: "Compliance as a byproduct",
-    body: "When care is documented well, compliance evidence creates itself. CQC inspectors see what happens every day — not what was prepared the week before their visit.",
-  },
-  {
-    Icon: AlertTriangle,
-    colour: "text-cr-red",
-    headline: "Emergency response that works",
-    body: "Every client has a QR card on their fridge. Paramedics scan it. Full medical record in 10 seconds. No login. No delay. This feature exists nowhere else in the market.",
-  },
-  {
-    Icon: Heart,
-    colour: "text-cr-forest",
-    headline: "Families as partners",
-    body: "Families are not an afterthought. They are part of the care team. Careroot gives them real visibility, real communication, and a real voice.",
-  },
-  {
-    Icon: UtensilsCrossed,
-    colour: "text-cr-forest",
-    headline: "The whole person",
-    body: "Margaret only eats from the blue plates. That detail matters. Careroot captures it and puts it in front of every carer, every visit.",
-  },
-  {
-    Icon: Globe,
-    colour: "text-cr-forest",
-    headline: "Built for the UK",
-    body: "CQC 2026 Single Assessment Framework. Ofsted compliance. UK data residency. Built for UK regulation, UK care types, and UK care workers from day one.",
-  },
-];
-
-const ROADMAP = [
-  {
-    pill: { label: "Live now", className: "bg-cr-mint text-cr-forest" },
-    headline: "Complete care management platform",
-    body: "AI care planning, CQC compliance, carer mobile app, family portal, emergency response, nutrition planning, eMAR, complaints management, DBS tracking, rota scheduling. Everything a care agency needs from day one.",
-  },
-  {
-    pill: { label: "In development", className: "bg-amber-50 text-amber-700" },
-    headline: "GP Connect integration",
-    body: "Seamless connection to GP records so carers and care managers have full clinical context without hours of back-and-forth phone calls.",
-  },
-  {
-    pill: { label: "On the roadmap", className: "bg-gray-50 text-gray-600" },
-    headline: "Predictive health intelligence",
-    body: "Moving from flagging what has happened to predicting what will happen. Using aggregated, anonymised care data to identify population-level health patterns and help commissioners plan better services.",
-  },
-];
-
-const ROLES = [
-  {
-    title: "Senior Full Stack Engineer",
-    type: "Full time · Remote",
-    body: "Next.js, TypeScript, Supabase. Building the core platform that care agencies across the UK depend on every day.",
-    subject: "Application: Senior Full Stack Engineer",
-  },
-  {
-    title: "Care Sector Customer Success",
-    type: "Full time · UK-based",
-    body: "You understand care. You understand software. You help agencies get the most from Careroot and build relationships that matter.",
-    subject: "Application: Customer Success",
-  },
-  {
-    title: "Care Sector Sales",
-    type: "Full time · UK-based",
-    body: "Not a hard sell. You understand registered managers and operations directors. You help them see what Careroot can do for their service.",
-    subject: "Application: Care Sector Sales",
-  },
-];
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-cr-ivory font-body">
+    <div className="min-h-screen bg-[#F9F7F4]">
       <MarketingNav />
 
-      {/* ── HERO ── */}
-      <section className="bg-cr-ivory py-24 px-4">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-sm font-body font-semibold uppercase tracking-widest text-cr-forest mb-4">
-            About Careroot
-          </p>
-          <h1 className="font-display text-4xl md:text-6xl font-semibold text-cr-charcoal leading-tight max-w-3xl">
+      {/* Hero */}
+      <section className="bg-[#F9F7F4] pt-24 pb-20 px-4 md:px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#1A3C2E] mb-4">About Careroot</p>
+          <h1 className="font-display font-bold text-[52px] md:text-[64px] leading-[1.1] text-[#1C1C1E] max-w-3xl mx-auto mb-6">
             Built by people who believe care can be better.
           </h1>
-          <p className="text-xl font-body text-cr-slate max-w-2xl leading-relaxed mt-6">
+          <p className="text-xl text-[#6B7280] leading-relaxed max-w-2xl mx-auto">
             Careroot exists because too many care agencies are still managing the most important work in the world with paper, spreadsheets, and disconnected systems. We are changing that.
           </p>
         </div>
       </section>
 
-      {/* ── MISSION ── */}
-      <section className="bg-white py-20 px-4">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
-          {/* Left */}
+      {/* Mission */}
+      <section className="bg-white py-20 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
-            <p className="text-xs font-body font-semibold uppercase tracking-widest text-cr-forest mb-4">
-              Our Mission
-            </p>
-            <h2 className="font-display text-4xl md:text-[44px] font-semibold text-cr-charcoal leading-tight mb-8">
+            <p className="text-xs font-semibold uppercase tracking-[2px] text-[#1A3C2E] mb-4">Our Mission</p>
+            <h2 className="font-display font-bold text-[40px] leading-[48px] text-[#1C1C1E] mb-6">
               Technology that serves the people who serve others.
             </h2>
-            <div className="space-y-5 text-base font-body text-cr-slate leading-relaxed">
-              <p>
-                Care workers are some of the most important people in our society. They show up every day — in people&rsquo;s homes, in care homes, in supported living services — and do work that most of us could not imagine doing. They deserve tools that respect the complexity and importance of what they do.
-              </p>
-              <p>
-                The people they support deserve to be known. Not as a record number or a care category — but as a whole person with preferences, memories, relationships, and dignity. Careroot is built to capture that wholeness and put it in the hands of every person who provides care.
-              </p>
-              <p>
-                We built Careroot because we experienced the gap between what care should look like and what the tools available allowed it to be. We are closing that gap.
-              </p>
+            <div className="space-y-5 text-[#6B7280] leading-relaxed">
+              <p>Care workers are some of the most important people in our society. They show up every day — in people's homes, in care homes, in supported living services — and do work that most of us could not imagine doing. They deserve tools that respect the complexity and importance of what they do.</p>
+              <p>The people they support deserve to be known. Not as a record number or a care category — but as a whole person with preferences, memories, relationships, and dignity. Careroot is built to capture that wholeness and put it in the hands of every person who provides care.</p>
+              <p>We built Careroot because we experienced the gap between what care should look like and what the tools available allowed it to be. We are closing that gap.</p>
             </div>
           </div>
-
-          {/* Right — pull quote */}
-          <div className="border-l-[3px] border-cr-forest pl-8 pt-2">
-            <blockquote className="font-display text-[28px] text-cr-charcoal italic leading-relaxed">
-              &ldquo;Care is not an industry. It is a human act. The technology supporting it should honour that.&rdquo;
+          <div className="border-l-4 border-[#1A3C2E] pl-8 py-4">
+            <blockquote className="font-display text-[28px] leading-relaxed text-[#1C1C1E] italic mb-4">
+              "Care is not an industry. It is a human act. The technology supporting it should honour that."
             </blockquote>
-            <p className="font-body text-sm text-cr-slate mt-6">
-              — Careroot founding principle
-            </p>
+            <p className="text-sm text-[#6B7280]">— Careroot founding principle</p>
           </div>
         </div>
       </section>
 
-      {/* ── WHAT WE ARE BUILDING ── */}
-      <section className="bg-cr-mint py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-xs font-body font-semibold uppercase tracking-widest text-cr-forest mb-4">
-              What We Are Building
-            </p>
-            <h2 className="font-display text-4xl md:text-[44px] font-semibold text-cr-charcoal leading-tight mb-4">
-              A platform for the whole care ecosystem.
-            </h2>
-            <p className="text-lg font-body text-cr-slate max-w-2xl mx-auto leading-relaxed">
-              Careroot is not a form-filling tool. It is a care intelligence platform — one that connects carers, managers, families, and emergency services around the people who matter most.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {PLATFORM_CARDS.map(({ Icon, colour, headline, body }) => (
-              <div key={headline} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-                <Icon size={28} className={colour} />
-                <h3 className="font-body font-semibold text-base text-cr-charcoal mt-3 mb-2">{headline}</h3>
-                <p className="font-body text-sm text-cr-slate leading-relaxed">{body}</p>
+      {/* What we are building */}
+      <section className="bg-[#E8F5EE] py-20 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#1A3C2E] mb-3">What we are building</p>
+          <h2 className="font-display font-bold text-[40px] leading-[48px] text-[#1C1C1E] mb-4">
+            A platform for the whole care ecosystem.
+          </h2>
+          <p className="text-lg text-[#6B7280] leading-relaxed max-w-2xl mb-12">
+            Careroot is not a form-filling tool. It is a care intelligence platform — connecting carers, managers, families, and emergency services around the people who matter most.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { icon: Brain, title: "AI that works for care", body: "Not AI for its own sake. AI that drafts care plans, spots deterioration patterns, and flags concerns — so coordinators can focus on people, not paperwork.", accent: false },
+              { icon: Shield, title: "Compliance as a byproduct", body: "When care is documented well, compliance evidence creates itself. CQC inspectors see what happens every day — not what was prepared the week before.", accent: false },
+              { icon: AlertTriangle, title: "Emergency response that works", body: "Every client has a QR card on their fridge. Paramedics scan it. Full medical record in 10 seconds. No login. No delay. This feature exists nowhere else.", accent: true },
+              { icon: Heart, title: "Families as partners", body: "Families are not an afterthought. They are part of the care team. Careroot gives them real visibility, real communication, and a real voice.", accent: false },
+              { icon: UtensilsCrossed, title: "The whole person", body: "Margaret only eats from the blue plates. That detail matters. Careroot captures it and puts it in front of every carer, every visit.", accent: false },
+              { icon: Globe, title: "Built for the UK", body: "CQC 2026 Single Assessment Framework. Ofsted compliance. UK data residency. Built for UK regulation, UK care types, and UK care workers from day one.", accent: false },
+            ].map(({ icon: Icon, title, body, accent }) => (
+              <div key={title} className="bg-white rounded-[16px] p-6 border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-4 ${accent ? "bg-red-50" : "bg-[#E8F5EE]"}`}>
+                  <Icon size={18} className={accent ? "text-[#DC2626]" : "text-[#1A3C2E]"} />
+                </div>
+                <h3 className="font-semibold text-base text-[#1C1C1E] mb-2">{title}</h3>
+                <p className="text-sm text-[#6B7280] leading-relaxed">{body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── ROADMAP ── */}
-      <section className="bg-white py-20 px-4">
+      {/* Roadmap */}
+      <section className="bg-white py-20 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs font-body font-semibold uppercase tracking-widest text-cr-forest mb-4">
-            Our Roadmap
-          </p>
-          <h2 className="font-display text-4xl md:text-[44px] font-semibold text-cr-charcoal leading-tight mb-14">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-[#1A3C2E] mb-3">Our Roadmap</p>
+          <h2 className="font-display font-bold text-[40px] leading-[48px] text-[#1C1C1E] mb-12">
             Where Careroot is going.
           </h2>
-
-          <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-4 top-0 bottom-0 w-[2px] bg-cr-forest/20" />
-
-            <div className="space-y-12">
-              {ROADMAP.map(({ pill, headline, body }) => (
-                <div key={headline} className="flex gap-8 relative">
-                  {/* Dot */}
-                  <div className="w-8 h-8 rounded-full bg-cr-forest flex-shrink-0 flex items-center justify-center z-10">
-                    <div className="w-2.5 h-2.5 rounded-full bg-white" />
-                  </div>
-                  {/* Content */}
-                  <div className="pt-0.5 pb-4">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-body font-semibold uppercase tracking-wide mb-3 ${pill.className}`}>
-                      {pill.label}
-                    </span>
-                    <h3 className="font-body font-semibold text-lg text-cr-charcoal mb-2">{headline}</h3>
-                    <p className="font-body text-sm text-cr-slate leading-relaxed max-w-xl">{body}</p>
-                  </div>
+          <div className="space-y-0">
+            {[
+              {
+                pill: "Live now", pillCls: "bg-[#E8F5EE] text-[#1A3C2E]",
+                dot: "bg-[#1A3C2E]",
+                title: "Complete care management platform",
+                body: "AI care planning, CQC compliance, carer mobile app, family portal, emergency response, nutrition planning, eMAR, complaints management, DBS tracking, rota scheduling, invoicing, payroll, and 50+ reports.",
+              },
+              {
+                pill: "In development", pillCls: "bg-amber-50 text-amber-700",
+                dot: "bg-[#F59E0B]",
+                title: "GP Connect integration",
+                body: "Seamless connection to GP records so carers and care managers have full clinical context without hours of back-and-forth phone calls.",
+              },
+              {
+                pill: "On the roadmap", pillCls: "bg-gray-100 text-[#6B7280]",
+                dot: "bg-gray-300",
+                title: "Predictive health intelligence",
+                body: "Moving from flagging what has happened to predicting what will happen. Using aggregated, anonymised care data to identify population-level health patterns.",
+              },
+            ].map(({ pill, pillCls, dot, title, body }, i) => (
+              <div key={title} className="flex gap-6">
+                <div className="flex flex-col items-center">
+                  <div className={`w-4 h-4 rounded-full flex-shrink-0 mt-1 ${dot}`} />
+                  {i < 2 && <div className="w-0.5 bg-gray-200 flex-1 my-2" />}
                 </div>
-              ))}
-            </div>
+                <div className={`pb-10 ${i === 2 ? "" : ""}`}>
+                  <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 ${pillCls}`}>{pill}</span>
+                  <h3 className="font-semibold text-lg text-[#1C1C1E] mb-2">{title}</h3>
+                  <p className="text-sm text-[#6B7280] leading-relaxed">{body}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── JOIN US ── */}
-      <section className="bg-cr-forest py-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-body font-semibold uppercase tracking-widest text-cr-mint mb-4">
-            Join The Team
-          </p>
-          <h2 className="font-display text-4xl md:text-[48px] font-semibold text-white leading-tight mb-4 max-w-3xl">
+      {/* Careers */}
+      <section id="careers" className="bg-[#1A3C2E] py-20 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-xs font-semibold uppercase tracking-[2px] text-white/60 mb-3">Join the team</p>
+          <h2 className="font-display font-bold text-[44px] leading-[52px] text-white mb-4">
             We are looking for people who care about care.
           </h2>
-          <p className="text-lg font-body text-white/80 max-w-2xl mb-12 leading-relaxed">
+          <p className="text-lg text-white/70 max-w-2xl mb-12">
             Careroot is a small team building something important. We are looking for people who combine technical excellence with genuine belief that technology can improve how care is delivered in the UK.
           </p>
-
-          {/* TODO: update with real open roles */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            {ROLES.map(({ title, type, body, subject }) => (
-              <div key={title} className="bg-white/10 border border-white/20 rounded-xl p-6 flex flex-col">
-                <span className="inline-block text-xs font-body font-semibold text-white/60 uppercase tracking-wide mb-3">
-                  {type}
-                </span>
-                <h3 className="font-body font-semibold text-white text-base mb-3">{title}</h3>
-                <p className="font-body text-sm text-white/70 leading-relaxed flex-1 mb-5">{body}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {[
+              { role: "Senior Full Stack Engineer", type: "Full time · Remote", body: "Next.js, TypeScript, Supabase. Building the core platform that care agencies across the UK depend on every day." },
+              { role: "Care Sector Customer Success", type: "Full time · UK-based", body: "You understand care. You understand software. You help agencies get the most from Careroot and build relationships that matter." },
+              { role: "Care Sector Sales", type: "Full time · UK-based", body: "Not a hard sell. You understand registered managers and operations directors. You help them see what Careroot can do for their service." },
+            ].map(({ role, type, body }) => (
+              <div key={role} className="bg-white/5 border border-white/10 rounded-[16px] p-6">
+                <h3 className="font-semibold text-white mb-1">{role}</h3>
+                <p className="text-xs text-white/50 mb-3">{type}</p>
+                <p className="text-sm text-white/70 leading-relaxed mb-4">{body}</p>
                 <a
-                  href={`mailto:onboarding@careroot.co.uk?subject=${encodeURIComponent(subject)}`}
-                  className="block text-center text-sm font-body font-semibold text-cr-forest bg-white rounded-lg py-2.5 hover:bg-cr-mint transition-colors"
+                  href={`mailto:onboarding@careroot.co.uk?subject=Application: ${role}`}
+                  className="text-sm font-semibold text-[#1A3C2E] bg-white px-4 py-2 rounded-[8px] hover:bg-[#E8F5EE] transition-colors inline-block"
                 >
                   Apply
                 </a>
               </div>
             ))}
           </div>
-
-          <p className="font-body text-sm text-white/70">
-            Don&rsquo;t see a role that fits?{" "}
-            <a
-              href="mailto:onboarding@careroot.co.uk?subject=Speculative%20Application"
-              className="text-white underline underline-offset-2 hover:no-underline"
-            >
-              Send us a speculative application at onboarding@careroot.co.uk
+          <p className="text-white/60 text-sm">
+            Don't see a role that fits?{" "}
+            <a href="mailto:onboarding@careroot.co.uk?subject=Speculative Application" className="text-white underline hover:no-underline">
+              Send us a speculative application
             </a>
           </p>
         </div>
       </section>
 
-      {/* ── CONTACT TEASER ── */}
-      <section className="bg-cr-ivory py-16 px-4 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="font-display text-4xl font-semibold text-cr-charcoal mb-3">
-            Want to know more?
-          </h2>
-          <p className="font-body text-cr-slate mt-3 mb-8 leading-relaxed">
-            Talk to us about Careroot, a demo, a partnership, or joining the team.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/demo"
-              className="bg-[#1A3C2E] text-white font-body font-medium px-7 py-3 rounded-lg hover:bg-cr-sage transition-colors"
-            >
-              Book a demo
-            </Link>
-            <Link
-              href="/contact"
-              className="border border-[#1A3C2E] text-[#1A3C2E] font-body font-medium px-7 py-3 rounded-lg hover:bg-cr-mint transition-colors"
-            >
-              Contact us
-            </Link>
+      {/* Contact teaser */}
+      <section className="bg-[#F9F7F4] py-16 px-4 md:px-6">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="font-display font-bold text-[40px] leading-[48px] text-[#1C1C1E] mb-3">Want to know more?</h2>
+          <p className="text-[#6B7280] mb-8">Talk to us about Careroot, a demo, a partnership, or joining the team.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/demo" className="bg-[#1A3C2E] text-white px-7 py-3 rounded-[8px] font-semibold hover:bg-[#4A7C5E] transition-colors w-full sm:w-auto text-center">Book a demo</Link>
+            <Link href="/contact" className="border-2 border-[#1A3C2E] text-[#1A3C2E] px-7 py-3 rounded-[8px] font-semibold hover:bg-[#E8F5EE] transition-colors w-full sm:w-auto text-center">Contact us</Link>
           </div>
         </div>
       </section>
