@@ -9,7 +9,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white font-body">
+    <div className="min-h-screen bg-cr-ivory font-body">
       <MarketingNav />
 
       {/* ── HERO ── */}

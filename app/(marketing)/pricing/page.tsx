@@ -87,7 +87,7 @@ const PLANS = [
     features: [
       "Everything in Scale",
       "Unlimited staff accounts",
-      "White label option",
+      "Custom App option",
       "Custom integrations",
       "SLA guarantee",
       "On-site training",
@@ -142,34 +142,34 @@ const ADDONS = [
     type: "api_access",
   },
   {
-    name: "White Label",
+    name: "Custom App",
     price: "From £500",
     billing: "/mo",
     desc: "Your brand, your colours, your domain. Careroot powers everything invisibly in the background.",
     cta: "Learn more",
-    type: "white_label",
-    scrollTo: "white-label",
+    type: "custom_app",
+    scrollTo: "custom-app",
   },
 ];
 
 const WL_PACKAGES = [
   {
-    name: "Basic White Label",
+    name: "Basic Custom App",
     price: "£500/mo extra",
     setup: "£2,000 one-time setup fee",
     features: ["Your logo and app name", "Custom brand colours", "Branded login screen"],
   },
   {
-    name: "Full White Label",
+    name: "Full Custom App",
     price: "£1,000/mo extra",
     setup: "£2,000 one-time setup fee",
-    features: ["Custom domain (premiercare.co.uk)", "Branded emails from your domain", "Everything in Basic"],
+    features: ["Custom domain (yourname.co.uk)", "Branded emails from your domain", "Everything in Basic"],
   },
   {
-    name: "Enterprise White Label",
+    name: "Enterprise Custom App",
     price: "£1,500/mo extra",
     setup: "£2,000 one-time setup fee",
-    features: ["Your own Play Store & App Store listing", "Dedicated white label support", "Everything in Full"],
+    features: ["Your own Play Store & App Store listing", "Dedicated support team", "Everything in Full"],
   },
 ];
 
@@ -195,12 +195,12 @@ const FAQS = [
     a: "Yes. Our Paper Migration add-on converts all your existing paper or PDF care plans to digital format using AI. Your manager reviews and approves each one before it goes live.",
   },
   {
-    q: "What is the white label option?",
-    a: "White label means your staff, families, and CQC inspectors only see your brand — never Careroot. We power everything in the background. Contact us to discuss.",
+    q: "What is Custom App?",
+    a: "Custom App means your staff, families, and CQC inspectors only see your brand — never Careroot. We power everything in the background. See our Custom App page for details.",
   },
   {
     q: "Is there a setup fee?",
-    a: "No setup fee on standard plans. White label has a one-time £2,000 setup fee covering branding configuration, domain setup, and staff training.",
+    a: "No setup fee on standard plans. Custom App has a one-time £2,000 setup fee covering branding configuration, domain setup, and staff training.",
   },
 ];
 
@@ -232,7 +232,7 @@ export default function PricingPage() {
   };
 
   const scrollToWL = () => {
-    document.getElementById("white-label")?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("custom-app")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -383,8 +383,8 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* White Label section */}
-        <div id="white-label" className="rounded-3xl bg-cr-forest text-white p-10 mb-20">
+        {/* Custom App section */}
+        <div id="custom-app" className="rounded-3xl bg-cr-forest text-white p-10 mb-20">
           <div className="text-center mb-10">
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-white mb-3">
               Your brand. Our platform.
@@ -427,10 +427,10 @@ export default function PricingPage() {
 
           <div className="text-center">
             <Link
-              href="/demo?subject=white-label"
+              href="/custom-app"
               className="inline-block px-8 py-3 bg-white text-cr-forest rounded-xl font-body font-semibold text-sm hover:bg-cr-mint transition-colors"
             >
-              Talk to us about white label →
+              Learn more about Custom App →
             </Link>
           </div>
         </div>
@@ -484,7 +484,7 @@ export default function PricingPage() {
                   { f: "Voice call alerts", v: [false, false, "✓", "✓"] },
                   { f: "Advanced reports", v: [false, false, "✓", "✓"] },
                   { f: "API access", v: [false, false, "✓", "✓"] },
-                  { f: "White label", v: [false, false, false, "✓"] },
+                  { f: "Custom App", v: [false, false, false, "✓"] },
                   { f: "Dedicated account manager", v: [false, false, "✓", "✓"] },
                   { f: "SLA guarantee", v: [false, false, false, "✓"] },
                   { f: "On-site training", v: [false, false, false, "✓"] },

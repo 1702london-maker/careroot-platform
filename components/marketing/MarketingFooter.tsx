@@ -24,12 +24,8 @@ export function MarketingFooter() {
                 { icon: MessageCircle, href: "#", label: "LinkedIn" },
                 { icon: Share2, href: "#", label: "Twitter" },
               ].map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-colors"
-                >
+                <a key={label} href={href} aria-label={label}
+                  className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-colors">
                   <Icon size={14} />
                 </a>
               ))}
@@ -43,10 +39,9 @@ export function MarketingFooter() {
               {[
                 ["Features", "/features"],
                 ["Pricing", "/pricing"],
-                ["White Label", "/white-label"],
-                ["API", "/docs/api"],
-                ["Security", "/features#security"],
-                ["Changelog", "#"],
+                ["Custom App", "/custom-app"],
+                ["Book a Demo", "/demo"],
+                ["Start Free Trial", "/signup"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className="text-xs font-body text-white/50 hover:text-white transition-colors">
@@ -62,12 +57,12 @@ export function MarketingFooter() {
             <p className="text-xs font-body font-semibold text-white uppercase tracking-widest mb-4">Solutions</p>
             <ul className="space-y-2.5">
               {[
-                ["Domiciliary Care", "/features"],
-                ["Supported Living", "/features"],
-                ["Residential", "/features"],
-                ["NHS Teams", "/demo"],
-                ["New Agencies", "/pricing"],
-                ["CQC Registration", "/features#compliance"],
+                ["Domiciliary Care", "/solutions/domiciliary"],
+                ["Supported Living", "/solutions/supported-living"],
+                ["Residential Care", "/solutions/residential"],
+                ["NHS Community Teams", "/solutions/nhs"],
+                ["New Care Agencies", "/solutions/new-agencies"],
+                ["CQC Registration", "/solutions/cqc-registration"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className="text-xs font-body text-white/50 hover:text-white transition-colors">
@@ -84,11 +79,10 @@ export function MarketingFooter() {
             <ul className="space-y-2.5">
               {[
                 ["About", "#"],
-                ["Book a Demo", "/demo"],
-                ["Contact", "/demo"],
-                ["Privacy Policy", "#"],
-                ["Terms of Service", "#"],
-                ["GDPR", "#"],
+                ["Contact Us", "/contact"],
+                ["FAQ", "/faq"],
+                ["Privacy Policy", "/privacy"],
+                ["Terms of Service", "/terms"],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className="text-xs font-body text-white/50 hover:text-white transition-colors">
@@ -102,12 +96,14 @@ export function MarketingFooter() {
 
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-xs font-body text-white/30">
-            © {new Date().getFullYear()} Careroot Ltd · Registered in England · UK data residency
+          <p className="text-sm font-body text-white/40">
+            &copy; 2026 Careroot Ltd &middot; All rights reserved
           </p>
-          <p className="text-xs font-body text-white/30">
-            hello@careroot.care
-          </p>
+          <div className="flex items-center gap-3 text-sm font-body text-white/40">
+            <Link href="/privacy" className="hover:text-white/70 transition-colors">Privacy</Link>
+            <span>&middot;</span>
+            <Link href="/terms" className="hover:text-white/70 transition-colors">Terms</Link>
+          </div>
         </div>
       </div>
     </footer>
