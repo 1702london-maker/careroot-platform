@@ -36,19 +36,11 @@ export function MarketingNav() {
 
   return (
     <>
-      {/* Gold announcement bar */}
-      <div className="bg-cr-gold text-white text-center text-xs font-body font-semibold py-2 px-4">
-        CQC 2026 Single Assessment Framework is live —{" "}
-        <Link href="/solutions/cqc-registration" className="underline underline-offset-2 hover:no-underline">
-          See how Careroot keeps you compliant →
-        </Link>
-      </div>
-
-      <nav className="sticky top-0 z-50 bg-white border-b border-[#F3F4F6]">
+      <nav className="sticky top-0 z-50 bg-white border-b border-[#F3F4F6] shadow-nav">
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between h-[68px]">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0" aria-label="Careroot home">
-            <div className="w-8 h-8 rounded-lg bg-[#1A3C2E] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-[#1A3C2E] flex items-center justify-center">
               <Leaf size={16} className="text-white" />
             </div>
             <span className="font-display text-xl font-semibold text-[#1C1C1E]">Careroot</span>

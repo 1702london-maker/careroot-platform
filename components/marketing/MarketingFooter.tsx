@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Leaf, Globe, Mail, MessageCircle, Share2 } from "lucide-react";
+import { Leaf } from "lucide-react";
 
 export function MarketingFooter() {
   return (
@@ -9,7 +9,7 @@ export function MarketingFooter() {
           {/* Col 1 — Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-[#1A3C2E] rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-[#1A3C2E] rounded-full flex items-center justify-center">
                 <Leaf size={16} className="text-white" />
               </div>
               <span className="font-display text-xl font-semibold text-[#1C1C1E]">Careroot</span>
@@ -19,14 +19,14 @@ export function MarketingFooter() {
             </p>
             <div className="flex gap-3">
               {[
-                { icon: Globe, href: "#", label: "Website" },
-                { icon: Mail, href: "mailto:hello@careroot.care", label: "Email" },
-                { icon: MessageCircle, href: "#", label: "LinkedIn" },
-                { icon: Share2, href: "#", label: "Twitter" },
-              ].map(({ icon: Icon, href, label }) => (
+                { letter: "W", href: "#", label: "Website" },
+                { letter: "E", href: "mailto:onboarding@careroot.co.uk", label: "Email" },
+                { letter: "L", href: "#", label: "LinkedIn" },
+                { letter: "X", href: "#", label: "Twitter" },
+              ].map(({ letter, href, label }) => (
                 <a key={label} href={href} aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-[#6B7280] hover:text-[#1A3C2E] hover:bg-[#E8F5EE] transition-colors">
-                  <Icon size={14} />
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-body font-bold text-[#6B7280] hover:text-[#1A3C2E] hover:bg-[#E8F5EE] transition-colors">
+                  {letter}
                 </a>
               ))}
             </div>

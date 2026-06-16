@@ -61,3 +61,35 @@ export const PLAN_LIMITS: Record<string, number> = {
   scale: 200,
   enterprise: Infinity,
 };
+
+export function getStatusClass(status: string): string {
+  const classes: Record<string, string> = {
+    completed: "bg-cr-mint text-cr-forest",
+    in_progress: "bg-amber-50 text-amber-700",
+    missed: "bg-red-50 text-cr-red",
+    scheduled: "bg-gray-100 text-cr-slate",
+    cancelled: "bg-gray-100 text-cr-slate",
+    active: "bg-cr-mint text-cr-forest",
+    draft: "bg-gray-100 text-cr-slate",
+    sent: "bg-blue-50 text-blue-700",
+    paid: "bg-cr-mint text-cr-forest",
+    overdue: "bg-red-50 text-cr-red",
+    open: "bg-amber-50 text-amber-700",
+    resolved: "bg-cr-mint text-cr-forest",
+    high: "bg-red-50 text-cr-red",
+    medium: "bg-amber-50 text-amber-700",
+    low: "bg-gray-100 text-cr-slate",
+    critical: "bg-red-50 text-cr-red font-bold",
+  };
+  return classes[status.toLowerCase()] || "bg-gray-100 text-cr-slate";
+}
+
+export function getRiskDotClass(level: string): string {
+  const classes: Record<string, string> = {
+    low: "bg-cr-forest",
+    medium: "bg-cr-amber",
+    high: "bg-cr-red",
+    critical: "bg-cr-red",
+  };
+  return classes[level.toLowerCase()] || "bg-cr-slate";
+}

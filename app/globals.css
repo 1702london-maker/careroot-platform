@@ -8,13 +8,13 @@
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  background-color: #F9F7F4;
+  color: #1C1C1E;
+  font-family: var(--font-dm-sans), DM Sans, sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-cormorant), Georgia, serif;
+h1, h2, h3, h4 {
+  font-family: var(--font-cormorant), Cormorant Garamond, Georgia, serif;
 }
 
 @layer utilities {
@@ -23,22 +23,22 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .font-display {
-    font-family: var(--font-cormorant), Georgia, serif;
+    font-family: var(--font-cormorant), Cormorant Garamond, Georgia, serif;
   }
 
   .font-body {
-    font-family: var(--font-dm-sans), system-ui, sans-serif;
+    font-family: var(--font-dm-sans), DM Sans, system-ui, sans-serif;
   }
 
   .cr-card {
-    @apply bg-white border border-gray-100 rounded-xl shadow-sm p-6;
+    @apply bg-white border border-gray-100 rounded-card shadow-card p-6;
   }
 
   .cr-btn-primary {
-    @apply bg-cr-forest text-white rounded-lg px-4 py-2 hover:bg-cr-sage transition-colors duration-200 font-body font-medium;
+    @apply bg-cr-forest text-white rounded-btn px-4 py-2 hover:bg-cr-sage transition-colors duration-150 font-body font-semibold;
   }
 
   .cr-btn-secondary {
-    @apply border border-cr-forest text-cr-forest rounded-lg px-4 py-2 hover:bg-cr-mint transition-colors duration-200 font-body font-medium;
+    @apply border border-cr-forest text-cr-forest rounded-btn px-4 py-2 hover:bg-cr-mint transition-colors duration-150 font-body font-semibold;
   }
 }

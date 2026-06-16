@@ -28,14 +28,14 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-3 mb-10">
             <Link
               href="/signup"
-              className="bg-cr-forest text-white rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-sage transition-colors flex items-center justify-center gap-2"
+              className="bg-cr-forest text-white rounded-btn px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-sage transition-colors flex items-center justify-center gap-2"
             >
               Start free trial
               <ArrowRight size={18} />
             </Link>
             <Link
               href="/demo"
-              className="border border-[#1A3C2E] text-[#1A3C2E] rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-mint transition-colors flex items-center justify-center gap-2"
+              className="border border-[#1A3C2E] text-[#1A3C2E] rounded-btn px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-mint transition-colors flex items-center justify-center gap-2"
             >
               Watch 2-min demo
             </Link>
@@ -84,7 +84,7 @@ export default function HomePage() {
                 body: "Every plan. Every feature. No credit card. No commitment. Cancel any time.",
               },
             ].map(({ Icon, headline, body }) => (
-              <div key={headline} className="bg-white rounded-xl p-6 border border-[#E5E7EB] text-center">
+              <div key={headline} className="bg-white rounded-card p-6 border border-[#E5E7EB] shadow-card text-center">
                 <Icon size={32} className="text-cr-forest mx-auto mb-3" />
                 <p className="font-display text-xl text-cr-charcoal mb-2">{headline}</p>
                 <p className="text-sm font-body text-cr-slate leading-relaxed">{body}</p>
@@ -118,7 +118,7 @@ export default function HomePage() {
                 body: "They don't know about the DNR. They don't know about the allergy. They don't know that Margaret only eats from blue plates and hates the smell of fish. That's not care. That's a risk.",
               },
             ].map((p) => (
-              <div key={p.title} className="bg-white rounded-2xl p-7 border-l-4 border-cr-red shadow-sm">
+              <div key={p.title} className="bg-white rounded-card p-7 border-l-4 border-cr-red shadow-card">
                 <h3 className="font-display text-lg font-semibold text-cr-charcoal mb-3">{p.title}</h3>
                 <p className="text-sm font-body text-cr-slate leading-relaxed">{p.body}</p>
               </div>
@@ -179,7 +179,7 @@ export default function HomePage() {
                 accent: "cr-forest",
               },
             ].map((f) => (
-              <div key={f.title} className="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm hover:shadow-md hover:border-cr-mint transition-all group">
+              <div key={f.title} className="bg-white rounded-card p-7 border border-gray-100 shadow-card hover:shadow-card-hover hover:border-cr-mint transition-all group">
                 <div className="w-11 h-11 rounded-xl bg-cr-ivory flex items-center justify-center mb-5 group-hover:bg-cr-mint transition-colors">
                   {f.icon}
                 </div>
@@ -387,16 +387,17 @@ export default function HomePage() {
             Start free. Scale as you grow.
           </h2>
           <p className="text-sm font-body text-cr-slate mb-10">30-day free trial on all plans. No credit card required.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5 max-w-5xl mx-auto">
             {[
               { name: "Seed", price: "£99", period: "/month", staff: "Up to 10 staff", highlight: false },
               { name: "Grow", price: "£349", period: "/month", staff: "Up to 50 staff", highlight: true },
               { name: "Scale", price: "£899", period: "/month", staff: "Up to 200 staff", highlight: false },
+              { name: "Enterprise", price: "Custom", period: "", staff: "Unlimited staff", highlight: false },
             ].map((t) => (
               <div
                 key={t.name}
-                className={`rounded-2xl p-6 border ${
-                  t.highlight ? "bg-cr-forest text-white border-cr-forest shadow-xl" : "bg-white border-gray-100 shadow-sm"
+                className={`rounded-card p-6 border ${
+                  t.highlight ? "bg-cr-forest text-white border-cr-forest shadow-xl" : "bg-white border-gray-100 shadow-card"
                 }`}
               >
                 {t.highlight && (
@@ -407,7 +408,7 @@ export default function HomePage() {
                 <h3 className={`font-display text-xl font-semibold mb-1 ${t.highlight ? "text-white" : "text-cr-charcoal"}`}>{t.name}</h3>
                 <div className={`text-3xl font-display font-semibold ${t.highlight ? "text-white" : "text-cr-charcoal"}`}>
                   {t.price}
-                  <span className={`text-sm font-body font-normal ${t.highlight ? "text-white/60" : "text-cr-slate"}`}>{t.period}</span>
+                  {t.period && <span className={`text-sm font-body font-normal ${t.highlight ? "text-white/60" : "text-cr-slate"}`}>{t.period}</span>}
                 </div>
                 <p className={`text-sm font-body mt-2 ${t.highlight ? "text-white/70" : "text-cr-slate"}`}>{t.staff}</p>
               </div>
@@ -429,15 +430,15 @@ export default function HomePage() {
             Join care agencies across the UK. 30-day free trial. No credit card. Cancel any time.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-            <Link href="/signup" className="bg-white text-cr-forest rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-mint transition-colors">
+            <Link href="/signup" className="bg-white text-cr-forest rounded-btn px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-mint transition-colors">
               Start free trial — 30 days free
             </Link>
-            <Link href="/demo" className="border border-white/40 text-white rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-white/10 transition-colors">
+            <Link href="/demo" className="border border-white/40 text-white rounded-btn px-7 py-3.5 font-body font-semibold text-base hover:bg-white/10 transition-colors">
               Book a demo
             </Link>
           </div>
           <p className="text-sm font-body text-white/50">
-            Questions? Email <a href="mailto:hello@careroot.care" className="text-white/70 hover:text-white underline">hello@careroot.care</a>
+            Questions? Email <a href="mailto:onboarding@careroot.co.uk" className="text-white/70 hover:text-white underline">onboarding@careroot.co.uk</a>
           </p>
         </div>
       </section>
