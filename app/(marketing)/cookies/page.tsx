@@ -1,6 +1,11 @@
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+
 export default function CookiesPage() {
   return (
-    <main className="bg-cr-ivory min-h-screen pt-28 pb-20 px-6">
+    <>
+      <MarketingNav />
+      <main className="bg-cr-ivory min-h-screen pt-28 pb-20 px-6">
       <div className="max-w-3xl mx-auto">
         <span className="inline-block text-xs font-body font-semibold uppercase tracking-widest text-cr-forest bg-cr-mint px-3 py-1.5 rounded-full mb-5">Legal</span>
         <h1 className="font-display text-5xl text-cr-charcoal mb-3">Cookie Policy</h1>
@@ -46,6 +51,8 @@ export default function CookiesPage() {
           </section>
         </div>
       </div>
-    </main>
+      </main>
+      <MarketingFooter />
+    </>
   );
 }

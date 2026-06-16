@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Activity, BarChart2, ShieldCheck, Users, Heart, Settings, CheckCircle } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 const SAMPLE_DATA = [
   { week: "Wk 1", completed: 42, scheduled: 45 },
@@ -40,7 +42,9 @@ const FEATURES = [
 
 export default function ReportsMarketingPage() {
   return (
-    <main>
+    <>
+      <MarketingNav />
+      <main>
       {/* Hero */}
       <section className="bg-cr-ivory pt-28 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
@@ -170,6 +174,8 @@ export default function ReportsMarketingPage() {
           </div>
         </div>
       </section>
-    </main>
+      </main>
+      <MarketingFooter />
+    </>
   );
 }

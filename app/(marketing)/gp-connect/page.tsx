@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FileText, RefreshCw, Shield, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 const FEATURES = [
   {
@@ -63,7 +65,9 @@ export default function GPConnectMarketingPage() {
   const inputCls = "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body focus:outline-none focus:border-cr-forest";
 
   return (
-    <main>
+    <>
+      <MarketingNav />
+      <main>
       {/* Hero */}
       <section className="bg-cr-ivory pt-28 pb-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
@@ -166,6 +170,8 @@ export default function GPConnectMarketingPage() {
           )}
         </div>
       </section>
-    </main>
+      </main>
+      <MarketingFooter />
+    </>
   );
 }
