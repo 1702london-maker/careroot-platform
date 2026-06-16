@@ -3,18 +3,18 @@ import { Leaf, Globe, Mail, MessageCircle, Share2 } from "lucide-react";
 
 export function MarketingFooter() {
   return (
-    <footer className="bg-cr-charcoal pt-14 pb-8">
+    <footer className="bg-white border-t border-[#F3F4F6] pt-14 pb-8">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
           {/* Col 1 — Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-cr-forest rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-[#1A3C2E] rounded-lg flex items-center justify-center">
                 <Leaf size={16} className="text-white" />
               </div>
-              <span className="font-display text-xl font-semibold text-white">Careroot</span>
+              <span className="font-display text-xl font-semibold text-[#1C1C1E]">Careroot</span>
             </div>
-            <p className="text-xs font-body text-white/50 leading-relaxed mb-5">
+            <p className="text-xs font-body text-[#6B7280] leading-relaxed mb-5">
               The UK&rsquo;s most intelligent care management platform. Built for CQC 2026.
             </p>
             <div className="flex gap-3">
@@ -25,7 +25,7 @@ export function MarketingFooter() {
                 { icon: Share2, href: "#", label: "Twitter" },
               ].map(({ icon: Icon, href, label }) => (
                 <a key={label} href={href} aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-colors">
+                  className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-[#6B7280] hover:text-[#1A3C2E] hover:bg-[#E8F5EE] transition-colors">
                   <Icon size={14} />
                 </a>
               ))}
@@ -34,7 +34,7 @@ export function MarketingFooter() {
 
           {/* Col 2 — Platform */}
           <div>
-            <p className="text-xs font-body font-semibold text-white uppercase tracking-widest mb-4">Platform</p>
+            <p className="text-xs font-body font-semibold text-[#6B7280] uppercase tracking-widest mb-4">Platform</p>
             <ul className="space-y-2.5">
               {[
                 ["Features", "/features"],
@@ -44,7 +44,7 @@ export function MarketingFooter() {
                 ["Start Free Trial", "/signup"],
               ].map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="text-xs font-body text-white/50 hover:text-white transition-colors">
+                  <Link href={href} className="text-xs font-body text-[#6B7280] hover:text-[#1A3C2E] transition-colors duration-150">
                     {label}
                   </Link>
                 </li>
@@ -54,7 +54,7 @@ export function MarketingFooter() {
 
           {/* Col 3 — Solutions */}
           <div>
-            <p className="text-xs font-body font-semibold text-white uppercase tracking-widest mb-4">Solutions</p>
+            <p className="text-xs font-body font-semibold text-[#6B7280] uppercase tracking-widest mb-4">Solutions</p>
             <ul className="space-y-2.5">
               {[
                 ["Domiciliary Care", "/solutions/domiciliary"],
@@ -65,7 +65,7 @@ export function MarketingFooter() {
                 ["CQC Registration", "/solutions/cqc-registration"],
               ].map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="text-xs font-body text-white/50 hover:text-white transition-colors">
+                  <Link href={href} className="text-xs font-body text-[#6B7280] hover:text-[#1A3C2E] transition-colors duration-150">
                     {label}
                   </Link>
                 </li>
@@ -75,7 +75,7 @@ export function MarketingFooter() {
 
           {/* Col 4 — Company */}
           <div>
-            <p className="text-xs font-body font-semibold text-white uppercase tracking-widest mb-4">Company</p>
+            <p className="text-xs font-body font-semibold text-[#6B7280] uppercase tracking-widest mb-4">Company</p>
             <ul className="space-y-2.5">
               {[
                 ["About", "#"],
@@ -85,7 +85,7 @@ export function MarketingFooter() {
                 ["Terms of Service", "/terms"],
               ].map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="text-xs font-body text-white/50 hover:text-white transition-colors">
+                  <Link href={href} className="text-xs font-body text-[#6B7280] hover:text-[#1A3C2E] transition-colors duration-150">
                     {label}
                   </Link>
                 </li>
@@ -95,14 +95,14 @@ export function MarketingFooter() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-sm font-body text-white/40">
+        <div className="border-t border-[#F3F4F6] pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
+          <p className="text-sm font-body text-[#6B7280]">
             &copy; 2026 Careroot Ltd &middot; All rights reserved
           </p>
-          <div className="flex items-center gap-3 text-sm font-body text-white/40">
-            <Link href="/privacy" className="hover:text-white/70 transition-colors">Privacy</Link>
+          <div className="flex items-center gap-3 text-sm font-body text-[#6B7280]">
+            <Link href="/privacy" className="hover:text-[#1A3C2E] transition-colors duration-150">Privacy</Link>
             <span>&middot;</span>
-            <Link href="/terms" className="hover:text-white/70 transition-colors">Terms</Link>
+            <Link href="/terms" className="hover:text-[#1A3C2E] transition-colors duration-150">Terms</Link>
           </div>
         </div>
       </div>

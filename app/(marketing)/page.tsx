@@ -9,78 +9,85 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen font-body">
+    <div className="min-h-screen bg-cr-ivory font-body">
       <MarketingNav />
 
-      {/* ── HERO ── pulls up behind sticky nav so green shows through transparent bar */}
-      <section className="bg-cr-forest relative overflow-hidden -mt-[68px] pt-[68px]">
-        {/* Subtle pattern overlay */}
-        <div
-          className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 2px 2px, #fff 1px, transparent 0)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-        <div className="relative max-w-6xl mx-auto px-4 md:px-6 pt-20 pb-24">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cr-gold/20 text-cr-gold text-xs font-body font-semibold mb-7 border border-cr-gold/30">
+      {/* ── HERO ── */}
+      <section className="bg-cr-ivory py-20">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cr-mint text-cr-forest text-xs font-body font-semibold mb-7 border border-cr-sage/20">
             <Shield size={12} />
             Built for CQC 2026 Single Assessment Framework
           </div>
-          <h1 className="font-display text-5xl md:text-7xl font-semibold text-white leading-tight mb-6 max-w-4xl">
+          <h1 className="font-display text-5xl md:text-7xl font-semibold text-cr-charcoal leading-tight mb-6 max-w-4xl">
             The care platform that works as hard as your team.
           </h1>
-          <p className="text-lg md:text-xl font-body text-white/70 mb-10 max-w-2xl leading-relaxed">
+          <p className="text-lg md:text-xl font-body text-cr-slate mb-10 max-w-2xl leading-relaxed">
             AI-powered care management, CQC compliance, emergency response, and family engagement — built specifically for UK domiciliary and supported living providers.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mb-10">
             <Link
               href="/signup"
-              className="bg-white text-cr-forest rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-mint transition-colors flex items-center justify-center gap-2"
+              className="bg-cr-forest text-white rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-sage transition-colors flex items-center justify-center gap-2"
             >
               Start free trial
               <ArrowRight size={18} />
             </Link>
             <Link
               href="/demo"
-              className="border border-white/40 text-white rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+              className="border border-[#1A3C2E] text-[#1A3C2E] rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-mint transition-colors flex items-center justify-center gap-2"
             >
               Watch 2-min demo
             </Link>
           </div>
-          <p className="text-sm font-body text-white/50">30 days free · No credit card · Set up in under an hour</p>
+          <p className="text-sm font-body text-cr-slate">30 days free · No credit card · Set up in under an hour</p>
 
           {/* Trust signals */}
           <div className="flex flex-col sm:flex-row gap-5 mt-8">
             {[
               { icon: Shield, text: "NHS-grade security" },
               { icon: CheckCircle, text: "CQC 2026 compliant" },
-              { icon: Star, text: "Rated 5/5 by care managers" },
+              { icon: CheckCircle, text: "Works offline on any device" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2">
-                <Icon size={15} className="text-cr-gold" />
-                <span className="text-sm font-body text-white/70">{text}</span>
+                <Icon size={15} className="text-cr-forest" />
+                <span className="text-sm font-body text-cr-slate">{text}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── STATS BAR ── */}
-      {/* Projected stats for launch — replace with real data as it comes in */}
-      <section className="bg-cr-mint border-b border-cr-sage/20">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      {/* ── BENEFIT CARDS ── */}
+      <section className="bg-cr-mint py-12">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { stat: "200+", label: "Care agencies trust Careroot" },
-              { stat: "94%", label: "CQC inspection pass rate" },
-              { stat: "3hrs", label: "Saved per coordinator per day" },
-              { stat: "28", label: "Days average to CQC readiness" },
-            ].map(({ stat, label }) => (
-              <div key={label}>
-                <p className="font-display text-3xl md:text-4xl font-semibold text-cr-forest mb-1">{stat}</p>
-                <p className="text-xs font-body text-cr-slate">{label}</p>
+              {
+                Icon: ShieldCheck,
+                headline: "CQC 2026 Ready",
+                body: "Built around the CQC Single Assessment Framework from day one — not retrofitted to meet it.",
+              },
+              {
+                Icon: Smartphone,
+                headline: "Works Offline",
+                body: "The carer app caches everything needed before each shift. Complete visits with no signal. Syncs when back online.",
+              },
+              {
+                Icon: AlertCircle,
+                headline: "Set Up in Under an Hour",
+                body: "Add your organisation, invite your first carer, onboard your first client. No IT team required.",
+              },
+              {
+                Icon: Heart,
+                headline: "30-Day Free Trial",
+                body: "Every plan. Every feature. No credit card. No commitment. Cancel any time.",
+              },
+            ].map(({ Icon, headline, body }) => (
+              <div key={headline} className="bg-white rounded-xl p-6 border border-[#E5E7EB] text-center">
+                <Icon size={32} className="text-cr-forest mx-auto mb-3" />
+                <p className="font-display text-xl text-cr-charcoal mb-2">{headline}</p>
+                <p className="text-sm font-body text-cr-slate leading-relaxed">{body}</p>
               </div>
             ))}
           </div>
@@ -372,50 +379,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SOCIAL PROOF ── */}
-      {/* Illustrative testimonials for launch — replace with real ones as they come in */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-cr-charcoal text-center mb-3">
-            Trusted by care managers across the UK
-          </h2>
-          <p className="text-sm font-body text-cr-slate text-center mb-12">
-            Care agencies using Careroot to deliver better care and stay CQC ready.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                quote: "We went from CQC improvement notice to Good rating in four months. The compliance dashboard showed us exactly what to fix.",
-                name: "Registered Manager, London",
-                sub: "Domiciliary care · 35 staff",
-              },
-              {
-                quote: "Our carers actually use it. That's the thing. Previous systems sat on a shelf. Careroot is on their phone every shift.",
-                name: "Operations Director, Manchester",
-                sub: "Supported living · 28 staff",
-              },
-              {
-                quote: "The paramedic QR feature alone is worth the subscription. We had an emergency last month and it worked exactly as promised.",
-                name: "Care Manager, Birmingham",
-                sub: "Domiciliary care · 12 staff",
-              },
-            ].map((t) => (
-              <div key={t.name} className="bg-white rounded-2xl p-7 border border-gray-100 shadow-sm">
-                <div className="flex gap-0.5 mb-5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} className="text-cr-gold fill-cr-gold" />
-                  ))}
-                </div>
-                <p className="text-sm font-body text-cr-charcoal leading-relaxed mb-5 italic">&ldquo;{t.quote}&rdquo;</p>
-                <div>
-                  <p className="text-sm font-body font-semibold text-cr-charcoal">{t.name}</p>
-                  <p className="text-xs font-body text-cr-slate">{t.sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── PRICING TEASER ── */}
       <section className="bg-cr-ivory py-16">

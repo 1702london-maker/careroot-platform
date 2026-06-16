@@ -7,20 +7,7 @@ import { Leaf, Menu, X } from "lucide-react";
 
 export function MarketingNav() {
   const pathname = usePathname();
-  const isHomepage = pathname === "/";
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isHomepage) {
-      setScrolled(true);
-      return;
-    }
-    const handleScroll = () => setScrolled(window.scrollY > 60);
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomepage]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -35,24 +22,7 @@ export function MarketingNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const transparent = isHomepage && !scrolled;
-
-  const navBg = transparent ? "bg-transparent" : "bg-white border-b border-gray-100 shadow-sm";
-  const logoText = transparent ? "text-white" : "text-[#1C1C1E]";
-  const logoIconBg = transparent ? "bg-white/20" : "bg-[#1A3C2E]";
-  const signInColour = transparent ? "text-white/80 hover:text-white" : "text-[#6B7280] hover:text-[#1C1C1E]";
-  const trialBtn = transparent
-    ? "bg-white text-[#1A3C2E] hover:bg-white/90"
-    : "bg-[#1A3C2E] text-white hover:bg-[#4A7C5E]";
-  const menuIconColour = transparent ? "#ffffff" : "#1C1C1E";
-
-  const linkClass = (href: string) => {
-    const isActive = pathname === href || pathname.startsWith(href + "/");
-    if (transparent) return "text-white hover:text-white/80";
-    return isActive
-      ? "text-[#1A3C2E]"
-      : "text-[#1C1C1E] hover:text-[#1A3C2E]";
-  };
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
   const NAV_LINKS = [
     { label: "Features", href: "/features" },
@@ -63,22 +33,26 @@ export function MarketingNav() {
 
   return (
     <>
-      <nav className={`sticky top-0 z-50 transition-all duration-200 ${navBg}`}>
+      <nav className="sticky top-0 z-50 bg-white border-b border-[#F3F4F6]">
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between h-[68px]">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0" aria-label="Careroot home">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${logoIconBg}`}>
+            <div className="w-8 h-8 rounded-lg bg-[#1A3C2E] flex items-center justify-center">
               <Leaf size={16} className="text-white" />
             </div>
-            <span className={`font-display text-xl font-semibold transition-colors ${logoText}`}>
-              Careroot
-            </span>
+            <span className="font-display text-xl font-semibold text-[#1C1C1E]">Careroot</span>
           </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map(({ label, href }) => (
-              <Link key={href} href={href} className={`text-sm font-medium transition-colors duration-150 ${linkClass(href)}`}>
+              <Link
+                key={href}
+                href={href}
+                className={`text-sm font-medium transition-colors duration-150 ${
+                  isActive(href) ? "text-[#1A3C2E]" : "text-[#1C1C1E] hover:text-[#1A3C2E]"
+                }`}
+              >
                 {label}
               </Link>
             ))}
@@ -86,17 +60,17 @@ export function MarketingNav() {
 
           {/* Right */}
           <div className="flex items-center gap-4">
-            <Link href="/login" className={`hidden md:block text-sm font-medium transition-colors duration-150 ${signInColour}`}>
+            <Link href="/login" className="hidden md:block text-sm font-medium text-[#6B7280] hover:text-[#1C1C1E] transition-colors duration-150">
               Sign in
             </Link>
-            <Link href="/signup" className={`hidden md:block text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-150 ${trialBtn}`}>
+            <Link href="/signup" className="hidden md:block text-sm font-medium px-4 py-2 rounded-lg bg-[#1A3C2E] text-white hover:bg-[#4A7C5E] transition-colors duration-150">
               Start free trial
             </Link>
             <Link href="/signup" className="md:hidden text-xs font-medium text-white px-3 py-1.5 rounded-lg bg-[#1A3C2E]">
               Start free
             </Link>
             <button className="md:hidden p-1" onClick={() => setMobileOpen(true)} aria-label="Open menu">
-              <Menu size={24} style={{ color: menuIconColour }} />
+              <Menu size={24} className="text-[#1C1C1E]" />
             </button>
           </div>
         </div>
