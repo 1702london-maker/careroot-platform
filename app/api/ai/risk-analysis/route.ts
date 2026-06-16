@@ -27,13 +27,13 @@ export async function POST(req: NextRequest) {
       { data: incidents },
       { data: client },
     ] = await Promise.all([
-      supabase.from("visit_notes").select("body, ai_structured, sentiment, created_at")
+      supabase.from("visit_notes").select("content, ai_structured, sentiment, created_at")
         .eq("client_id", client_id).gte("created_at", thirtyDaysAgo),
       supabase.from("medication_records").select("status, medication_id, created_at")
         .eq("client_id", client_id).gte("created_at", thirtyDaysAgo),
-      supabase.from("meal_records").select("consumption_level, meal_name, meal_type, fluid_intake_ml, fluid_ml, recorded_at")
+      supabase.from("meal_records").select("consumption_level, meal_name, meal_time, fluid_intake_ml, recorded_at")
         .eq("client_id", client_id).gte("recorded_at", thirtyDaysAgo),
-      supabase.from("incidents").select("severity, incident_type, category, description, reported_at, date_time")
+      supabase.from("incidents").select("severity, category, description, reported_at")
         .eq("client_id", client_id).gte("created_at", thirtyDaysAgo),
       supabase.from("clients").select("first_name, last_name").eq("id", client_id).single(),
     ]);
@@ -70,22 +70,18 @@ INCIDENTS (${incidents?.length ?? 0} records): ${JSON.stringify(incidents ?? [])
 
     const flags = (analysis.flags as Array<Record<string, string>>) ?? [];
 
-    // Store all flags
     for (const flag of flags) {
       await supabase.from("ai_risk_flags").insert({
         organisation_id,
         client_id,
         flag_type: flag.type,
         severity: flag.severity,
-        title: flag.description?.slice(0, 100) ?? flag.type,
         description: flag.description,
         evidence: [{ text: flag.evidence }],
-        recommended_action: (analysis.recommended_actions as string[])?.join("; "),
         status: "open",
       });
     }
 
-    // Alert on high/critical
     const riskLevel = analysis.risk_level as string;
     if (riskLevel === "high" || riskLevel === "critical") {
       const { data: org } = await supabase.from("organisations")
@@ -102,7 +98,7 @@ INCIDENTS (${incidents?.length ?? 0} records): ${JSON.stringify(incidents ?? [])
 
       const { data: managers } = await supabase.from("users")
         .select("email").eq("organisation_id", organisation_id)
-        .in("role", ["owner", "manager"]).eq("is_active", true);
+        .in("role", ["org_admin", "manager"]).eq("is_active", true);
 
       if (process.env.RESEND_API_KEY && managers?.length) {
         const resend = new Resend(process.env.RESEND_API_KEY);

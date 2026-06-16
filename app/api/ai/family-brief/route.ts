@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       { data: client },
     ] = await Promise.all([
       supabase.from("visit_notes")
-        .select("body, sentiment, created_at")
+        .select("content, sentiment, created_at")
         .eq("client_id", client_id)
         .eq("is_family_visible", true)
         .eq("is_internal", false)
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         .select("severity, incident_type, description")
         .eq("client_id", client_id)
         .eq("is_family_visible", true)
-        .in("severity", ["serious", "critical"])
+        .in("severity", ["high", "critical"])
         .gte("created_at", period_start),
       supabase.from("medication_records")
         .select("status, created_at")
@@ -89,7 +89,6 @@ MEDICATION REFUSALS THIS PERIOD: ${medRefusals?.length ?? 0}`;
     const { data: briefing } = await supabase.from("family_briefings").insert({
       client_id,
       organisation_id,
-      briefing_text: briefingText,
       content: briefingText,
       ai_generated: true,
       period_start,

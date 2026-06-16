@@ -21,7 +21,7 @@ export async function sendSMS(to: string, body: string) {
     const client = getTwilioClient();
     const message = await client.messages.create({
       body,
-      from: process.env.TWILIO_PHONE_NUMBER!,
+      from: process.env.TWILIO_FROM_NUMBER!,
       to,
     });
     return { success: true, sid: message.sid };

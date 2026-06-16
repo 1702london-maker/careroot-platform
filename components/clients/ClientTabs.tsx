@@ -10,6 +10,7 @@ import { ClientIncidentsTab } from "./tabs/IncidentsTab";
 import { ClientRiskTab } from "./tabs/RiskTab";
 import { ClientNutritionTab } from "./tabs/NutritionTab";
 import { ClientEmergencyTab } from "./tabs/EmergencyTab";
+import { ClientAITab } from "./tabs/AITab";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -20,6 +21,7 @@ const TABS = [
   { id: "risk", label: "Risk" },
   { id: "nutrition", label: "Nutrition" },
   { id: "emergency", label: "Emergency" },
+  { id: "ai", label: "✦ AI" },
 ];
 
 interface Props {
@@ -68,6 +70,7 @@ export function ClientTabs({
       {active === "risk" && <ClientRiskTab client={client} riskAssessment={riskAssessment} />}
       {active === "nutrition" && <ClientNutritionTab client={client} nutritionProfile={nutritionProfile} />}
       {active === "emergency" && <ClientEmergencyTab client={client} emergencyToken={emergencyToken} />}
+      {active === "ai" && <ClientAITab client={client} />}
     </div>
   );
 }

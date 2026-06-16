@@ -82,6 +82,13 @@ export default function SignupPage() {
         is_active: true,
       });
 
+      // Send welcome email (fire and forget — don't block navigation)
+      fetch("/api/auth/welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_name: data.firstName, org_name: data.orgName }),
+      }).catch(() => {});
+
       router.push("/dashboard");
     } catch {
       setError("Something went wrong. Please try again.");

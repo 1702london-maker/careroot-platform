@@ -74,10 +74,12 @@ ${JSON.stringify(medications ?? [], null, 2)}`;
       return NextResponse.json({ error: "No AI response" }, { status: 500 });
     }
 
+    let analysis: Record<string, unknown>;
     let draft: Record<string, string>;
     try {
       const raw = textContent.text.replace(/```json|```/g, "").trim();
-      draft = JSON.parse(raw);
+      analysis = JSON.parse(raw);
+      draft = analysis as unknown as Record<string, string>;
     } catch {
       return NextResponse.json({ error: "AI returned invalid JSON" }, { status: 500 });
     }
@@ -88,9 +90,9 @@ ${JSON.stringify(medications ?? [], null, 2)}`;
       organisation_id,
       title: `${clientName} — Care Plan ${today}`,
       status: "draft",
-      care_needs: draft,
-      ai_generated: true,
-      ai_prompt_used: "care-plan-draft-v1",
+      content: draft,
+      ai_summary: analysis.summary ?? null,
+      version: 1,
     }).select().single();
 
     if (cpError) {

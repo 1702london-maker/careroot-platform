@@ -8,6 +8,7 @@ import { CREmptyState } from "@/components/ui/CREmptyState";
 import { Sparkles } from "lucide-react";
 import { formatDateTimeUK } from "@/lib/utils";
 import Link from "next/link";
+import { RiskFlagActions } from "@/components/ai/RiskFlagActions";
 
 export default async function AIRiskFlagsPage() {
   const supabase = await createClient();
@@ -82,12 +83,15 @@ export default async function AIRiskFlagsPage() {
                       <span className="text-xs font-body text-cr-slate">{formatDateTimeUK(flag.created_at)}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <CRBadge
-                        variant={flag.status === "open" ? "red" : flag.status === "acknowledged" ? "amber" : "green"}
-                        size="sm"
-                      >
-                        {flag.status}
-                      </CRBadge>
+                      <div className="flex flex-col gap-1">
+                        <CRBadge
+                          variant={flag.status === "open" ? "red" : flag.status === "acknowledged" ? "amber" : "green"}
+                          size="sm"
+                        >
+                          {flag.status}
+                        </CRBadge>
+                        <RiskFlagActions flagId={String(flag.id)} status={String(flag.status)} />
+                      </div>
                     </td>
                   </tr>
                 );

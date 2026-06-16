@@ -59,10 +59,8 @@ export async function POST(req: NextRequest) {
         organisation_id,
         flag_type: "visit_note_concern",
         severity,
-        title: `${structured.sentiment === "urgent" ? "Urgent" : "Concern"} flagged in visit note`,
         description: structured.concerns || structured.observations,
         evidence: [{ source: "visit_note", text: note_text.slice(0, 500) }],
-        recommended_action: structured.concerns ? `Follow up on: ${structured.concerns}` : "Review visit note",
         status: "open",
       });
     }

@@ -6,6 +6,7 @@ import { CRCard } from "@/components/ui/CRCard";
 import { CRAIBadge } from "@/components/ui/CRAIBadge";
 import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
 import { Loader2, CheckCircle, QrCode, Printer, Sparkles } from "lucide-react";
+import QRCode from "qrcode";
 
 interface CarePlanSection {
   title: string;
@@ -29,6 +30,7 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
   const [saved, setSaved] = useState(false);
   const [emergencyToken, setEmergencyToken] = useState<string | null>(null);
   const [emergencyPin, setEmergencyPin] = useState<string | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [client, setClient] = useState<{ first_name: string; last_name: string } | null>(null);
 
   useEffect(() => {
@@ -76,33 +78,36 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
         organisation_id: userRecord?.organisation_id,
         created_by: userRecord?.id,
         title: `Care Plan — ${client?.first_name} ${client?.last_name}`,
-        sections: carePlanSections?.reduce((acc, s) => ({
+        content: carePlanSections?.reduce((acc: Record<string, string>, s) => ({
           ...acc,
           [s.title.toLowerCase().replace(/ /g, "_")]: s.content,
         }), {}),
-        ai_generated: true,
-        status,
+        status: "draft",
         version: 1,
       }).select().single();
 
-      // Generate emergency access token + PIN
+      // Generate emergency access token + 6-digit PIN
       const token = crypto.randomUUID().replace(/-/g, "").slice(0, 20);
       const pin = String(Math.floor(100000 + Math.random() * 900000));
-      const pinHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pin))
-        .then((b) => Array.from(new Uint8Array(b)).map((x) => x.toString(16).padStart(2, "0")).join(""));
+
+      // Generate QR code data URL
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care";
+      const emergencyUrl = `${appUrl}/emergency/${token}`;
+      const qr = await QRCode.toDataURL(emergencyUrl, { width: 200, margin: 1, color: { dark: "#1A3C2E" } });
 
       await supabase.from("emergency_access_tokens").insert({
         client_id: clientId,
         organisation_id: userRecord?.organisation_id,
         token,
-        pin_hash: pinHash,
-        is_active: true,
+        pin,
+        qr_code_url: qr,
       });
 
       await supabase.from("clients").update({ onboarding_complete: true, onboarding_step: 6 }).eq("id", clientId);
 
       setEmergencyToken(token);
       setEmergencyPin(pin);
+      setQrDataUrl(qr);
       setSaved(true);
     } catch {
       setError("Failed to save care plan");
@@ -116,19 +121,44 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
     if (!win) return;
     win.document.write(`
       <html><head><title>Emergency Card — ${client?.first_name} ${client?.last_name}</title>
-      <style>body{font-family:sans-serif;padding:20px;max-width:400px}
-      .header{background:#1A3C2E;color:white;padding:16px;border-radius:8px;margin-bottom:16px}
-      .pin{font-size:36px;font-weight:bold;letter-spacing:8px;color:#DC2626;text-align:center;margin:16px 0}
-      .url{font-size:12px;word-break:break-all;color:#6B7280}
-      p{margin:4px 0;font-size:14px}</style></head>
+      <style>
+        @page{size:A5;margin:12mm}
+        body{font-family:'Helvetica Neue',sans-serif;padding:0;margin:0;background:#fff}
+        .card{border:3px solid #1A3C2E;border-radius:12px;overflow:hidden;max-width:148mm}
+        .header{background:#1A3C2E;color:white;padding:16px 20px;display:flex;align-items:center;gap:12px}
+        .header-text h1{margin:0;font-size:18px;font-weight:700}
+        .header-text p{margin:4px 0 0;font-size:13px;opacity:0.8}
+        .body{padding:16px 20px}
+        .alert{background:#FEF2F2;border:2px solid #DC2626;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:#DC2626;text-align:center}
+        .qr-pin{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+        .pin{font-size:40px;font-weight:800;letter-spacing:6px;color:#DC2626;font-family:monospace}
+        .pin-label{font-size:11px;color:#6B7280;text-align:center;margin-top:4px}
+        .url{font-size:10px;word-break:break-all;color:#4A7C5E;margin-top:6px}
+        .footer{font-size:10px;color:#9CA3AF;border-top:1px solid #e5e7eb;padding:10px 20px;text-align:center}
+        img{display:block}
+      </style></head>
       <body>
-        <div class="header"><h2 style="margin:0">Emergency Medical Access</h2>
-        <p style="margin:4px 0;font-size:14px;opacity:0.8">${client?.first_name} ${client?.last_name}</p></div>
-        <p><strong>Scan QR or visit:</strong></p>
-        <p class="url">careroot.care/emergency/${emergencyToken}</p>
-        <p class="pin">${emergencyPin}</p>
-        <p style="text-align:center;color:#6B7280;font-size:12px">6-digit PIN to access medical information</p>
-        <p style="margin-top:16px;font-size:12px;color:#6B7280">For emergency paramedic use only. Contact agency: [PHONE]</p>
+        <div class="card">
+          <div class="header">
+            <div class="header-text">
+              <h1>Emergency Medical Access</h1>
+              <p>${client?.first_name} ${client?.last_name} · Careroot</p>
+            </div>
+          </div>
+          <div class="body">
+            <div class="alert">⚠️ For paramedic and emergency service use only</div>
+            <div class="qr-pin">
+              ${qrDataUrl ? `<img src="${qrDataUrl}" width="120" height="120" alt="QR code" />` : ""}
+              <div>
+                <p style="font-size:12px;color:#374151;margin:0 0 6px">Scan QR or enter PIN at:</p>
+                <div class="pin">${emergencyPin}</div>
+                <div class="pin-label">6-digit access PIN</div>
+                <div class="url">careroot.care/emergency/${emergencyToken}</div>
+              </div>
+            </div>
+          </div>
+          <div class="footer">Contains critical medical information · Do not discard · Careroot © ${new Date().getFullYear()}</div>
+        </div>
       </body></html>
     `);
     win.print();
@@ -158,9 +188,15 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
               <QrCode className="text-cr-forest" size={20} />
               <span className="font-body font-semibold text-cr-charcoal">Emergency Paramedic Access</span>
             </div>
-            <p className="text-sm font-body text-cr-slate mb-3">
-              This PIN card gives paramedics instant access to critical medical information in an emergency.
+            <p className="text-sm font-body text-cr-slate mb-4">
+              Print this card and keep it on the fridge. Paramedics can scan the QR or enter the PIN to access critical medical information immediately.
             </p>
+            {qrDataUrl && (
+              <div className="flex justify-center mb-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrDataUrl} alt="Emergency QR code" width={160} height={160} className="rounded-lg border-4 border-white shadow-sm" />
+              </div>
+            )}
             <div className="text-4xl font-bold tracking-widest text-cr-red text-center my-4">{emergencyPin}</div>
             <p className="text-xs text-cr-slate text-center mb-4">
               careroot.care/emergency/{emergencyToken}
@@ -169,7 +205,7 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
               onClick={printEmergencyCard}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-cr-forest text-white rounded-lg text-sm font-body hover:bg-cr-sage transition-colors"
             >
-              <Printer size={16} /> Print Emergency Card
+              <Printer size={16} /> Print A5 Emergency Card
             </button>
           </div>
 

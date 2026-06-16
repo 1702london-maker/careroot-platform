@@ -30,11 +30,12 @@ export async function POST(req: NextRequest) {
       { data: recentVisits },
       { data: recentMeds },
     ] = await Promise.all([
-      supabase.from("compliance_evidence").select("category, title, status, evidence_date, expiry_date").eq("organisation_id", organisation_id),
+      supabase.from("compliance_evidence").select("category, title, status").eq("organisation_id", organisation_id),
       supabase.from("care_plans").select("id").eq("organisation_id", organisation_id).eq("status", "active").lt("review_date", now.toISOString().split("T")[0]),
-      supabase.from("users").select("id").eq("organisation_id", organisation_id).lt("dbs_expiry", now.toISOString().split("T")[0]).in("role", ["carer", "coordinator", "manager"]),
-      supabase.from("incidents").select("id").eq("organisation_id", organisation_id).in("investigation_status", ["open", "under_investigation"]).in("severity", ["serious", "critical"]),
-      supabase.from("complaints").select("id").eq("organisation_id", organisation_id).lt("created_at", twentyEightDaysAgo).in("status", ["received", "acknowledged", "investigating"]),
+      // DBS is stored in staff_records, not users
+      supabase.from("staff_records").select("id").eq("organisation_id", organisation_id).lt("dbs_expiry", now.toISOString().split("T")[0]).not("dbs_expiry", "is", null),
+      supabase.from("incidents").select("id").eq("organisation_id", organisation_id).in("status", ["open", "investigating"]).in("severity", ["high", "critical"]),
+      supabase.from("complaints").select("id").eq("organisation_id", organisation_id).lt("created_at", twentyEightDaysAgo).in("status", ["open", "investigating"]),
       supabase.from("care_plan_views").select("id").gte("viewed_at", thirtyDaysAgo),
       supabase.from("visits").select("status").eq("organisation_id", organisation_id).gte("scheduled_start", thirtyDaysAgo),
       supabase.from("medication_records").select("status").gte("created_at", thirtyDaysAgo),

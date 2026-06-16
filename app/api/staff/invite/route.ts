@@ -13,22 +13,42 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
     const { data: inviter } = await supabase.from("users")
-      .select("first_name, last_name, organisation_id, organisations(name)")
+      .select("first_name, last_name, organisation_id, organisations(name, max_staff)")
       .eq("id", user.id)
       .single();
 
     if (!inviter) return NextResponse.json({ error: "Inviter not found" }, { status: 404 });
 
-    const orgName = (inviter.organisations as Record<string, string> | null)?.name ?? "your organisation";
+    const org = inviter.organisations as Record<string, string | number> | null;
+    const orgId = inviter.organisation_id;
+    const maxStaff = (org?.max_staff as number) ?? 10;
+
+    // Enforce staff limit — count active users for this org
+    const { count: currentStaff } = await supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .eq("organisation_id", orgId)
+      .eq("is_active", true)
+      .not("role", "eq", "family");
+
+    if ((currentStaff ?? 0) >= maxStaff) {
+      return NextResponse.json({
+        error: `Staff limit reached. Your ${org?.name} plan allows ${maxStaff} staff members. Upgrade your plan to invite more.`,
+        limit_reached: true,
+        current: currentStaff,
+        max: maxStaff,
+      }, { status: 403 });
+    }
+
+    const orgName = (org?.name as string) ?? "your organisation";
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care";
 
-    // Generate Supabase invite link
     const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
       data: {
         first_name,
         last_name,
         role,
-        organisation_id: inviter.organisation_id,
+        organisation_id: orgId,
       },
       redirectTo: `${appUrl}/signup/complete`,
     });

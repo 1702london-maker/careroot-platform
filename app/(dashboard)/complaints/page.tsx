@@ -7,6 +7,7 @@ import { CREmptyState } from "@/components/ui/CREmptyState";
 import { MessageSquare } from "lucide-react";
 import { formatDateUK, getDaysSince } from "@/lib/utils";
 import Link from "next/link";
+import { ComplaintsHeader } from "@/components/complaints/ComplaintsHeader";
 
 export default async function ComplaintsPage() {
   const supabase = await createClient();
@@ -22,11 +23,19 @@ export default async function ComplaintsPage() {
   // Carers cannot access complaints
   if (userRecord?.role === "carer") redirect("/dashboard");
 
-  const { data: complaints } = await supabase
-    .from("complaints")
-    .select("*, clients(first_name, last_name)")
-    .eq("organisation_id", userRecord?.organisation_id)
-    .order("created_at", { ascending: false });
+  const [{ data: complaints }, { data: clients }] = await Promise.all([
+    supabase
+      .from("complaints")
+      .select("*, clients(first_name, last_name)")
+      .eq("organisation_id", userRecord?.organisation_id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("clients")
+      .select("id, first_name, last_name")
+      .eq("organisation_id", userRecord?.organisation_id)
+      .eq("is_active", true)
+      .order("last_name"),
+  ]);
 
   const getUrgencyVariant = (days: number, status: string) => {
     if (status === "resolved" || status === "closed") return "green";
@@ -37,11 +46,7 @@ export default async function ComplaintsPage() {
 
   return (
     <div>
-      <CRPageHeader
-        title="Complaints"
-        subtitle="28-day response target from date of receipt"
-        breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }]}
-      />
+      <ComplaintsHeader clients={clients ?? []} />
 
       {complaints?.length === 0 ? (
         <CREmptyState
@@ -67,9 +72,11 @@ export default async function ComplaintsPage() {
                   const client = c.clients as Record<string, string> | null;
                   const days = getDaysSince(c.created_at);
                   const urgencyVariant = getUrgencyVariant(days, c.status);
+                  const isOverdue = c.status !== "resolved" && c.status !== "closed" && days >= 28;
+                  const isNearDeadline = c.status !== "resolved" && c.status !== "closed" && days >= 21;
 
                   return (
-                    <tr key={c.id} className="hover:bg-gray-50/50 transition-colors">
+                    <tr key={c.id} className={`hover:bg-gray-50/50 transition-colors ${isOverdue ? "bg-red-50/30" : ""}`}>
                       <td className="px-6 py-4">
                         <span className="text-sm font-body font-semibold text-cr-forest">
                           {c.reference_number}
@@ -77,7 +84,7 @@ export default async function ComplaintsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm font-body text-cr-charcoal capitalize">
-                          {c.category?.replace("_", " ")}
+                          {c.category?.replace(/_/g, " ")}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -95,8 +102,8 @@ export default async function ComplaintsPage() {
                         <span className="text-sm font-body text-cr-slate">{formatDateUK(c.created_at)}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <CRBadge variant={urgencyVariant} size="sm">
-                          {days}d {c.status !== "resolved" && c.status !== "closed" && days >= 21 && "⚠️"}
+                        <CRBadge variant={urgencyVariant as "green" | "red" | "amber" | "slate"} size="sm">
+                          {days}d {isNearDeadline && "⚠️"}
                         </CRBadge>
                       </td>
                       <td className="px-6 py-4">

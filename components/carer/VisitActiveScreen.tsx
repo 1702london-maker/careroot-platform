@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
@@ -254,30 +254,13 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
         </div>
       )}
 
-      {/* Care Plan tab */}
+      {/* Care Plan tab — logs view to care_plan_views on first open */}
       {activeTab === "Care Plan" && (
-        <div>
-          {!carePlan ? (
-            <CRCard className="!p-4 text-center">
-              <FileText size={32} className="mx-auto mb-2 text-cr-slate" />
-              <p className="text-sm text-cr-slate">No approved care plan</p>
-              <p className="text-xs text-cr-slate mt-1">Care plan is pending manager approval</p>
-            </CRCard>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-2">
-                <CRBadge variant="green">Active</CRBadge>
-                {carePlan.ai_generated && <CRAIBadge size="sm" />}
-              </div>
-              {Object.entries((carePlan.sections as Record<string, string>) || {}).map(([key, val]) => (
-                <CRCard key={key} className="!p-4">
-                  <h4 className="text-sm font-body font-semibold text-cr-charcoal mb-1 capitalize">{key.replace(/_/g, " ")}</h4>
-                  <p className="text-sm font-body text-cr-charcoal leading-relaxed">{val}</p>
-                </CRCard>
-              ))}
-            </div>
-          )}
-        </div>
+        <CarePlanTabWithLogging
+          carePlan={carePlan}
+          visit={visit}
+          supabase={supabase}
+        />
       )}
 
       {/* Medications tab */}
@@ -430,6 +413,58 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
         onPress={triggerEmergency}
         clientName={`${String(client.first_name)} ${String(client.last_name)}`}
       />
+    </div>
+  );
+}
+
+// Logs care_plan_views when carer opens the care plan tab
+function CarePlanTabWithLogging({
+  carePlan,
+  visit,
+  supabase,
+}: {
+  carePlan: Record<string, unknown> | null;
+  visit: Record<string, unknown>;
+  supabase: ReturnType<typeof import("@/lib/supabase/client").createClient>;
+}) {
+  const [logged, setLogged] = useState(false);
+
+  useEffect(() => {
+    if (!carePlan || logged) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from("care_plan_views").insert({
+        care_plan_id: carePlan.id as string,
+        client_id: carePlan.client_id as string,
+        carer_id: user.id,
+        visit_id: visit.id as string,
+        viewed_at: new Date().toISOString(),
+      }).then(() => setLogged(true));
+    });
+  }, [carePlan, logged, supabase, visit.id]);
+
+  if (!carePlan) {
+    return (
+      <CRCard className="!p-4 text-center">
+        <FileText size={32} className="mx-auto mb-2 text-cr-slate" />
+        <p className="text-sm text-cr-slate">No approved care plan</p>
+        <p className="text-xs text-cr-slate mt-1">Care plan is pending manager approval</p>
+      </CRCard>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 mb-2">
+        <CRBadge variant="green">Active</CRBadge>
+        <CRAIBadge size="sm" />
+      </div>
+      {Object.entries((carePlan.content as Record<string, string>) || {}).map(([key, val]) => (
+        <CRCard key={key} className="!p-4">
+          <h4 className="text-sm font-body font-semibold text-cr-charcoal mb-1 capitalize">{key.replace(/_/g, " ")}</h4>
+          <p className="text-sm font-body text-cr-charcoal leading-relaxed">{val}</p>
+        </CRCard>
+      ))}
     </div>
   );
 }

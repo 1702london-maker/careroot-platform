@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRAIBadge } from "@/components/ui/CRAIBadge";
+import { RiskFlagActions } from "@/components/ai/RiskFlagActions";
 import { formatDateUK } from "@/lib/utils";
 import { Sparkles, TrendingUp } from "lucide-react";
 import Link from "next/link";
@@ -10,14 +12,16 @@ import Link from "next/link";
 export default async function AIInsightsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
   const { data: userRecord } = await supabase.from("users")
-    .select("organisation_id").eq("id", user!.id).single();
+    .select("organisation_id").eq("id", user.id).single();
 
   const [{ data: riskFlags }, { data: briefings }] = await Promise.all([
     supabase.from("ai_risk_flags")
       .select("*, clients(first_name, last_name)")
       .eq("organisation_id", userRecord?.organisation_id)
-      .eq("status", "active")
+      .in("status", ["open", "acknowledged"])
       .order("created_at", { ascending: false })
       .limit(20),
     supabase.from("family_briefings")
@@ -28,8 +32,7 @@ export default async function AIInsightsPage() {
   ]);
 
   const severityVariant = (s: string) => {
-    if (s === "critical") return "red";
-    if (s === "high") return "red";
+    if (s === "critical" || s === "high") return "red";
     if (s === "medium") return "amber";
     return "slate";
   };
@@ -44,7 +47,6 @@ export default async function AIInsightsPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Risk flags */}
         <div>
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp size={18} className="text-cr-forest" />
@@ -60,16 +62,14 @@ export default async function AIInsightsPage() {
                     <Link href={`/clients/${flag.client_id}`} className="font-body font-medium text-cr-charcoal hover:text-cr-forest">
                       {client?.first_name} {client?.last_name}
                     </Link>
-                    <CRBadge variant={severityVariant(String(flag.severity))}>{String(flag.severity)}</CRBadge>
+                    <CRBadge variant={severityVariant(String(flag.severity))} size="sm">{String(flag.severity)}</CRBadge>
                   </div>
-                  <p className="text-sm font-body text-cr-charcoal mb-2">{String(flag.description)}</p>
-                  {flag.recommended_actions && (
-                    <div className="p-2 bg-cr-mint rounded-lg">
-                      <p className="text-xs font-body text-cr-forest font-semibold">Recommended:</p>
-                      <p className="text-xs font-body text-cr-charcoal">{String(flag.recommended_actions)}</p>
-                    </div>
-                  )}
-                  <p className="text-xs text-cr-slate mt-2">{formatDateUK(String(flag.created_at))}</p>
+                  <p className="text-xs font-body text-cr-slate mb-1 capitalize">{String(flag.flag_type).replace(/_/g, " ")}</p>
+                  <p className="text-sm font-body text-cr-charcoal mb-3">{String(flag.description)}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-cr-slate">{formatDateUK(String(flag.created_at))}</p>
+                    <RiskFlagActions flagId={String(flag.id)} status={String(flag.status)} />
+                  </div>
                 </CRCard>
               );
             })}
@@ -82,7 +82,6 @@ export default async function AIInsightsPage() {
           </div>
         </div>
 
-        {/* Family briefings */}
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={18} className="text-cr-forest" />
@@ -100,7 +99,7 @@ export default async function AIInsightsPage() {
                     <p className="text-xs text-cr-slate">{formatDateUK(String(b.created_at))}</p>
                   </div>
                   <p className="text-sm font-body text-cr-slate line-clamp-3">{String(b.content)}</p>
-                  {b.sent_at && <CRBadge variant="green" className="mt-2">Sent to family</CRBadge>}
+                  {b.sent_at && <CRBadge variant="green" size="sm" className="mt-2">Sent to family</CRBadge>}
                 </CRCard>
               );
             })}

@@ -68,10 +68,8 @@ export async function POST(req: NextRequest) {
         organisation_id,
         flag_type: "appetite_concern",
         severity,
-        title: "Appetite concern identified",
         description: analysis.flag_message as string,
         evidence: [{ source: "meal_records", summary: analysis.pattern_description }],
-        recommended_action: (analysis.recommended_actions as string[]).join("; "),
         status: "open",
       });
     }

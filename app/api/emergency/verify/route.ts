@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     const { data: tokenRecord } = await supabase
       .from("emergency_access_tokens")
-      .select("*, clients(*, medications(name, dosage, frequency, route, is_active), organisations(name, phone))")
+      .select("*, clients(*, medications(name, dosage, frequency, route, is_active), organisations(name, phone, on_call_phone))")
       .eq("token", token)
       .single();
 
