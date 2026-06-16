@@ -9,11 +9,11 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-cr-ivory font-body">
+    <div className="min-h-screen font-body">
       <MarketingNav />
 
-      {/* ── HERO ── */}
-      <section className="bg-cr-forest relative overflow-hidden">
+      {/* ── HERO ── pulls up behind sticky nav so green shows through transparent bar */}
+      <section className="bg-cr-forest relative overflow-hidden -mt-[68px] pt-[68px]">
         {/* Subtle pattern overlay */}
         <div
           className="absolute inset-0 opacity-5"
