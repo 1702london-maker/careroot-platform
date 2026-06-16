@@ -90,7 +90,7 @@ const navigation: NavGroup[] = [
   {
     title: "Integrations",
     items: [
-      { label: "GP Connect", href: "/gp-connect", icon: <Stethoscope size={18} />, soon: true },
+      { label: "GP Connect", href: "/gp-connect/dashboard", icon: <Stethoscope size={18} />, soon: true },
     ],
   },
 ];

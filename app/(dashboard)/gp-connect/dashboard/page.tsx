@@ -36,7 +36,6 @@ export default function DashboardGPConnectPage() {
 
   return (
     <div className="max-w-4xl">
-      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <h1 className="font-body font-semibold text-2xl text-cr-charcoal">GP Connect</h1>
@@ -45,7 +44,6 @@ export default function DashboardGPConnectPage() {
         <p className="text-sm text-cr-slate font-body">Direct integration with GP records is coming to Careroot in Q4 2026.</p>
       </div>
 
-      {/* Main coming soon card */}
       <div className="bg-cr-mint rounded-xl border border-cr-forest/10 p-8 flex items-start gap-6 mb-6">
         <div className="w-14 h-14 bg-cr-forest rounded-xl flex items-center justify-center flex-shrink-0">
           <Stethoscope size={28} className="text-white" />
@@ -64,7 +62,6 @@ export default function DashboardGPConnectPage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">
-        {/* Interest form */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
           <h3 className="font-body font-semibold text-cr-charcoal mb-1">Register your interest</h3>
           <p className="text-xs text-cr-slate font-body mb-4">We'll notify you as soon as GP Connect is available for your account.</p>
@@ -95,10 +92,8 @@ export default function DashboardGPConnectPage() {
           )}
         </div>
 
-        {/* Mock preview */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
           <h3 className="font-body font-semibold text-cr-charcoal mb-4">What it will look like</h3>
-          {/* Watermark */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div className="rotate-[-25deg] text-cr-forest/10 font-display text-4xl font-bold whitespace-nowrap select-none">
               PREVIEW — NOT LIVE DATA
