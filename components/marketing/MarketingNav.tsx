@@ -28,6 +28,8 @@ export function MarketingNav() {
     { label: "ABOUT", href: "/about" },
     { label: "FEATURES", href: "/features" },
     { label: "PRICING", href: "/pricing" },
+    { label: "REPORTS", href: "/reports" },
+    { label: "GP CONNECT", href: "/gp-connect", soon: true },
     { label: "CUSTOM APP", href: "/custom-app" },
     { label: "CONTACT", href: "/contact" },
   ];
@@ -54,15 +56,20 @@ export function MarketingNav() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
-            {NAV_LINKS.map(({ label, href }) => (
+            {NAV_LINKS.map(({ label, href, soon }) => (
               <Link
                 key={href}
                 href={href}
-                className={`text-xs font-semibold font-body uppercase tracking-wide transition-colors duration-150 ${
+                className={`inline-flex items-center gap-1.5 text-xs font-semibold font-body uppercase tracking-wide transition-colors duration-150 ${
                   isActive(href) ? "text-[#1A3C2E]" : "text-[#1C1C1E] hover:text-[#1A3C2E]"
                 }`}
               >
                 {label}
+                {soon && (
+                  <span className="bg-cr-mint text-cr-forest text-xs rounded-full px-2 py-0.5 normal-case font-semibold tracking-normal">
+                    Soon
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -100,10 +107,15 @@ export function MarketingNav() {
             </button>
           </div>
           <div className="flex-1 flex flex-col justify-center px-8 gap-2">
-            {NAV_LINKS.map(({ label, href }) => (
+            {NAV_LINKS.map(({ label, href, soon }) => (
               <Link key={href} href={href} onClick={() => setMobileOpen(false)}
-                className="py-4 text-xl font-body font-semibold uppercase tracking-wide text-white border-b border-white/10">
+                className="py-4 text-xl font-body font-semibold uppercase tracking-wide text-white border-b border-white/10 flex items-center gap-3">
                 {label}
+                {soon && (
+                  <span className="bg-cr-mint text-cr-forest text-xs rounded-full px-2 py-0.5 normal-case font-semibold tracking-normal">
+                    Soon
+                  </span>
+                )}
               </Link>
             ))}
             <Link href="/login" onClick={() => setMobileOpen(false)}

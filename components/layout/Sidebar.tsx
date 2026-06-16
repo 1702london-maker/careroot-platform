@@ -7,7 +7,8 @@ import {
   UserCheck, Heart, Sparkles, TrendingUp, BookOpen,
   Shield, FileCheck, FolderOpen, MessageSquare,
   AlertTriangle, BarChart3, Settings, LogOut,
-  ChevronRight, Leaf, Crown
+  ChevronRight, Leaf, Crown, FileText, Banknote,
+  Stethoscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +21,7 @@ interface NavItem {
   href: string;
   icon: React.ReactNode;
   aiPowered?: boolean;
+  soon?: boolean;
 }
 
 interface NavGroup {
@@ -40,6 +42,8 @@ const navigation: NavGroup[] = [
       { label: "Clients", href: "/clients", icon: <Users size={18} /> },
       { label: "Visits", href: "/visits", icon: <Clock size={18} /> },
       { label: "Rota", href: "/rota", icon: <Calendar size={18} /> },
+      { label: "Invoicing", href: "/invoicing", icon: <FileText size={18} /> },
+      { label: "Payroll", href: "/payroll", icon: <Banknote size={18} /> },
     ],
   },
   {
@@ -70,7 +74,23 @@ const navigation: NavGroup[] = [
     items: [
       { label: "Complaints", href: "/complaints", icon: <MessageSquare size={18} /> },
       { label: "Emergency Log", href: "/emergency", icon: <AlertTriangle size={18} /> },
-      { label: "Reports", href: "/reports", icon: <BarChart3 size={18} /> },
+    ],
+  },
+  {
+    title: "Reports",
+    items: [
+      { label: "Reports Home", href: "/reports/dashboard", icon: <BarChart3 size={18} /> },
+      { label: "Visit Reports", href: "/reports/visits", icon: <Clock size={18} /> },
+      { label: "Financial", href: "/reports/financial", icon: <FileText size={18} /> },
+      { label: "Compliance", href: "/reports/compliance", icon: <Shield size={18} /> },
+      { label: "Staff", href: "/reports/staff", icon: <UserCheck size={18} /> },
+      { label: "Clients", href: "/reports/clients", icon: <Heart size={18} /> },
+    ],
+  },
+  {
+    title: "Integrations",
+    items: [
+      { label: "GP Connect", href: "/gp-connect", icon: <Stethoscope size={18} />, soon: true },
     ],
   },
 ];
@@ -139,6 +159,7 @@ export function Sidebar({ userRole, orgPlan, isWhiteLabel }: SidebarProps) {
                   <span className="flex-shrink-0">{item.icon}</span>
                   <span className="flex-1">{item.label}</span>
                   {item.aiPowered && <CRAIBadge size="sm" label="AI" />}
+                  {item.soon && <span className="text-[10px] font-body font-semibold bg-cr-gold/20 text-cr-gold rounded-full px-1.5 py-0.5">Soon</span>}
                   {isActive && <ChevronRight size={14} className="opacity-60" />}
                 </Link>
               );

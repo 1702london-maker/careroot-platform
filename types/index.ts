@@ -480,3 +480,52 @@ export interface MealSuggestion {
   reviewed_at?: string;
   created_at: string;
 }
+
+// ── Invoicing ──────────────────────────────────────────────────────────────
+export interface RateCard {
+  id: string; organisation_id: string; name: string;
+  funder_type: 'local_authority' | 'nhs' | 'private' | 'mixed';
+  hourly_rate: number; visit_rate: number; overnight_rate: number;
+  travel_rate_per_mile: number; currency: string; is_default: boolean;
+  created_at: string; updated_at: string;
+}
+export interface ClientBilling {
+  id: string; client_id: string; organisation_id: string; rate_card_id: string;
+  funder_type: string; local_authority_name: string; local_authority_ref: string;
+  private_rate_override: number; split_billing: boolean; la_percentage: number;
+  private_percentage: number; billing_email: string;
+  billing_address: Record<string, unknown>; payment_terms_days: number;
+}
+export interface Invoice {
+  id: string; organisation_id: string; client_id: string; invoice_number: string;
+  funder_type: string; status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'void';
+  issue_date: string; due_date: string; period_start: string; period_end: string;
+  subtotal: number; vat_rate: number; vat_amount: number; total: number;
+  amount_paid: number; amount_outstanding: number; notes: string;
+  payment_reference: string; paid_at: string; sent_at: string; pdf_url: string;
+  line_items?: InvoiceLineItem[];
+  clients?: { first_name: string; last_name: string };
+}
+export interface InvoiceLineItem {
+  id: string; invoice_id: string; visit_id: string; description: string;
+  date: string; quantity: number; unit: string; unit_price: number; total: number;
+}
+// ── Payroll ────────────────────────────────────────────────────────────────
+export interface CarerPayRate {
+  id: string; user_id: string; organisation_id: string; hourly_rate: number;
+  overtime_rate: number; weekend_rate: number; bank_holiday_rate: number;
+  travel_rate_per_mile: number; effective_from: string; effective_to: string;
+}
+export interface PayrollRun {
+  id: string; organisation_id: string; period_start: string; period_end: string;
+  status: 'draft' | 'processing' | 'approved' | 'exported' | 'paid';
+  total_gross: number; total_carers: number; total_hours: number; total_visits: number;
+  approved_by: string; approved_at: string; notes: string;
+  carer_summaries?: PayrollCarerSummary[];
+}
+export interface PayrollCarerSummary {
+  id: string; payroll_run_id: string; carer_id: string; organisation_id: string;
+  total_visits: number; total_hours: number; total_miles: number;
+  regular_pay: number; overtime_pay: number; travel_pay: number; gross_pay: number;
+  visit_breakdown: unknown[]; carer?: User;
+}
