@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Leaf, Linkedin, Twitter, Facebook, Instagram } from "lucide-react";
+import { Leaf, Globe, Mail, MessageCircle, Share2 } from "lucide-react";
 
 export function MarketingFooter() {
   return (
@@ -19,10 +19,10 @@ export function MarketingFooter() {
             </p>
             <div className="flex gap-3">
               {[
-                { icon: Linkedin, href: "#", label: "LinkedIn" },
-                { icon: Twitter, href: "#", label: "Twitter" },
-                { icon: Facebook, href: "#", label: "Facebook" },
-                { icon: Instagram, href: "#", label: "Instagram" },
+                { icon: Globe, href: "#", label: "Website" },
+                { icon: Mail, href: "mailto:hello@careroot.care", label: "Email" },
+                { icon: MessageCircle, href: "#", label: "LinkedIn" },
+                { icon: Share2, href: "#", label: "Twitter" },
               ].map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
