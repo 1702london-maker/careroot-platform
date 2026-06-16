@@ -10,6 +10,13 @@ const PUBLIC_PATHS = [
   "/signup",
   "/forgot-password",
   "/family/login",
+  "/custom-app",
+  "/white-label",
+  "/contact",
+  "/faq",
+  "/privacy",
+  "/terms",
+  "/solutions",
 ];
 
 export async function middleware(request: NextRequest) {
