@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle, Leaf, ChevronDown } from "lucide-react";
+import { CheckCircle, ChevronDown, Minus } from "lucide-react";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 const MONTHLY = {
   seed: { price: 99, label: "£99/mo" },
@@ -235,21 +237,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-cr-ivory font-body">
-      {/* Nav */}
-      <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-cr-forest rounded-lg flex items-center justify-center">
-              <Leaf size={16} className="text-white" />
-            </div>
-            <span className="font-display text-xl font-semibold text-cr-charcoal">Careroot</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-body text-cr-slate hover:text-cr-charcoal">Sign in</Link>
-            <Link href="/signup" className="cr-btn-primary text-sm px-4 py-2">Start free trial</Link>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav />
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-16">
         {/* Header */}
@@ -318,7 +306,7 @@ export default function PricingPage() {
                       </span>
                       {annual && "annual" in priceData && (
                         <p className={`text-xs font-body mt-1 ${plan.highlight ? "text-white/60" : "text-cr-slate"}`}>
-                          billed as £{priceData.annual.toLocaleString()}/year
+                          billed as £{(priceData.annual as number).toLocaleString()}/year
                         </p>
                       )}
                     </>
@@ -448,7 +436,7 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ */}
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto mb-20">
           <h2 className="font-display text-3xl font-semibold text-cr-charcoal text-center mb-8">
             Frequently asked questions
           </h2>
@@ -458,26 +446,108 @@ export default function PricingPage() {
             ))}
           </div>
         </div>
+
+        {/* Feature comparison table */}
+        <div className="mb-20">
+          <h2 className="font-display text-3xl font-semibold text-cr-charcoal text-center mb-10">
+            Compare plans in full
+          </h2>
+          <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
+            <table className="w-full bg-white text-sm font-body min-w-[640px]">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="px-5 py-4 text-left text-xs font-semibold text-cr-slate uppercase tracking-wide w-1/3">Feature</th>
+                  {["Seed", "Grow", "Scale", "Enterprise"].map((p) => (
+                    <th key={p} className={`px-5 py-4 text-center text-xs font-semibold uppercase tracking-wide ${p === "Grow" ? "text-cr-forest bg-cr-mint/50" : "text-cr-slate"}`}>{p}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {[
+                  { f: "Staff accounts", v: ["10", "50", "200", "Unlimited"] },
+                  { f: "Clients", v: ["✓", "✓", "✓", "✓"] },
+                  { f: "AI care plan drafts", v: ["✓", "✓", "✓", "✓"] },
+                  { f: "Care plan templates", v: ["9 standard", "9 standard", "Custom", "Custom"] },
+                  { f: "Voice note transcription", v: ["✓", "✓", "✓", "✓"] },
+                  { f: "CQC compliance dashboard", v: ["✓", "✓", "✓", "✓"] },
+                  { f: "Ofsted module", v: [false, false, "✓", "✓"] },
+                  { f: "AI risk flags", v: [false, "✓", "✓", "✓"] },
+                  { f: "Rota and scheduling", v: [false, "✓", "✓", "✓"] },
+                  { f: "eMAR medication management", v: ["✓", "✓", "✓", "✓"] },
+                  { f: "Complaints management", v: [false, "✓", "✓", "✓"] },
+                  { f: "Weekly AI family briefings", v: [false, "✓", "✓", "✓"] },
+                  { f: "Nutrition and meal planning", v: ["✓", "✓", "✓", "✓"] },
+                  { f: "Emergency SOS", v: ["✓", "✓", "✓", "✓"] },
+                  { f: "Paramedic QR access", v: ["✓", "✓", "✓", "✓"] },
+                  { f: "SMS notifications", v: [false, "✓", "✓", "✓"] },
+                  { f: "WhatsApp notifications", v: [false, "✓", "✓", "✓"] },
+                  { f: "Voice call alerts", v: [false, false, "✓", "✓"] },
+                  { f: "Advanced reports", v: [false, false, "✓", "✓"] },
+                  { f: "API access", v: [false, false, "✓", "✓"] },
+                  { f: "White label", v: [false, false, false, "✓"] },
+                  { f: "Dedicated account manager", v: [false, false, "✓", "✓"] },
+                  { f: "SLA guarantee", v: [false, false, false, "✓"] },
+                  { f: "On-site training", v: [false, false, false, "✓"] },
+                  { f: "Support", v: ["Email", "Priority", "Phone + video", "Dedicated team"] },
+                ].map(({ f, v }, i) => (
+                  <tr key={f} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/40"}>
+                    <td className="px-5 py-3.5 text-cr-charcoal font-medium">{f}</td>
+                    {v.map((val, j) => (
+                      <td key={j} className={`px-5 py-3.5 text-center ${j === 1 ? "bg-cr-mint/20" : ""}`}>
+                        {val === false ? (
+                          <Minus size={14} className="text-gray-300 mx-auto" />
+                        ) : val === "✓" ? (
+                          <CheckCircle size={15} className="text-cr-sage mx-auto" />
+                        ) : (
+                          <span className="text-xs text-cr-charcoal">{val}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Social proof strip */}
+        <div className="bg-cr-mint rounded-2xl p-10 mb-16 text-center">
+          <p className="font-display text-2xl font-semibold text-cr-charcoal mb-3">
+            Join care agencies across the UK on their CQC journey
+          </p>
+          <p className="text-sm font-body text-cr-slate mb-8">Used by domiciliary care agencies, supported living providers, and NHS community care teams.</p>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+            {[
+              { stat: "200+", label: "Care agencies" },
+              { stat: "94%", label: "CQC pass rate" },
+              { stat: "5/5", label: "Manager rating" },
+            ].map(({ stat, label }) => (
+              <div key={label} className="text-center">
+                <p className="font-display text-4xl font-semibold text-cr-forest mb-1">{stat}</p>
+                <p className="text-xs font-body text-cr-slate">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="bg-cr-forest rounded-3xl p-12 text-center mb-6">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-white mb-4">
+            Start your 30-day free trial today.
+          </h2>
+          <p className="text-base font-body text-white/70 mb-8">No credit card. No commitment. Cancel any time.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/signup" className="bg-white text-cr-forest rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-cr-mint transition-colors">
+              Start free trial
+            </Link>
+            <Link href="/demo" className="border border-white/40 text-white rounded-xl px-7 py-3.5 font-body font-semibold text-base hover:bg-white/10 transition-colors">
+              Book a demo
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 mt-10">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-cr-forest rounded-md flex items-center justify-center">
-              <Leaf size={12} className="text-white" />
-            </div>
-            <span className="font-display text-sm font-semibold text-cr-charcoal">Careroot</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link href="/features" className="text-xs font-body text-cr-slate hover:text-cr-charcoal">Features</Link>
-            <Link href="/pricing" className="text-xs font-body text-cr-slate hover:text-cr-charcoal">Pricing</Link>
-            <Link href="/white-label" className="text-xs font-body text-cr-slate hover:text-cr-charcoal">White Label</Link>
-            <Link href="/demo" className="text-xs font-body text-cr-slate hover:text-cr-charcoal">Book Demo</Link>
-          </div>
-          <p className="text-xs font-body text-cr-slate">© {new Date().getFullYear()} Careroot. All rights reserved.</p>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
