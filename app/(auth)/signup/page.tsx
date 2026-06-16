@@ -46,7 +46,16 @@ export default function SignupPage() {
       });
 
       if (authError || !authData.user) {
-        setError(authError?.message || "Failed to create account");
+        const msg = authError?.message || "";
+        if (msg.includes("already registered") || msg.includes("already exists")) {
+          setError("An account with this email already exists. Try signing in instead.");
+        } else if (msg.includes("invalid") || msg.includes("Invalid")) {
+          setError("Please check your email address and try again.");
+        } else if (msg.includes("placeholder") || msg.includes("fetch") || msg.includes("Failed to fetch") || !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+          setError("Platform setup in progress. Please contact onboarding@careroot.co.uk to get access.");
+        } else {
+          setError(msg || "Failed to create account. Please try again.");
+        }
         setLoading(false);
         return;
       }
@@ -66,7 +75,12 @@ export default function SignupPage() {
         .single();
 
       if (orgError || !org) {
-        setError("Failed to create organisation");
+        const msg = orgError?.message || "";
+        if (msg.includes("placeholder") || msg.includes("fetch")) {
+          setError("Platform setup in progress. Please contact onboarding@careroot.co.uk to get access.");
+        } else {
+          setError("Failed to create organisation. Please try again.");
+        }
         setLoading(false);
         return;
       }
@@ -90,8 +104,13 @@ export default function SignupPage() {
       }).catch(() => {});
 
       router.push("/dashboard");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("fetch") || msg.includes("network") || msg.includes("placeholder")) {
+        setError("Platform setup in progress. Please email onboarding@careroot.co.uk to get early access.");
+      } else {
+        setError("Something went wrong. Please email onboarding@careroot.co.uk if this continues.");
+      }
     } finally {
       setLoading(false);
     }
