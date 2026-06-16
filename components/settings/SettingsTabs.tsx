@@ -15,9 +15,9 @@ const TABS = [
 ];
 
 const PLAN_DETAILS = {
-  seed: { name: "Seed", limit: "10 staff", price: "£49/mo" },
-  grow: { name: "Grow", limit: "50 staff", price: "£199/mo" },
-  scale: { name: "Scale", limit: "200 staff", price: "£599/mo" },
+  seed: { name: "Seed", limit: "10 staff", price: "£99/mo" },
+  grow: { name: "Grow", limit: "50 staff", price: "£349/mo" },
+  scale: { name: "Scale", limit: "200 staff", price: "£899/mo" },
   enterprise: { name: "Enterprise", limit: "Unlimited", price: "Custom" },
 };
 

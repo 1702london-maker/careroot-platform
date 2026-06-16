@@ -7,12 +7,13 @@ import {
   UserCheck, Heart, Sparkles, TrendingUp, BookOpen,
   Shield, FileCheck, FolderOpen, MessageSquare,
   AlertTriangle, BarChart3, Settings, LogOut,
-  ChevronRight, Leaf
+  ChevronRight, Leaf, Crown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { CRAIBadge } from "@/components/ui/CRAIBadge";
+import { useWhiteLabel } from "@/components/providers/WhiteLabelProvider";
 
 interface NavItem {
   label: string;
@@ -51,24 +52,9 @@ const navigation: NavGroup[] = [
   {
     title: "Intelligence",
     items: [
-      {
-        label: "AI Risk Flags",
-        href: "/ai/risk-flags",
-        icon: <Sparkles size={18} />,
-        aiPowered: true,
-      },
-      {
-        label: "Insights",
-        href: "/ai/insights",
-        icon: <TrendingUp size={18} />,
-        aiPowered: true,
-      },
-      {
-        label: "Family Briefs",
-        href: "/ai/family-briefs",
-        icon: <BookOpen size={18} />,
-        aiPowered: true,
-      },
+      { label: "AI Risk Flags", href: "/ai/risk-flags", icon: <Sparkles size={18} />, aiPowered: true },
+      { label: "Insights", href: "/ai/insights", icon: <TrendingUp size={18} />, aiPowered: true },
+      { label: "Family Briefs", href: "/ai/family-briefs", icon: <BookOpen size={18} />, aiPowered: true },
     ],
   },
   {
@@ -89,24 +75,43 @@ const navigation: NavGroup[] = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  userRole?: string;
+  orgPlan?: string;
+  isWhiteLabel?: boolean;
+}
+
+export function Sidebar({ userRole, orgPlan, isWhiteLabel }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const wl = useWhiteLabel();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
 
+  const showWhiteLabelLink =
+    userRole === "org_admin" && (orgPlan === "enterprise" || isWhiteLabel);
+
+  const appName = wl.isWhiteLabel ? wl.appName : "Careroot";
+
   return (
     <aside className="hidden md:flex flex-col w-64 bg-cr-forest text-white h-screen fixed left-0 top-0 z-40 overflow-y-auto">
       {/* Logo */}
       <div className="flex items-center gap-2 px-6 py-5 border-b border-white/10">
-        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-          <Leaf size={18} className="text-cr-forest" />
-        </div>
-        <span className="font-display text-xl font-semibold text-white">Careroot</span>
+        {wl.isWhiteLabel && wl.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={wl.logoUrl} alt={appName} className="h-8 w-auto object-contain" />
+        ) : (
+          <>
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+              <Leaf size={18} className="text-cr-forest" />
+            </div>
+            <span className="font-display text-xl font-semibold text-white">{appName}</span>
+          </>
+        )}
       </div>
 
       {/* Navigation */}
@@ -120,7 +125,6 @@ export function Sidebar() {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));
-
               return (
                 <Link
                   key={item.href}
@@ -145,6 +149,20 @@ export function Sidebar() {
 
       {/* Bottom actions */}
       <div className="px-3 pb-4 border-t border-white/10 pt-3 space-y-1">
+        {showWhiteLabelLink && (
+          <Link
+            href="/settings/white-label"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-body font-medium transition-all",
+              pathname.startsWith("/settings/white-label")
+                ? "bg-white/15 text-white"
+                : "text-white/70 hover:bg-white/10 hover:text-white"
+            )}
+          >
+            <Crown size={18} />
+            White Label
+          </Link>
+        )}
         <Link
           href="/settings/organisation"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-body font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all"

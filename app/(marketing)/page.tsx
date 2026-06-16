@@ -226,9 +226,9 @@ export default function HomePage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mt-8">
             {[
-              { name: "Seed", price: "£49", period: "/month", staff: "Up to 10 staff", highlight: false },
-              { name: "Grow", price: "£199", period: "/month", staff: "Up to 50 staff", highlight: true },
-              { name: "Scale", price: "£599", period: "/month", staff: "Up to 200 staff", highlight: false },
+              { name: "Seed", price: "£99", period: "/month", staff: "Up to 10 staff", highlight: false },
+              { name: "Grow", price: "£349", period: "/month", staff: "Up to 50 staff", highlight: true },
+              { name: "Scale", price: "£899", period: "/month", staff: "Up to 200 staff", highlight: false },
             ].map((t) => (
               <div
                 key={t.name}

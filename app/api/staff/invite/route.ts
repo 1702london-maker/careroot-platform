@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
 
     const org = inviter.organisations as Record<string, string | number> | null;
     const orgId = inviter.organisation_id;
-    const maxStaff = (org?.max_staff as number) ?? 10;
+    const PLAN_LIMITS: Record<string, number> = { seed: 10, grow: 50, scale: 200, enterprise: Infinity };
+    const plan = (org?.plan as string) ?? "seed";
+    const maxStaff = (org?.max_staff as number) ?? PLAN_LIMITS[plan] ?? 10;
 
     // Enforce staff limit — count active users for this org
     const { count: currentStaff } = await supabase
