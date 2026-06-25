@@ -144,7 +144,7 @@ export default function FAQPage() {
         <section className="pt-24 pb-14 px-6">
           <div className="max-w-3xl mx-auto text-center">
             <span className="inline-block text-xs font-body font-semibold uppercase tracking-widest text-cr-forest bg-cr-mint px-3 py-1.5 rounded-full mb-5">FAQ</span>
-            <h1 className="font-display text-5xl text-cr-charcoal leading-tight mb-4">Frequently asked questions</h1>
+            <h1 className="font-display text-4xl text-cr-charcoal leading-tight mb-4">Frequently asked questions</h1>
             <p className="text-base font-body text-cr-slate max-w-xl mx-auto">
               Everything you need to know about Careroot. Can&rsquo;t find your answer?{" "}
               <Link href="/contact" className="text-cr-forest underline underline-offset-2 hover:text-cr-sage">Contact us</Link>.
@@ -157,7 +157,7 @@ export default function FAQPage() {
           <div className="max-w-3xl mx-auto space-y-8">
             {FAQS.map((section) => (
               <div key={section.category}>
-                <h2 className="font-display text-2xl text-cr-charcoal mb-4">{section.category}</h2>
+                <h2 className="font-display text-xl text-cr-charcoal mb-4">{section.category}</h2>
                 <div className="bg-white rounded-card border border-gray-100 shadow-card px-6">
                   {section.items.map((item) => (
                     <FAQItem key={item.q} q={item.q} a={item.a} />
@@ -171,7 +171,7 @@ export default function FAQPage() {
         {/* CTA */}
         <section className="bg-cr-forest py-16 px-6">
           <div className="max-w-2xl mx-auto text-center">
-            <h2 className="font-display text-3xl text-white mb-3">Still have questions?</h2>
+            <h2 className="font-display text-2xl text-white mb-3">Still have questions?</h2>
             <p className="text-sm font-body text-white/70 mb-6">Our team is happy to walk you through anything — book a demo or email us directly.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/demo" className="bg-white text-cr-forest rounded-btn px-6 py-3 font-body font-semibold text-sm hover:bg-cr-mint transition-colors">

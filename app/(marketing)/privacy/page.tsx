@@ -89,13 +89,13 @@ export default function PrivacyPage() {
       <main className="bg-cr-ivory min-h-screen pt-28 pb-20 px-6">
         <div className="max-w-3xl mx-auto">
           <span className="inline-block text-xs font-body font-semibold uppercase tracking-widest text-cr-forest bg-cr-mint px-3 py-1.5 rounded-full mb-5">Legal</span>
-          <h1 className="font-display text-5xl text-cr-charcoal mb-2">Privacy Policy</h1>
+          <h1 className="font-display text-4xl text-cr-charcoal mb-2">Privacy Policy</h1>
           <p className="text-sm text-cr-slate font-body mb-10">Last updated: June 2026 · Careroot Ltd</p>
 
           <div className="space-y-10">
             {SECTIONS.map((section, i) => (
               <section key={i}>
-                <h2 className="font-display text-2xl text-cr-charcoal mb-3">{section.title}</h2>
+                <h2 className="font-display text-xl text-cr-charcoal mb-3">{section.title}</h2>
                 <div className="text-sm font-body text-cr-slate leading-relaxed space-y-3">
                   {section.body.split("\n\n").map((para, j) => (
                     <p key={j} className="whitespace-pre-line">{para}</p>

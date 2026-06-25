@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { formatDateTimeUK, formatTimeUK, getDaysSince } from "@/lib/utils";
 import Link from "next/link";
+import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -67,6 +68,60 @@ export default async function DashboardPage() {
   const totalVisits = todayVisits?.length ?? 0;
   const highFlags = openFlags?.filter(f => f.severity === "high" || f.severity === "critical").length ?? 0;
 
+  // Chart data — visit status breakdown
+  const visitStatus = {
+    completed: completedVisits,
+    in_progress: todayVisits?.filter(v => v.status === "in_progress").length ?? 0,
+    scheduled: todayVisits?.filter(v => v.status === "scheduled").length ?? 0,
+    missed: missedVisits,
+    cancelled: todayVisits?.filter(v => v.status === "cancelled").length ?? 0,
+  };
+
+  // Weekly visits — last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  const { data: weekVisits } = await supabase
+    .from("visits")
+    .select("scheduled_start, status")
+    .eq("organisation_id", orgId)
+    .gte("scheduled_start", sevenDaysAgo.toISOString());
+
+  const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weeklyMap: Record<string, { visits: number; completed: number }> = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    weeklyMap[DAY_LABELS[d.getDay()]] = { visits: 0, completed: 0 };
+  }
+  weekVisits?.forEach(v => {
+    const label = DAY_LABELS[new Date(v.scheduled_start).getDay()];
+    if (weeklyMap[label]) {
+      weeklyMap[label].visits++;
+      if (v.status === "completed") weeklyMap[label].completed++;
+    }
+  });
+  const weeklyVisits = Object.entries(weeklyMap).map(([day, data]) => ({ day, ...data }));
+
+  // CQC compliance scores per key question
+  const { data: cqcEvidence } = await supabase
+    .from("compliance_evidence")
+    .select("category, status")
+    .eq("organisation_id", orgId)
+    .eq("framework", "cqc");
+
+  const calcScore = (cat: string) => {
+    const items = cqcEvidence?.filter(e => e.category === cat) ?? [];
+    if (!items.length) return 0;
+    return Math.round((items.filter(e => e.status === "compliant").length / items.length) * 100);
+  };
+  const compliance = {
+    safe: calcScore("safe"),
+    effective: calcScore("effective"),
+    caring: calcScore("caring"),
+    responsive: calcScore("responsive"),
+    wellLed: calcScore("well-led"),
+  };
+
   const greeting = () => {
     const h = new Date().getHours();
     if (h < 12) return "Good morning";
@@ -115,6 +170,13 @@ export default async function DashboardPage() {
           variant={highFlags > 0 ? "danger" : openFlags?.length ? "warning" : "default"}
         />
       </div>
+
+      {/* Charts row */}
+      <DashboardCharts
+        visitStatus={visitStatus}
+        weeklyVisits={weeklyVisits}
+        compliance={compliance}
+      />
 
       {/* Missed visit alert */}
       {missedVisits > 0 && (

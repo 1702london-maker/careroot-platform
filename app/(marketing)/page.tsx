@@ -19,7 +19,7 @@ export default function HomePage() {
             <Shield size={11} />
             Built for CQC 2026 Single Assessment Framework
           </div>
-          <h1 className="font-display font-bold text-[52px] md:text-[68px] leading-[1.1] tracking-tight text-[#1C1C1E] max-w-4xl mx-auto mb-6">
+          <h1 className="font-display font-bold text-[38px] md:text-[52px] leading-[1.1] tracking-tight text-[#1C1C1E] max-w-4xl mx-auto mb-6">
             The care platform that works as hard as your team.
           </h1>
           <p className="text-xl text-[#6B7280] leading-relaxed max-w-2xl mx-auto mb-10">
@@ -78,10 +78,10 @@ export default function HomePage() {
           <p className="text-xs font-semibold uppercase tracking-[2px] text-[#1A3C2E] mb-3">
             The Problem
           </p>
-          <h2 className="font-display font-bold text-[44px] leading-[52px] text-[#1C1C1E] max-w-xl mb-4">
+          <h2 className="font-display font-bold text-[32px] leading-[40px] text-[#1C1C1E] max-w-xl mb-4">
             Care agencies are drowning in paperwork.
           </h2>
-          <p className="text-lg text-[#6B7280] leading-relaxed max-w-lg mb-14">
+          <p className="text-base text-[#6B7280] leading-relaxed max-w-lg mb-14">
             Every minute on admin is a minute not spent on care. Your carers deserve better tools. Your clients deserve better care.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -117,10 +117,10 @@ export default function HomePage() {
           <p className="text-xs font-semibold uppercase tracking-[2px] text-[#1A3C2E] mb-3">
             The Platform
           </p>
-          <h2 className="font-display font-bold text-[40px] leading-[48px] text-[#1C1C1E] max-w-2xl mb-4">
+          <h2 className="font-display font-bold text-[32px] leading-[40px] text-[#1C1C1E] max-w-2xl mb-4">
             One platform. Every role. Every need.
           </h2>
-          <p className="text-lg text-[#6B7280] leading-relaxed max-w-xl mb-14">
+          <p className="text-base text-[#6B7280] leading-relaxed max-w-xl mb-14">
             Careroot replaces every disconnected tool with one intelligent system that grows with your service.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -33,10 +33,10 @@ const config: Config = {
         phone: "36px",
       },
       fontSize: {
-        display: ["60px", { lineHeight: "68px", fontWeight: "700" }],
-        h1: ["44px", { lineHeight: "52px", fontWeight: "700" }],
-        h2: ["32px", { lineHeight: "40px", fontWeight: "600" }],
-        h3: ["22px", { lineHeight: "30px", fontWeight: "600" }],
+        display: ["48px", { lineHeight: "56px", fontWeight: "700" }],
+        h1: ["36px", { lineHeight: "44px", fontWeight: "700" }],
+        h2: ["26px", { lineHeight: "34px", fontWeight: "600" }],
+        h3: ["18px", { lineHeight: "26px", fontWeight: "600" }],
       },
       boxShadow: {
         card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
