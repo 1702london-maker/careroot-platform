@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     await supabase.from("visits").update({ status: "missed" }).eq("id", visit.id);
     missedCount++;
 
-    const client = visit.clients as Record<string, string> | null;
+    const client = visit.clients as unknown as Record<string, string> | null;
     const clientName = client ? `${client.first_name} ${client.last_name}` : "Unknown client";
     const startTime = new Date(visit.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 

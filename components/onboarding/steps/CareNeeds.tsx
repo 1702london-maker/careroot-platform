@@ -58,7 +58,8 @@ export function StepCareNeeds({ clientId, onComplete, onBack }: Props) {
   const supabase = createClient();
 
   const { register, handleSubmit, watch, setValue } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
     defaultValues: { personal_care: [], meal_tasks: [], mobility_tasks: [], domestic_tasks: [] },
   });
 

@@ -112,7 +112,7 @@ export default function StaffReportsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#E8F5EE" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 11, fontFamily: "DM Sans" }} unit="h" />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontFamily: "DM Sans" }} width={130} />
-              <Tooltip contentStyle={{ fontFamily: "DM Sans", fontSize: 12 }} formatter={(v: number) => [`${v}h`, "Hours"]} />
+              <Tooltip contentStyle={{ fontFamily: "DM Sans", fontSize: 12 }} formatter={(v) => [`${Number(v ?? 0)}h`, "Hours"]} />
               <Bar dataKey="hours" fill="#1A3C2E" name="Hours" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>

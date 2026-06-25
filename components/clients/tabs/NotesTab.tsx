@@ -67,13 +67,13 @@ export function ClientNotesTab({ client, visits }: Props) {
                   <span className="text-sm font-body font-medium text-cr-charcoal">
                     {formatDateTimeUK(String(note.created_at))}
                   </span>
-                  {note.sentiment && (
+                  {!!note.sentiment && (
                     <CRBadge variant={sentimentVariant(String(note.sentiment))}>
                       {String(note.sentiment)}
                     </CRBadge>
                   )}
-                  {note.ai_structured && <CRAIBadge size="sm" />}
-                  {note.is_internal && <CRBadge variant="slate">Internal</CRBadge>}
+                  {!!note.ai_structured && <CRAIBadge size="sm" />}
+                  {!!note.is_internal && <CRBadge variant="slate">Internal</CRBadge>}
                 </div>
                 <p className="text-xs text-cr-slate mb-2">
                   {carer ? `${carer.first_name} ${carer.last_name}` : "Unknown carer"}
@@ -85,7 +85,7 @@ export function ClientNotesTab({ client, visits }: Props) {
                 {isExpanded && aiData && (
                   <div className="mt-4 p-3 bg-cr-mint rounded-xl">
                     <p className="text-xs font-body font-semibold text-cr-forest mb-2">AI Analysis</p>
-                    {Object.entries(aiData).map(([key, val]) => val && (
+                    {Object.entries(aiData).map(([key, val]) => !!val && (
                       <div key={key} className="mb-2">
                         <p className="text-xs font-body font-medium text-cr-charcoal capitalize">{key.replace(/_/g, " ")}</p>
                         <p className="text-sm font-body text-cr-slate">{String(val)}</p>

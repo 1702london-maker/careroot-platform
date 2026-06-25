@@ -15,7 +15,7 @@ export default async function WhiteLabelSettingsPage() {
 
   if (userRecord?.role !== "org_admin") redirect("/dashboard");
 
-  const org = userRecord?.organisations as Record<string, unknown> | null;
+  const org = userRecord?.organisations as unknown as Record<string, unknown> | null;
   const plan = org?.plan as string;
   const isWhiteLabel = !!org?.white_label;
 

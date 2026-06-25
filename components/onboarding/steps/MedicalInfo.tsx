@@ -44,7 +44,8 @@ export function StepMedicalInfo({ clientId, onComplete, onBack }: Props) {
   const [error, setError] = useState("");
 
   const { register, handleSubmit, control, watch } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
     defaultValues: { conditions: [], allergies: [], intolerances: [], medications: [], dnr_status: false },
   });
 

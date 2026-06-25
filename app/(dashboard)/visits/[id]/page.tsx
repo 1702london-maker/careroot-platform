@@ -120,7 +120,7 @@ export default async function VisitDetailPage({ params }: Props) {
               >
                 {client?.first_name as string} {client?.last_name as string}
               </Link>
-              {client?.risk_level && client.risk_level !== "low" && (
+              {!!client?.risk_level && client.risk_level !== "low" && (
                 <div className="mt-1">
                   <CRBadge variant={riskVariant(client.risk_level as string)} size="sm">
                     {client.risk_level as string} risk
@@ -281,9 +281,9 @@ export default async function VisitDetailPage({ params }: Props) {
               </div>
               <div className="divide-y divide-gray-50">
                 {mealRecords?.map((meal) => {
-                  const consumptionVariant = {
+                  const consumptionVariant = ({
                     all: "green", most: "green", half: "amber", little: "amber", refused: "red",
-                  }[meal.consumption_level ?? ""] ?? "slate";
+                  } as Record<string, string>)[meal.consumption_level as string ?? ""] ?? "slate";
                   return (
                     <div key={meal.id} className="flex items-center gap-4 px-6 py-4">
                       <div className="flex-1">

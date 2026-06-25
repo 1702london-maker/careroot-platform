@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   if (!userRecord) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const orgId = userRecord.organisation_id;
-  const org = userRecord.organisations as Record<string, string> | null;
+  const org = userRecord.organisations as unknown as Record<string, string> | null;
   const stripe = getStripe();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care";
 

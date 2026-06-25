@@ -320,7 +320,7 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
                 {(nutritionProfile.diet_types as string[] || []).map((d) => (
                   <CRBadge key={d} variant="forest">{d}</CRBadge>
                 ))}
-                {nutritionProfile.texture_level && String(nutritionProfile.texture_level) !== "regular" && (
+                {!!nutritionProfile.texture_level && String(nutritionProfile.texture_level) !== "regular" && (
                   <CRBadge variant="amber">Texture: {String(nutritionProfile.texture_level).replace(/_/g, " ")}</CRBadge>
                 )}
               </div>
@@ -331,10 +331,10 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
             return (
               <CRCard key={String(pref.id)} className="!p-4">
                 <h3 className="font-body font-semibold text-cr-charcoal mb-2">{String(pref.meal_time)}</h3>
-                {pref.preferred_items && (
+                {pref.preferred_items != null && (
                   <p className="text-sm font-body text-cr-slate mb-3">{String(pref.preferred_items)}</p>
                 )}
-                {steps.length > 0 && <CRStepList steps={steps} large />}
+                {steps.length > 0 && <CRStepList steps={steps.map((s: string, i: number) => ({ step: i + 1, instruction: s }))} large />}
               </CRCard>
             );
           })}
@@ -379,7 +379,7 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
                 <p className="text-sm font-body font-semibold text-cr-charcoal">AI Summary</p>
                 <CRAIBadge size="sm" />
               </div>
-              {Object.entries(aiSummary).map(([key, val]) => val && (
+              {Object.entries(aiSummary).map(([key, val]) => !!val && (
                 <div key={key} className="mb-2">
                   <p className="text-xs font-body font-semibold text-cr-charcoal capitalize">{key.replace(/_/g, " ")}</p>
                   <p className="text-sm font-body text-cr-slate">{String(val)}</p>
@@ -410,8 +410,7 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
 
       {/* Emergency SOS button */}
       <CREmergencyButton
-        onPress={triggerEmergency}
-        clientName={`${String(client.first_name)} ${String(client.last_name)}`}
+        onClick={triggerEmergency}
       />
     </div>
   );

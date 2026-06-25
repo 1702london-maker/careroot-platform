@@ -35,11 +35,14 @@ export default function ComplianceReportsPage() {
       const start = new Date();
       start.setMonth(start.getMonth() - 6);
 
-      const [{ data: incidents }, { data: complaints }, { data: meds }] = await Promise.all([
-        supabase.from("incidents").select("*").eq("organisation_id", u.organisation_id).gte("created_at", start.toISOString()).catch(() => ({ data: null })),
-        supabase.from("complaints").select("*").eq("organisation_id", u.organisation_id).gte("received_date", start.toISOString().split("T")[0]).catch(() => ({ data: null })),
-        supabase.from("medication_records").select("status").eq("organisation_id", u.organisation_id).gte("created_at", start.toISOString()).catch(() => ({ data: null })),
+      const [incidentRes, complaintRes, medRes] = await Promise.all([
+        supabase.from("incidents").select("*").eq("organisation_id", u.organisation_id).gte("created_at", start.toISOString()),
+        supabase.from("complaints").select("*").eq("organisation_id", u.organisation_id).gte("received_date", start.toISOString().split("T")[0]),
+        supabase.from("medication_records").select("status").eq("organisation_id", u.organisation_id).gte("created_at", start.toISOString()),
       ]);
+      const incidents = incidentRes.data;
+      const complaints = complaintRes.data;
+      const meds = medRes.data;
 
       // Incident trend by month
       const iMap: Record<string, { low: number; medium: number; high: number; critical: number }> = {};

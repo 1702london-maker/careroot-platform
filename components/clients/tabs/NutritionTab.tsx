@@ -73,7 +73,7 @@ export function ClientNutritionTab({ client, nutritionProfile }: Props) {
             <p className="text-xs font-body font-medium text-cr-slate uppercase mb-1">Fluid consistency</p>
             <CRBadge variant="blue">{fluidLabels[String(nutritionProfile.fluid_consistency)] || String(nutritionProfile.fluid_consistency)}</CRBadge>
           </div>
-          {nutritionProfile.fluid_intake_target_ml && (
+          {nutritionProfile.fluid_intake_target_ml != null && (
             <div>
               <p className="text-xs font-body font-medium text-cr-slate uppercase mb-1">Fluid target</p>
               <p className="text-sm font-body font-semibold text-cr-charcoal">{String(nutritionProfile.fluid_intake_target_ml)} ml/day</p>
@@ -82,10 +82,10 @@ export function ClientNutritionTab({ client, nutritionProfile }: Props) {
         </div>
 
         <div className="space-y-2">
-          {nutritionProfile.feeding_assistance_required && (
+          {!!nutritionProfile.feeding_assistance_required && (
             <CRBadge variant="amber">Feeding assistance required</CRBadge>
           )}
-          {nutritionProfile.supplement_drinks && (
+          {!!nutritionProfile.supplement_drinks && (
             <CRBadge variant="amber">
               Supplement drinks: {nutritionProfile.supplement_name ? String(nutritionProfile.supplement_name) : "required"}
             </CRBadge>
@@ -94,7 +94,7 @@ export function ClientNutritionTab({ client, nutritionProfile }: Props) {
       </CRCard>
 
       {/* Cultural context */}
-      {nutritionProfile.cultural_food_notes && (
+      {nutritionProfile.cultural_food_notes != null && (
         <CRCard>
           <h3 className="font-display text-lg font-semibold text-cr-charcoal mb-2">Cultural Food Preferences</h3>
           <p className="text-sm font-body text-cr-charcoal leading-relaxed">{String(nutritionProfile.cultural_food_notes)}</p>
@@ -102,7 +102,7 @@ export function ClientNutritionTab({ client, nutritionProfile }: Props) {
       )}
 
       {/* Nutritional goals */}
-      {nutritionProfile.nutritional_goals && (
+      {nutritionProfile.nutritional_goals != null && (
         <CRCard>
           <h3 className="font-display text-lg font-semibold text-cr-charcoal mb-2">Nutritional Goals</h3>
           <p className="text-sm font-body text-cr-charcoal">{String(nutritionProfile.nutritional_goals)}</p>
@@ -115,11 +115,12 @@ export function ClientNutritionTab({ client, nutritionProfile }: Props) {
           <h3 className="font-display text-xl font-semibold text-cr-charcoal mb-4">Meal Preferences & Preparation</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {mealPreferences.map((pref) => {
-              const steps = (pref.preparation_steps as string[]) || [];
+              const rawSteps = (pref.preparation_steps as string[]) || [];
+              const steps = rawSteps.map((instruction, i) => ({ step: i + 1, instruction }));
               return (
                 <CRCard key={String(pref.id)}>
                   <h4 className="font-display text-lg font-semibold text-cr-charcoal mb-2">{String(pref.meal_time)}</h4>
-                  {pref.preferred_items && (
+                  {pref.preferred_items != null && (
                     <p className="text-sm font-body text-cr-charcoal mb-3">{String(pref.preferred_items)}</p>
                   )}
                   {steps.length > 0 && (
@@ -128,7 +129,7 @@ export function ClientNutritionTab({ client, nutritionProfile }: Props) {
                       <CRStepList steps={steps} />
                     </>
                   )}
-                  {pref.notes && (
+                  {pref.notes != null && (
                     <p className="text-xs text-cr-slate mt-2 italic">{String(pref.notes)}</p>
                   )}
                 </CRCard>

@@ -46,7 +46,8 @@ export function StepPersonalDetails({ onComplete }: Props) {
   const [error, setError] = useState("");
 
   const { register, handleSubmit, control, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
     defaultValues: { emergency_contacts: [] },
   });
 
@@ -109,7 +110,7 @@ export function StepPersonalDetails({ onComplete }: Props) {
         {label}{required && <span className="text-cr-red ml-1">*</span>}
       </label>
       <input
-        {...register(name as string)}
+        {...register(name)}
         type={type}
         className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest"
       />

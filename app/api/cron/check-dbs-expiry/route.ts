@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     if (!staffRecords?.length) continue;
 
     for (const record of staffRecords) {
-      const person = record.users as Record<string, string | boolean> | null;
+      const person = record.users as unknown as Record<string, string | boolean> | null;
       if (!person || !person.is_active) continue;
 
       const staffName = `${person.first_name ?? ""} ${person.last_name ?? ""}`.trim();

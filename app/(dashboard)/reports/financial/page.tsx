@@ -122,7 +122,7 @@ export default function FinancialReportsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#E8F5EE" />
               <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: "DM Sans" }} />
               <YAxis tick={{ fontSize: 11, fontFamily: "DM Sans" }} tickFormatter={(v) => `£${v}`} />
-              <Tooltip contentStyle={{ fontFamily: "DM Sans", fontSize: 12 }} formatter={(v: number) => [`£${v.toFixed(2)}`, ""]} />
+              <Tooltip contentStyle={{ fontFamily: "DM Sans", fontSize: 12 }} formatter={(v) => [`£${Number(v ?? 0).toFixed(2)}`, ""]} />
               <Legend wrapperStyle={{ fontFamily: "DM Sans", fontSize: 12 }} />
               <Bar dataKey="local_authority" fill="#1A3C2E" name="Local Authority" stackId="a" />
               <Bar dataKey="nhs" fill="#4A7C5E" name="NHS" stackId="a" />
@@ -160,7 +160,7 @@ export default function FinancialReportsPage() {
               <Pie data={statusData} cx="50%" cy="50%" outerRadius={80} dataKey="value">
                 {statusData.map((d, i) => <Cell key={i} fill={STATUS_COLOURS[d.name] ?? PIE_COLOURS[i % PIE_COLOURS.length]} />)}
               </Pie>
-              <Tooltip contentStyle={{ fontFamily: "DM Sans", fontSize: 12 }} formatter={(v: number) => [`£${v.toFixed(2)}`, ""]} />
+              <Tooltip contentStyle={{ fontFamily: "DM Sans", fontSize: 12 }} formatter={(v) => [`£${Number(v ?? 0).toFixed(2)}`, ""]} />
             </PieChart>
           </ResponsiveContainer>
           <div className="flex-1 overflow-x-auto">

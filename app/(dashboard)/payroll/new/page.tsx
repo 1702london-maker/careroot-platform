@@ -56,7 +56,7 @@ export default function NewPayrollPage() {
     const res = await fetch("/api/payroll/calculate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ organisation_id: orgId, period_start: periodStart, period_end: periodEnd, carer_ids: [...selectedCarers] }),
+      body: JSON.stringify({ organisation_id: orgId, period_start: periodStart, period_end: periodEnd, carer_ids: Array.from(selectedCarers) }),
     });
     const data = await res.json();
     setSummaries(data.summaries ?? []);

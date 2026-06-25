@@ -520,7 +520,7 @@ export interface PayrollRun {
   id: string; organisation_id: string; period_start: string; period_end: string;
   status: 'draft' | 'processing' | 'approved' | 'exported' | 'paid';
   total_gross: number; total_carers: number; total_hours: number; total_visits: number;
-  approved_by: string; approved_at: string; notes: string;
+  approved_by: string; approved_at: string; notes: string; created_at: string;
   carer_summaries?: PayrollCarerSummary[];
 }
 export interface PayrollCarerSummary {

@@ -62,11 +62,11 @@ export function ClientCarePlanTab({ client, carePlans }: Props) {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-display text-xl font-semibold text-cr-charcoal">{String(plan.title)}</h3>
-              {plan.ai_generated && <CRAIBadge />}
+              {!!plan.ai_generated && <CRAIBadge />}
             </div>
             <p className="text-xs font-body text-cr-slate">
               Version {String(plan.version)} · Created {formatDateUK(String(plan.created_at))}
-              {plan.approved_at && ` · Approved ${formatDateUK(String(plan.approved_at))}`}
+              {plan.approved_at != null && ` · Approved ${formatDateUK(String(plan.approved_at))}`}
             </p>
           </div>
           <CRBadge variant={plan.status === "active" ? "green" : plan.status === "draft" ? "amber" : "slate"}>

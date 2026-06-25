@@ -38,7 +38,8 @@ export function StepRiskAssessment({ clientId, onComplete, onBack }: Props) {
   const supabase = createClient();
 
   const { register, handleSubmit, watch } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
     defaultValues: { falls_risk_score: 0, pressure_sore_risk: "low", medication_risk: "low", overall_risk_level: "low" },
   });
 

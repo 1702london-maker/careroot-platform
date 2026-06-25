@@ -44,19 +44,19 @@ export function ClientOverviewTab({ client, recentVisits, familyAccess }: Props)
         <CRCard>
           <h3 className="font-display text-lg font-semibold text-cr-charcoal mb-3">Care Needs Summary</h3>
           <div className="space-y-2 text-sm font-body">
-            {careNeeds.visit_frequency && (
+            {careNeeds.visit_frequency != null && (
               <div className="flex justify-between">
                 <span className="text-cr-slate">Visit frequency</span>
                 <span className="text-cr-charcoal font-medium">{String(careNeeds.visit_frequency)}</span>
               </div>
             )}
-            {careNeeds.visit_duration_minutes && (
+            {careNeeds.visit_duration_minutes != null && (
               <div className="flex justify-between">
                 <span className="text-cr-slate">Duration</span>
                 <span className="text-cr-charcoal font-medium">{String(careNeeds.visit_duration_minutes)} min</span>
               </div>
             )}
-            {careNeeds.preferred_carer_gender && (
+            {careNeeds.preferred_carer_gender != null && (
               <div className="flex justify-between">
                 <span className="text-cr-slate">Carer preference</span>
                 <span className="text-cr-charcoal font-medium capitalize">{String(careNeeds.preferred_carer_gender)}</span>

@@ -304,8 +304,8 @@ export default async function NutritionClientPage({ params }: Props) {
                         <span className={`text-xs font-body font-semibold px-2 py-0.5 rounded-full capitalize ${cls}`}>
                           {record.consumption_level}
                         </span>
-                        {record.ai_flag && (
-                          <AlertTriangle size={13} className="text-cr-amber" title="AI flagged" />
+                        {!!record.ai_flag && (
+                          <AlertTriangle size={13} className="text-cr-amber" aria-label="AI flagged" />
                         )}
                       </div>
                     </div>

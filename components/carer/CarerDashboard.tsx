@@ -102,7 +102,7 @@ export function CarerDashboard({ visits, user }: Props) {
                             </span>
                           )}
                         </div>
-                        {client?.risk_level && String(client.risk_level) !== "low" && (
+                        {!!client?.risk_level && String(client.risk_level) !== "low" && (
                           <div className="flex items-center gap-1 mt-1">
                             <AlertTriangle size={10} className="text-amber-500" />
                             <span className="text-xs text-amber-600 capitalize">{String(client.risk_level)} risk</span>

@@ -38,7 +38,7 @@ export function ClientRiskTab({ client, riskAssessment }: Props) {
         {riskAssessment ? (
           <p className="text-xs text-cr-slate">
             Last assessed {formatDateUK(String(riskAssessment.created_at))}
-            {riskAssessment.next_review_date && ` · Next review ${formatDateUK(String(riskAssessment.next_review_date))}`}
+            {riskAssessment.next_review_date != null && ` · Next review ${formatDateUK(String(riskAssessment.next_review_date))}`}
           </p>
         ) : (
           <p className="text-sm text-cr-slate">No formal risk assessment on record</p>
@@ -72,19 +72,19 @@ export function ClientRiskTab({ client, riskAssessment }: Props) {
             <CRCard>
               <h3 className="font-display text-lg font-semibold text-cr-charcoal mb-4">Risk Factors</h3>
               <div className="space-y-4">
-                {riskAssessment.environmental_risks && (
+                {riskAssessment.environmental_risks != null && (
                   <div>
                     <p className="text-xs font-body font-semibold text-cr-charcoal uppercase tracking-wide mb-1">Environmental</p>
                     <p className="text-sm font-body text-cr-charcoal">{String(riskAssessment.environmental_risks)}</p>
                   </div>
                 )}
-                {riskAssessment.medication_risks && (
+                {riskAssessment.medication_risks != null && (
                   <div>
                     <p className="text-xs font-body font-semibold text-cr-charcoal uppercase tracking-wide mb-1">Medication Risk</p>
                     <CRBadge variant={riskVariant(String(riskAssessment.medication_risks))}>{String(riskAssessment.medication_risks)}</CRBadge>
                   </div>
                 )}
-                {riskAssessment.notes && (
+                {riskAssessment.notes != null && (
                   <div>
                     <p className="text-xs font-body font-semibold text-cr-charcoal uppercase tracking-wide mb-1">Assessor Notes</p>
                     <p className="text-sm font-body text-cr-charcoal">{String(riskAssessment.notes)}</p>

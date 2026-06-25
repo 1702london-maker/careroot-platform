@@ -15,8 +15,17 @@ export default function DemoPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
-    await new Promise((r) => setTimeout(r, 1000));
-    setStatus("success");
+    try {
+      const res = await fetch("/api/demo-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      setStatus("success");
+    } catch {
+      setStatus("idle");
+    }
   };
 
   const inputCls = "w-full border border-gray-200 rounded-[8px] px-4 py-3 text-sm text-[#1C1C1E] focus:border-[#1A3C2E] focus:outline-none transition-colors placeholder:text-[#9CA3AF]";

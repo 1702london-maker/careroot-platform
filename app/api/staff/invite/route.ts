@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     if (!inviter) return NextResponse.json({ error: "Inviter not found" }, { status: 404 });
 
-    const org = inviter.organisations as Record<string, string | number> | null;
+    const org = inviter.organisations as unknown as Record<string, string | number> | null;
     const orgId = inviter.organisation_id;
     const PLAN_LIMITS: Record<string, number> = { seed: 10, grow: 50, scale: 200, enterprise: Infinity };
     const plan = (org?.plan as string) ?? "seed";

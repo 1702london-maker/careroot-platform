@@ -62,7 +62,8 @@ export function StepNutritionPlan({ clientId, onComplete, onBack }: Props) {
   const supabase = createClient();
 
   const { register, handleSubmit, control, watch, setValue } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       diet_types: [],
       texture_level: "regular",
@@ -246,7 +247,8 @@ export function StepNutritionPlan({ clientId, onComplete, onBack }: Props) {
 
       {/* Meal Preferences with preparation steps */}
       {fields.map((field, i) => {
-        const steps = watch(`meal_preferences.${i}.preparation_steps`) || [];
+        const rawSteps = (watch(`meal_preferences.${i}.preparation_steps`) || []) as string[];
+        const steps = rawSteps.map((instruction, idx) => ({ step: idx + 1, instruction }));
         return (
           <CRCard key={field.id}>
             <h3 className="font-display text-lg font-semibold text-cr-charcoal mb-4">
@@ -290,7 +292,7 @@ export function StepNutritionPlan({ clientId, onComplete, onBack }: Props) {
                   <div className="mt-2 space-y-1">
                     {steps.map((step, si) => (
                       <div key={si} className="flex items-center justify-between px-3 py-1.5 bg-gray-50 rounded-lg">
-                        <span className="text-sm font-body text-cr-charcoal">{si + 1}. {step}</span>
+                        <span className="text-sm font-body text-cr-charcoal">{si + 1}. {step.instruction}</span>
                         <button type="button" onClick={() => removeStep(i, si)} className="text-cr-red ml-2">
                           <Trash2 size={14} />
                         </button>

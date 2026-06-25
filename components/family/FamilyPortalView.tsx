@@ -104,7 +104,7 @@ export function FamilyPortalView({ client, accessLevel, recentVisits, latestBrie
           <CRCard>
             <div className="flex items-center gap-2 mb-3">
               <h2 className="font-display text-lg font-semibold text-cr-charcoal">Latest Care Update</h2>
-              {latestBriefing.ai_generated && <CRAIBadge size="sm" />}
+              {!!latestBriefing.ai_generated && <CRAIBadge size="sm" />}
             </div>
             <p className="text-xs text-cr-slate mb-3">
               {formatDateUK(String(latestBriefing.created_at))}

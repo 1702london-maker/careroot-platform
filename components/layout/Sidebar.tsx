@@ -186,7 +186,7 @@ export function Sidebar({ userRole, orgPlan, isWhiteLabel }: SidebarProps) {
           </Link>
         )}
         <Link
-          href="/settings/organisation"
+          href="/settings"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-body font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all"
         >
           <Settings size={18} />
