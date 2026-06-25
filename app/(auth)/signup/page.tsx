@@ -36,51 +36,30 @@ export default function SignupPage() {
     setError("");
 
     try {
-      // 1. Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = (await res.json().catch(() => null)) as { error?: string } | null;
+
+      if (!res.ok) {
+        setError(result?.error || "Failed to create account");
+        setLoading(false);
+        return;
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
-        options: {
-          data: { first_name: data.firstName, last_name: data.lastName },
-        },
       });
 
-      if (authError || !authData.user) {
-        setError(authError?.message || "Failed to create account");
+      if (signInError) {
+        setError(signInError.message);
         setLoading(false);
         return;
       }
-
-      // 2. Create organisation
-      const { data: org, error: orgError } = await supabase
-        .from("organisations")
-        .insert({
-          name: data.orgName,
-          type: data.orgType,
-          plan: "seed",
-          plan_status: "trial",
-          trial_ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          max_staff: 10,
-        })
-        .select()
-        .single();
-
-      if (orgError || !org) {
-        setError("Failed to create organisation");
-        setLoading(false);
-        return;
-      }
-
-      // 3. Create user profile
-      await supabase.from("users").insert({
-        id: authData.user.id,
-        organisation_id: org.id,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        email: data.email,
-        role: "org_admin",
-        is_active: true,
-      });
 
       // Send welcome email (fire and forget — don't block navigation)
       fetch("/api/auth/welcome", {
@@ -90,6 +69,7 @@ export default function SignupPage() {
       }).catch(() => {});
 
       router.push("/dashboard");
+      router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

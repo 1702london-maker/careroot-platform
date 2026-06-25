@@ -8,7 +8,7 @@ import {
   Shield, FileCheck, FolderOpen, MessageSquare,
   AlertTriangle, BarChart3, Settings, LogOut,
   ChevronRight, Leaf, Crown, FileText, Banknote,
-  Stethoscope,
+  Stethoscope, UtensilsCrossed,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -44,6 +44,7 @@ const navigation: NavGroup[] = [
       { label: "Rota", href: "/rota", icon: <Calendar size={18} /> },
       { label: "Invoicing", href: "/invoicing", icon: <FileText size={18} /> },
       { label: "Payroll", href: "/payroll", icon: <Banknote size={18} /> },
+      { label: "Nutrition", href: "/nutrition", icon: <UtensilsCrossed size={18} /> },
     ],
   },
   {

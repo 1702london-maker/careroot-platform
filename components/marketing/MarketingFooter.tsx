@@ -78,7 +78,7 @@ export function MarketingFooter() {
             <p className="text-xs font-body font-semibold text-[#6B7280] uppercase tracking-widest mb-4">Company</p>
             <ul className="space-y-2.5">
               {[
-                ["About", "#"],
+                ["About", "/about"],
                 ["Contact Us", "/contact"],
                 ["FAQ", "/faq"],
                 ["Privacy Policy", "/privacy"],
