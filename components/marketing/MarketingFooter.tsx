@@ -18,17 +18,10 @@ export function MarketingFooter() {
               The UK&rsquo;s most intelligent care management platform. Built for CQC 2026.
             </p>
             <div className="flex gap-3">
-              {[
-                { letter: "W", href: "#", label: "Website" },
-                { letter: "E", href: "mailto:onboarding@careroot.co.uk", label: "Email" },
-                { letter: "L", href: "#", label: "LinkedIn" },
-                { letter: "X", href: "#", label: "Twitter" },
-              ].map(({ letter, href, label }) => (
-                <a key={label} href={href} aria-label={label}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-body font-bold text-[#6B7280] hover:text-[#1A3C2E] hover:bg-[#E8F5EE] transition-colors">
-                  {letter}
-                </a>
-              ))}
+              <a href="mailto:onboarding@careroot.co.uk" aria-label="Email Careroot"
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-body font-bold text-[#6B7280] hover:text-[#1A3C2E] hover:bg-[#E8F5EE] transition-colors">
+                E
+              </a>
             </div>
           </div>
 

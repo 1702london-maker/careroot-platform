@@ -74,6 +74,7 @@ export default function LoginPage() {
               <input
                 {...register("email")}
                 type="email"
+                required
                 autoComplete="email"
                 placeholder="you@careagency.co.uk"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"
@@ -91,6 +92,7 @@ export default function LoginPage() {
                 <input
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
+                  required
                   autoComplete="current-password"
                   placeholder="••••••••"
                   className="w-full px-3 py-2.5 pr-10 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"

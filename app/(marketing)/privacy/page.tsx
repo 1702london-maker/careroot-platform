@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | Careroot",
+  description: "Careroot's privacy policy. How we collect, use, and protect data in compliance with UK GDPR and the Data Protection Act 2018.",
+};
+
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 

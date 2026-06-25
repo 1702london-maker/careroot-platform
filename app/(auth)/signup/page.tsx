@@ -113,6 +113,7 @@ export default function SignupPage() {
               <input
                 {...register("orgName")}
                 type="text"
+                required
                 placeholder="Sunrise Care Services Ltd"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"
               />
@@ -142,6 +143,7 @@ export default function SignupPage() {
                 <input
                   {...register("firstName")}
                   type="text"
+                  required
                   placeholder="Jane"
                   className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"
                 />
@@ -154,6 +156,7 @@ export default function SignupPage() {
                 <input
                   {...register("lastName")}
                   type="text"
+                  required
                   placeholder="Smith"
                   className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"
                 />
@@ -167,6 +170,8 @@ export default function SignupPage() {
               <input
                 {...register("email")}
                 type="email"
+                required
+                autoComplete="email"
                 placeholder="jane@careagency.co.uk"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"
               />
@@ -180,6 +185,8 @@ export default function SignupPage() {
               <input
                 {...register("password")}
                 type="password"
+                required
+                autoComplete="new-password"
                 placeholder="At least 8 characters"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"
               />

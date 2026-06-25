@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "White Label Care Software | Careroot",
+  description: "Launch your own branded care management platform. White-label Careroot with your logo, colours, and domain. Built for care groups, franchises, and system providers.",
+  openGraph: { title: "White Label Care Software | Careroot", description: "Your brand, our platform. White-label care management for groups and franchises.", url: "https://www.careroot.co.uk/white-label", siteName: "Careroot" },
+};
+
 import Link from "next/link";
 import { CheckCircle, Leaf, Building2, Globe, Mail, Smartphone, Users, Shield } from "lucide-react";
 

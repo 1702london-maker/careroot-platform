@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Careroot — UK Care Management Platform | CQC Compliance Software",
+  description: "The complete care management platform for UK care providers. AI care plans, CQC compliance, offline carer app, medication tracking, and emergency response. Start free.",
+  openGraph: { title: "Careroot — UK Care Management Platform", description: "AI-powered care software built for CQC 2026. Domiciliary, supported living, residential care.", url: "https://www.careroot.co.uk", siteName: "Careroot" },
+};
+
 import Link from "next/link";
 import {
   Brain, ShieldCheck, AlertTriangle, Heart, Smartphone,

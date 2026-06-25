@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Features | Careroot",
+  description: "Explore every feature of Careroot: AI care plans, CQC compliance tools, offline carer app, medication tracking, GP Connect integration, and family portal.",
+  openGraph: { title: "Features | Careroot", description: "AI-powered care management features built for UK providers.", url: "https://www.careroot.co.uk/features", siteName: "Careroot" },
+};
+
 import Link from "next/link";
 import {
   Brain, ShieldCheck, AlertTriangle, Heart, Smartphone,
