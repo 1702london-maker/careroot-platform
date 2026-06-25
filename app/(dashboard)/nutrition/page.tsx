@@ -179,7 +179,7 @@ export default async function NutritionPage() {
                 const client = profile.clients as Record<string, string> | null;
                 const allergies = Array.isArray(profile.allergies) ? profile.allergies : [];
                 return (
-                  <Link key={profile.id} href={`/clients/${profile.client_id}`}
+                  <Link key={profile.id} href={`/nutrition/${profile.client_id}`}
                     className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/50 transition-colors">
                     <CRAvatar firstName={client?.first_name} lastName={client?.last_name} size="sm" />
                     <div className="flex-1 min-w-0">
