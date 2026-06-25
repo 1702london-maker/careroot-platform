@@ -145,6 +145,10 @@ export default function DemoPage() {
                 <p className="text-xs text-[#9CA3AF] text-center">
                   We will reply within 2 business hours · onboarding@careroot.co.uk
                 </p>
+                <p className="text-xs text-[#9CA3AF] text-center">
+                  By submitting, you agree to be contacted about your demo request. See our{" "}
+                  <a href="/privacy" className="underline hover:text-[#1A3C2E] transition-colors">Privacy Policy</a>.
+                </p>
               </form>
             )}
           </div>

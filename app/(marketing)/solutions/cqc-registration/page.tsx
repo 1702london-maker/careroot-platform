@@ -116,7 +116,7 @@ export default function CQCRegistrationPage() {
           </div>
 
           <h2 className="font-display text-3xl text-[#1C1C1E] mb-6">Common reasons agencies fail registration</h2>
-          <ol className="space-y-3 mb-10">
+          <ul className="space-y-3 mb-10 list-none">
             {[
               "Weak policies that are generic rather than specific to the service — inspectors can tell when a policy has been copied from the internet and never adapted",
               "Nominated individual or registered manager not demonstrating knowledge of CQC requirements during the assessment interview",
@@ -129,7 +129,7 @@ export default function CQCRegistrationPage() {
                 {item}
               </li>
             ))}
-          </ol>
+          </ul>
 
           <h2 className="font-display text-3xl text-[#1C1C1E] mb-6">Why digital systems matter</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -151,7 +151,7 @@ export default function CQCRegistrationPage() {
           <div className="space-y-6 mb-10">
             {[
               { key: "Safe", features: ["Medication management with eMAR", "Risk assessment tools", "Safeguarding concern flagging", "DBS tracking and alerts", "Emergency response system", "Incident management"] },
-              { key: "Effective", features: ["AI care plan drafting", "Training record management", "Outcome tracking", "GP Connect ready"] },
+              { key: "Effective", features: ["AI care plan drafting", "Training record management", "Outcome tracking", "GP Connect ready (coming Q4 2026)"] },
               { key: "Caring", features: ["Person-centred onboarding wizard", "Cultural and personal preferences", "Nutrition and meal planning", "Family portal involvement", "Dignity in all documentation"] },
               { key: "Responsive", features: ["Complaints system with 28-day tracker", "Person-centred care plans", "Family communication tools", "Flexible care plan updates"] },
               { key: "Well-led", features: ["Compliance dashboard", "Staff wellbeing monitoring", "Quality reporting", "Audit trail of everything"] },

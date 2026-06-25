@@ -186,6 +186,7 @@ export default function SignupPage() {
                 {...register("password")}
                 type="password"
                 required
+                minLength={8}
                 autoComplete="new-password"
                 placeholder="At least 8 characters"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"
@@ -206,6 +207,12 @@ export default function SignupPage() {
             >
               {loading ? "Creating account..." : "Create account — free for 30 days"}
             </button>
+            <p className="text-xs text-center text-cr-slate">
+              By creating an account, you agree to our{" "}
+              <Link href="/terms" className="text-cr-forest hover:text-cr-sage underline">Terms of Service</Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="text-cr-forest hover:text-cr-sage underline">Privacy Policy</Link>.
+            </p>
           </form>
 
           <p className="mt-6 text-center text-sm font-body text-cr-slate">

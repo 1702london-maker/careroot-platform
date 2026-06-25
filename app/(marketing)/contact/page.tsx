@@ -116,6 +116,10 @@ export default function ContactPage() {
                 >
                   {status === "loading" ? <><Loader2 size={16} className="animate-spin" /> Sending...</> : "Send message"}
                 </button>
+                <p className="text-xs text-[#9CA3AF] text-center">
+                  By submitting, you agree to be contacted about your enquiry. We will never share your details. See our{" "}
+                  <a href="/privacy" className="underline hover:text-[#1A3C2E] transition-colors">Privacy Policy</a>.
+                </p>
               </form>
             )}
           </div>

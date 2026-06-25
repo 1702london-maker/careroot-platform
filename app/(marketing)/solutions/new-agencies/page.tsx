@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: "Does Careroot help with the CQC application itself?",
-    a: "Careroot gives you the compliance infrastructure CQC expects. We do not complete the application on your behalf but our guide covers every step of the process. Read it at careroot.care/solutions/cqc-registration",
+    a: "Careroot gives you the compliance infrastructure CQC expects. We do not complete the application on your behalf but our guide covers every step of the process. Read it at careroot.co.uk/solutions/cqc-registration",
   },
   {
     q: "What if I only have 1 or 2 clients to start?",

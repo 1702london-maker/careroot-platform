@@ -71,12 +71,15 @@ export default function GPConnectMarketingPage() {
       {/* Hero */}
       <section className="bg-cr-ivory pt-28 pb-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block text-sm font-body font-semibold bg-cr-mint text-cr-forest rounded-full px-3 py-1 mb-6">Coming Soon</span>
+          <span className="inline-block text-sm font-body font-semibold bg-amber-100 text-amber-700 rounded-full px-3 py-1 mb-6">Not live yet — estimated Q4 2026, subject to NHS assurance</span>
           <h1 className="font-display text-5xl md:text-6xl text-cr-charcoal leading-[1.1] mb-5">
             GP Connect.<br />Coming to Careroot.
           </h1>
-          <p className="text-lg text-cr-slate font-body max-w-2xl mx-auto">
+          <p className="text-lg text-cr-slate font-body max-w-2xl mx-auto mb-4">
             Direct access to your clients' GP records — medications, allergies, conditions, and recent consultations — without hours of back-and-forth phone calls.
+          </p>
+          <p className="text-sm text-cr-slate font-body max-w-xl mx-auto bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+            <strong>Important:</strong> GP Connect is not available in Careroot yet. We have applied for NHS Assured Supplier status. This page describes what the integration will do once approved. Estimated go-live is Q4 2026 — this is an estimate, not a guarantee.
           </p>
         </div>
       </section>

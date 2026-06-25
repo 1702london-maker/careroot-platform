@@ -17,7 +17,7 @@ If you do not agree to these Terms, you may not use the Service.`,
   },
   {
     title: "2. Description of service",
-    body: `Careroot is a cloud-based care management platform for UK domiciliary and supported living providers. The Service includes care planning, visit management, CQC compliance tools, AI-powered features, emergency response functionality, family portal access, payroll, and invoicing tools.
+    body: `Careroot is a cloud-based care management platform for UK care providers, including domiciliary, supported living, residential, NHS community, and other regulated care services. The Service includes care planning, visit management, CQC compliance tools, AI-powered features, emergency response functionality, family portal access, payroll, and invoicing tools.
 
 We reserve the right to modify, suspend, or discontinue any part of the Service at any time with reasonable notice.`,
   },
@@ -73,7 +73,7 @@ The Careroot carer app includes offline functionality designed to maintain acces
   },
   {
     title: "10. Limitation of liability",
-    body: `To the maximum extent permitted by law, Careroot Ltd shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service.
+    body: `To the maximum extent permitted by law, Careroot AI Limited shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service.
 
 Our total liability to you for any claim arising under these Terms shall not exceed the total amount you paid to us in the 12 months preceding the claim.
 
@@ -81,7 +81,7 @@ Nothing in these Terms excludes liability for death or personal injury caused by
   },
   {
     title: "11. Intellectual property",
-    body: `The Careroot platform, including all software, design, branding, and content, is owned by Careroot Ltd and protected by UK and international intellectual property laws.
+    body: `The Careroot platform, including all software, design, branding, and content, is owned by Careroot AI Limited and protected by UK and international intellectual property laws.
 
 We grant you a limited, non-exclusive, non-transferable licence to use the Service solely for your internal business purposes during your subscription.`,
   },
@@ -102,7 +102,9 @@ These Terms were last updated in June 2026.`,
     body: `For questions about these Terms, contact us at:
 
 **Email:** onboarding@careroot.co.uk
-**Company:** Careroot Ltd, registered in England and Wales`,
+**Company:** Careroot AI Limited, registered in England and Wales
+**Company number:** 16796060
+**Registered office:** 71–75 Shelton Street, Covent Garden, London WC2H 9JQ`,
   },
 ];
 
@@ -114,7 +116,8 @@ export default function TermsPage() {
         <div className="max-w-3xl mx-auto">
           <span className="inline-block text-xs font-body font-semibold uppercase tracking-widest text-cr-forest bg-cr-mint px-3 py-1.5 rounded-full mb-5">Legal</span>
           <h1 className="font-display text-4xl text-cr-charcoal mb-2">Terms of Service</h1>
-          <p className="text-sm text-cr-slate font-body mb-10">Last updated: June 2026 · Careroot Ltd</p>
+          <p className="text-sm text-cr-slate font-body mb-2">Last updated: June 2026 · Careroot AI Limited</p>
+          <p className="text-xs text-cr-slate font-body mb-10">Company No. 16796060 · Registered in England and Wales · 71–75 Shelton Street, Covent Garden, London WC2H 9JQ</p>
 
           <div className="space-y-10">
             {SECTIONS.map((section, i) => (

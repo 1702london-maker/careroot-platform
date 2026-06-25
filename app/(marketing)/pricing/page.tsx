@@ -59,9 +59,9 @@ const COMPARISON = [
   { feature: "GP Connect", seed: false, grow: false, scale: false, enterprise: "Soon" },
 ];
 
-function Cell({ value }: { value: boolean | string }) {
-  if (value === true) return <CheckCircle size={16} className="text-[#1A3C2E] mx-auto" />;
-  if (value === false) return <Minus size={16} className="text-gray-300 mx-auto" />;
+function Cell({ value, plan }: { value: boolean | string; plan: string }) {
+  if (value === true) return <><CheckCircle size={16} className="text-[#1A3C2E] mx-auto" /><span className="sr-only">Included in {plan}</span></>;
+  if (value === false) return <><Minus size={16} className="text-gray-300 mx-auto" /><span className="sr-only">Not included in {plan}</span></>;
   return <span className="text-xs font-medium text-[#1C1C1E]">{value}</span>;
 }
 
@@ -78,9 +78,10 @@ export default function PricingPage() {
         <h1 className="font-display font-bold text-[52px] md:text-[64px] leading-[1.1] text-[#1C1C1E] mb-4">
           Start free. Scale as you grow.
         </h1>
-        <p className="text-xl text-[#6B7280] leading-relaxed max-w-xl mx-auto mb-8">
+        <p className="text-xl text-[#6B7280] leading-relaxed max-w-xl mx-auto mb-2">
           30-day free trial on all plans. No credit card required. Cancel any time.
         </p>
+        <p className="text-xs text-[#9CA3AF] mb-8">All prices in GBP, excluding VAT where applicable.</p>
 
         {/* Billing toggle */}
         <div className="inline-flex items-center gap-3 bg-white border border-gray-200 rounded-full p-1">
@@ -119,19 +120,19 @@ export default function PricingPage() {
                 <p className={`text-sm font-semibold mb-1 ${plan.highlight ? "text-white/70" : "text-[#6B7280]"}`}>{plan.name}</p>
                 <p className={`text-xs mb-4 ${plan.highlight ? "text-white/50" : "text-[#9CA3AF]"}`}>{plan.staff}</p>
                 {plan.monthly ? (
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className={`font-bold text-[40px] leading-none ${plan.highlight ? "text-white" : "text-[#1C1C1E]"}`}>
-                      £{annual ? plan.annual : plan.monthly}
-                    </span>
-                    <span className={`text-base ${plan.highlight ? "text-white/60" : "text-[#6B7280]"}`}>/mo</span>
-                  </div>
+                  <>
+                    <div className="flex items-baseline gap-1 mb-1">
+                      <span className={`font-bold text-[40px] leading-none ${plan.highlight ? "text-white" : "text-[#1C1C1E]"}`}>
+                        £{annual ? plan.annual : plan.monthly}
+                      </span>
+                      <span className={`text-base ${plan.highlight ? "text-white/60" : "text-[#6B7280]"}`}>/mo</span>
+                    </div>
+                    <p className={`text-xs ${plan.highlight ? "text-white/50" : "text-[#9CA3AF]"}`}>
+                      ex VAT · {annual ? `£${plan.annual! * 12}/year billed annually` : `or £${plan.annual}/mo billed annually (save 20%)`}
+                    </p>
+                  </>
                 ) : (
                   <div className="font-bold text-[40px] leading-none text-[#1C1C1E] mb-1">Custom</div>
-                )}
-                {annual && plan.monthly && (
-                  <p className={`text-xs ${plan.highlight ? "text-white/50" : "text-[#9CA3AF]"}`}>
-                    £{plan.annual! * 12}/year billed annually
-                  </p>
                 )}
                 <p className={`text-sm mt-3 ${plan.highlight ? "text-white/70" : "text-[#6B7280]"}`}>{plan.desc}</p>
               </div>
@@ -211,9 +212,9 @@ export default function PricingPage() {
                 <div className="p-3.5 col-span-1">
                   <p className="text-xs text-[#6B7280]">{row.feature}</p>
                 </div>
-                {[row.seed, row.grow, row.scale, row.enterprise].map((val, j) => (
+                {([["Seed", row.seed], ["Grow", row.grow], ["Scale", row.scale], ["Enterprise", row.enterprise]] as [string, boolean | string][]).map(([planName, val], j) => (
                   <div key={j} className={`p-3.5 text-center flex items-center justify-center ${j === 1 ? "bg-[#1A3C2E]/5" : ""}`}>
-                    <Cell value={val as boolean | string} />
+                    <Cell value={val} plan={planName} />
                   </div>
                 ))}
               </div>

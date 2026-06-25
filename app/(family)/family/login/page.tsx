@@ -114,7 +114,7 @@ export default function FamilyLoginPage() {
 
           <div className="mt-4 pt-4 border-t border-gray-100 text-center">
             <p className="text-xs text-cr-slate">
-              Staff login → <a href="/login" className="text-cr-forest hover:underline">careroot.care/login</a>
+              Staff login → <a href="/login" className="text-cr-forest hover:underline">careroot.co.uk/login</a>
             </p>
           </div>
         </div>

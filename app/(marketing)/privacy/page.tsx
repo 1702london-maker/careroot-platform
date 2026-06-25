@@ -11,7 +11,11 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 const SECTIONS = [
   {
     title: "Who we are",
-    body: `Careroot Ltd is a software company registered in England and Wales. We provide a cloud-based care management platform for UK domiciliary and supported living providers. Our registered address and ICO registration details are available on request. Contact us at onboarding@careroot.co.uk.`,
+    body: `Careroot AI Limited is a software company registered in England and Wales. Company number: 16796060. Registered office: 71–75 Shelton Street, Covent Garden, London WC2H 9JQ.
+
+We provide a cloud-based care management platform for UK care providers, including domiciliary, supported living, residential, and NHS community care services. We trade as Careroot.
+
+For data protection enquiries, contact our team at: onboarding@careroot.co.uk`,
   },
   {
     title: "What data we collect",
@@ -34,7 +38,9 @@ We do not sell data to third parties. We do not use care data for advertising or
   },
   {
     title: "Data storage and security",
-    body: `All data is stored in UK-based infrastructure (Supabase, hosted on AWS EU-West-2). Data is encrypted at rest using AES-256 and in transit using TLS 1.3. Access is controlled via Row Level Security — each organisation can only access its own data.
+    body: `All data is stored in UK-based infrastructure on all plans. Careroot uses Supabase hosted on AWS EU-West-2 (London region). Data is encrypted at rest using AES-256 and in transit using TLS 1.3. Access is controlled via Row Level Security — each organisation can only access its own data.
+
+Enterprise customers receive an enhanced contractual UK data residency guarantee and a dedicated Data Processing Agreement with specific sub-processor commitments.
 
 We maintain SOC 2 Type II compliant infrastructure. API keys and credentials are stored as environment secrets and are never exposed to the client.`,
   },
@@ -61,14 +67,14 @@ To exercise any of these rights, contact us at onboarding@careroot.co.uk. We wil
     title: "Third-party processors",
     body: `We use the following sub-processors to deliver the Careroot platform:
 
-- **Supabase** — database hosting and authentication (EU-West-2, AWS)
+- **Supabase** — database hosting and authentication (AWS EU-West-2, London region)
 - **Vercel** — application hosting and deployment (EU region)
 - **Resend** — transactional email delivery
 - **Stripe** — payment processing (PCI DSS Level 1 certified)
 - **Twilio** — SMS notifications for emergency alerts
-- **Anthropic** — AI features (care plan drafts, risk analysis, family briefs)
+- **Anthropic** — AI features (care plan drafts, risk analysis, family briefs). AI processing does not use your care data for model training.
 
-A full Data Processing Agreement (DPA) is available on request.`,
+A full Data Processing Agreement (DPA) is available on request by emailing onboarding@careroot.co.uk.`,
   },
   {
     title: "Cookies",
@@ -97,7 +103,8 @@ export default function PrivacyPage() {
         <div className="max-w-3xl mx-auto">
           <span className="inline-block text-xs font-body font-semibold uppercase tracking-widest text-cr-forest bg-cr-mint px-3 py-1.5 rounded-full mb-5">Legal</span>
           <h1 className="font-display text-4xl text-cr-charcoal mb-2">Privacy Policy</h1>
-          <p className="text-sm text-cr-slate font-body mb-10">Last updated: June 2026 · Careroot Ltd</p>
+          <p className="text-sm text-cr-slate font-body mb-2">Last updated: June 2026 · Careroot AI Limited</p>
+          <p className="text-xs text-cr-slate font-body mb-10">Company No. 16796060 · Registered in England and Wales · 71–75 Shelton Street, Covent Garden, London WC2H 9JQ</p>
 
           <div className="space-y-10">
             {SECTIONS.map((section, i) => (

@@ -1,7 +1,3 @@
-"use client";
-
-import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import Link from "next/link";
@@ -33,11 +29,11 @@ const FAQS = [
     items: [
       {
         q: "How does Careroot help with CQC inspections?",
-        a: "Careroot maps all evidence to the CQC 2026 Single Assessment Framework — all 5 key questions and 34 quality statements. Your live compliance score shows exactly where you stand and flags gaps before an inspector finds them.",
+        a: "Careroot maps evidence to the CQC assessment framework key questions and quality statements. Your live compliance dashboard shows where you stand and flags gaps before an inspector finds them.",
       },
       {
-        q: "Is Careroot built for the new CQC Single Assessment Framework?",
-        a: "Yes. The 2026 Single Assessment Framework is built into Careroot from day one — not retrofitted. Every care plan, visit note, and incident is automatically mapped to the relevant quality statements.",
+        q: "Is Careroot built for the current CQC assessment framework?",
+        a: "Yes. The current CQC assessment framework is built into Careroot from day one — not retrofitted. Every care plan, visit note, and incident is mapped to the relevant quality statements. Careroot is designed to support CQC evidence readiness, not to claim CQC certification (CQC does not certify software).",
       },
       {
         q: "Can I store CQC evidence documents in Careroot?",
@@ -75,7 +71,7 @@ const FAQS = [
     items: [
       {
         q: "Where is my data stored?",
-        a: "All data is stored in UK-based servers, fully encrypted at rest and in transit. Careroot is built on NHS-grade infrastructure that meets ISO 27001 standards.",
+        a: "All data is stored in UK-based servers (AWS EU-West-2, London region) on all plans, fully encrypted at rest using AES-256 and in transit using TLS 1.3. Enterprise customers receive an enhanced contractual UK data residency guarantee.",
       },
       {
         q: "Who can see client data?",
@@ -83,11 +79,11 @@ const FAQS = [
       },
       {
         q: "Is Careroot GDPR compliant?",
-        a: "Yes. Careroot is fully GDPR compliant. We are the data processor; your organisation is the data controller. A Data Processing Agreement (DPA) is available on request.",
+        a: "Yes. Careroot is fully UK GDPR compliant. We are the data processor; your organisation is the data controller. A Data Processing Agreement (DPA) is available on request at onboarding@careroot.co.uk.",
       },
       {
         q: "Can carers access client data on personal devices?",
-        a: "Yes, securely. The carer app uses Supabase Row Level Security — carers can only access data for their assigned visits. Sessions are time-limited and device management controls are available on enterprise plans.",
+        a: "Yes, securely. The carer app uses Row Level Security — carers can only access data for their assigned visits. Sessions are time-limited and device management controls are available on enterprise plans.",
       },
     ],
   },
@@ -100,7 +96,7 @@ const FAQS = [
       },
       {
         q: "What is GP Connect?",
-        a: "GP Connect is an NHS API that gives care providers direct access to a client's GP record — medications, allergies, conditions, and consultations. Careroot is currently applying for NHS Assured Supplier status to enable this. Register your interest at careroot.co.uk/gp-connect.",
+        a: "GP Connect is an NHS API that gives care providers access to a client's GP record. Careroot has applied for NHS Assured Supplier status to enable this integration. It is not live yet — estimated Q4 2026, subject to NHS assurance approval. Register your interest at careroot.co.uk/gp-connect.",
       },
       {
         q: "Can families see what's happening with their relative?",
@@ -113,27 +109,6 @@ const FAQS = [
     ],
   },
 ];
-
-function FAQItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b border-gray-100 last:border-0">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-start justify-between gap-4 py-4 text-left"
-      >
-        <span className="text-sm font-body font-semibold text-cr-charcoal leading-relaxed">{q}</span>
-        {open
-          ? <ChevronUp size={18} className="text-cr-forest flex-shrink-0 mt-0.5" />
-          : <ChevronDown size={18} className="text-cr-slate flex-shrink-0 mt-0.5" />
-        }
-      </button>
-      {open && (
-        <p className="text-sm font-body text-cr-slate leading-relaxed pb-4">{a}</p>
-      )}
-    </div>
-  );
-}
 
 export default function FAQPage() {
   return (
@@ -160,7 +135,15 @@ export default function FAQPage() {
                 <h2 className="font-display text-xl text-cr-charcoal mb-4">{section.category}</h2>
                 <div className="bg-white rounded-card border border-gray-100 shadow-card px-6">
                   {section.items.map((item) => (
-                    <FAQItem key={item.q} q={item.q} a={item.a} />
+                    <details key={item.q} className="border-b border-gray-100 last:border-0 group">
+                      <summary className="flex items-start justify-between gap-4 py-4 cursor-pointer list-none">
+                        <span className="text-sm font-body font-semibold text-cr-charcoal leading-relaxed">{item.q}</span>
+                        <span className="text-cr-slate flex-shrink-0 mt-0.5 transition-transform group-open:rotate-180">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+                        </span>
+                      </summary>
+                      <p className="text-sm font-body text-cr-slate leading-relaxed pb-4">{item.a}</p>
+                    </details>
                   ))}
                 </div>
               </div>

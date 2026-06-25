@@ -44,7 +44,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ["careroot.care", "localhost:3000"],
+      allowedOrigins: ["careroot.co.uk", "www.careroot.co.uk", "careroot.care", "localhost:3000"],
     },
   },
 };
