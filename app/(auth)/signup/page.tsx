@@ -56,7 +56,12 @@ export default function SignupPage() {
       });
 
       if (signInError) {
-        setError(signInError.message);
+        const msg = signInError.message || "";
+        if (msg.includes("already registered") || msg.includes("already exists")) {
+          setError("An account with this email already exists. Try signing in instead.");
+        } else {
+          setError(msg || "Failed to sign in after account creation. Please try logging in.");
+        }
         setLoading(false);
         return;
       }
@@ -70,8 +75,13 @@ export default function SignupPage() {
 
       router.push("/dashboard");
       router.refresh();
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("fetch") || msg.includes("network")) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError("Something went wrong. Please email onboarding@careroot.co.uk if this continues.");
+      }
     } finally {
       setLoading(false);
     }

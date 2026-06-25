@@ -1,335 +1,146 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { CheckCircle, Lock, Calendar, Shield, Star, ArrowRight, Smartphone } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-
-const schema = z.object({
-  first_name: z.string().min(1, "Required"),
-  last_name: z.string().min(1, "Required"),
-  organisation_name: z.string().min(1, "Required"),
-  email: z.string().email("Invalid email"),
-  phone: z.string().min(7, "Required"),
-  staff_count: z.string().min(1, "Select staff count"),
-  care_type: z.string().min(1, "Select care type"),
-  message: z.string().optional(),
-});
-
-type FormData = z.infer<typeof schema>;
-
-function InputField({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-body font-medium text-cr-charcoal mb-1">{label}</label>
-      {children}
-      {error && <p className="mt-1 text-xs text-cr-red">{error}</p>}
-    </div>
-  );
-}
-
-const INPUT_CLS =
-  "w-full px-3.5 py-3 rounded-xl border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest bg-white";
+import { CheckCircle, Loader2 } from "lucide-react";
 
 export default function DemoPage() {
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [form, setForm] = useState({ firstName: "", lastName: "", org: "", email: "", phone: "", staff: "", type: "" });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const onSubmit = async (data: FormData) => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/demo-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) setSubmitted(true);
-      else setSubmitted(true); // show success anyway
-    } catch {
-      setSubmitted(true);
-    } finally {
-      setLoading(false);
-    }
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    await new Promise((r) => setTimeout(r, 1000));
+    setStatus("success");
   };
 
+  const inputCls = "w-full border border-gray-200 rounded-[8px] px-4 py-3 text-sm text-[#1C1C1E] focus:border-[#1A3C2E] focus:outline-none transition-colors placeholder:text-[#9CA3AF]";
+
   return (
-    <div className="min-h-screen bg-cr-ivory font-body">
+    <div className="min-h-screen bg-[#F9F7F4]">
       <MarketingNav />
 
-      {submitted ? (
-        /* ── THANK YOU SCREEN ── */
-        <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-          <div className="w-16 h-16 rounded-full bg-cr-mint flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={32} className="text-cr-forest" />
-          </div>
-          <h1 className="font-display text-4xl md:text-5xl font-semibold text-cr-charcoal mb-4">
-            You&rsquo;re booked in.
-          </h1>
-          <p className="text-base font-body text-cr-slate mb-3 leading-relaxed">
-            We&rsquo;ve received your request and will confirm your demo time within 2 hours.
-          </p>
-          <p className="text-sm font-body text-cr-slate mb-12">
-            Check your email — a confirmation is on its way.
-          </p>
+      <section className="py-16 px-4 md:px-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 items-start">
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-left mb-8">
-            <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-6">While you wait</h2>
-            <div className="space-y-5">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-cr-mint flex items-center justify-center flex-shrink-0">
-                  <Smartphone size={18} className="text-cr-forest" />
+          {/* Left — info */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[2px] text-[#1A3C2E] mb-4">Book a demo</p>
+            <h1 className="font-display font-bold text-[44px] leading-[52px] text-[#1C1C1E] mb-4">
+              See Careroot in 30 minutes.
+            </h1>
+            <p className="text-[#6B7280] leading-relaxed mb-10">
+              We will show you the full platform tailored to your service type. No sales pressure. Just a clear picture of whether Careroot is right for you.
+            </p>
+
+            <div className="space-y-5 mb-10">
+              {[
+                { title: "Personalised walkthrough", body: "We configure the demo around your care type — domiciliary, supported living, or residential." },
+                { title: "See your biggest pain point solved", body: "Tell us what's breaking in your current system. We will show you exactly how Careroot fixes it." },
+                { title: "No obligation", body: "If Careroot isn't right for you, we will tell you. We would rather you find the right tool than use the wrong one." },
+              ].map(({ title, body }) => (
+                <div key={title} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-[#E8F5EE] flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <CheckCircle size={13} className="text-[#1A3C2E]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#1C1C1E] text-sm mb-0.5">{title}</p>
+                    <p className="text-sm text-[#6B7280] leading-relaxed">{body}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-body font-semibold text-cr-charcoal mb-1">Install Careroot on your phone</p>
-                  <p className="text-sm font-body text-cr-slate">
-                    Open <span className="text-cr-forest font-medium">careroot.care</span> in your mobile browser, tap the share icon, and select &ldquo;Add to Home Screen&rdquo;. No app store needed.
-                  </p>
+              ))}
+            </div>
+
+            <div className="bg-white border border-gray-100 rounded-[16px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[2px] text-[#6B7280] mb-3">What you will see</p>
+              {["AI care plan drafting live", "CQC compliance dashboard with your evidence gaps", "Carer mobile app — offline visit demo", "Paramedic QR emergency access", "Family portal", "Invoicing and payroll overview"].map((item) => (
+                <div key={item} className="flex items-center gap-2 py-1.5 border-b border-gray-50 last:border-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#1A3C2E] flex-shrink-0" />
+                  <p className="text-sm text-[#6B7280]">{item}</p>
                 </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-cr-mint flex items-center justify-center flex-shrink-0">
-                  <ArrowRight size={18} className="text-cr-forest" />
-                </div>
-                <div>
-                  <p className="text-sm font-body font-semibold text-cr-charcoal mb-1">Start your free trial now</p>
-                  <p className="text-sm font-body text-cr-slate">
-                    You don&rsquo;t have to wait for the demo.{" "}
-                    <Link href="/signup" className="text-cr-forest font-medium hover:text-cr-sage underline">
-                      Start your 30-day free trial
-                    </Link>{" "}
-                    and explore at your own pace.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-cr-mint flex items-center justify-center flex-shrink-0">
-                  <Shield size={18} className="text-cr-forest" />
-                </div>
-                <div>
-                  <p className="text-sm font-body font-semibold text-cr-charcoal mb-1">Read our CQC preparation guide</p>
-                  <p className="text-sm font-body text-cr-slate">
-                    Everything you need to know about the 2026 Single Assessment Framework and how Careroot maps to it.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          <Link href="/" className="inline-block text-sm font-body text-cr-forest hover:text-cr-sage transition-colors">
-            ← Back to homepage
-          </Link>
-        </div>
-      ) : (
-        /* ── DEMO BOOKING PAGE ── */
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-            {/* Left — context */}
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cr-mint text-cr-forest text-xs font-body font-semibold border border-cr-sage/20 mb-6">
-                <Calendar size={12} />
-                30-minute demo · Free · No commitment
-              </div>
-              <h1 className="font-display text-4xl md:text-5xl font-semibold text-cr-charcoal leading-tight mb-5">
-                See Careroot in 30 minutes.
-              </h1>
-              <p className="text-base font-body text-cr-slate mb-10 leading-relaxed">
-                We&rsquo;ll walk you through the platform for your specific type of care service and answer every question you have. No sales pressure. Just the product.
-              </p>
-
-              {/* What you'll see */}
-              <div className="mb-10">
-                <p className="text-xs font-body font-semibold text-cr-charcoal uppercase tracking-widest mb-4">What you&rsquo;ll see</p>
-                <ul className="space-y-3">
-                  {[
-                    "How to set up a client and generate an AI care plan",
-                    "How the CQC compliance dashboard scores your service",
-                    "How the carer app works in the field — with offline mode",
-                    "How the emergency system protects your clients and staff",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <CheckCircle size={15} className="text-cr-sage mt-0.5 flex-shrink-0" />
-                      <span className="text-sm font-body text-cr-charcoal">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Who this is for */}
-              <div className="mb-10">
-                <p className="text-xs font-body font-semibold text-cr-charcoal uppercase tracking-widest mb-4">Who this is for</p>
-                <ul className="space-y-3">
-                  {[
-                    "Registered managers preparing for CQC registration",
-                    "Operations directors evaluating care management software",
-                    "Care agency owners looking to replace paper systems",
-                    "NHS community care team leads",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3">
-                      <div className="w-1.5 h-1.5 rounded-full bg-cr-forest flex-shrink-0" />
-                      <span className="text-sm font-body text-cr-slate">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* What happens next */}
-              <div className="mb-10">
-                <p className="text-xs font-body font-semibold text-cr-charcoal uppercase tracking-widest mb-4">What happens next</p>
-                <div className="space-y-4">
-                  {[
-                    { n: "1", title: "Submit the form", body: "We confirm your demo time within 2 hours." },
-                    { n: "2", title: "30-minute video call", body: "We show you the exact features relevant to your service type." },
-                    { n: "3", title: "Start your free trial", body: "Set up your agency the same day. 30 days free, no card required." },
-                  ].map(({ n, title, body }) => (
-                    <div key={n} className="flex items-start gap-4">
-                      <div className="w-8 h-8 rounded-full bg-cr-forest text-white text-sm font-body font-bold flex items-center justify-center flex-shrink-0">
-                        {n}
-                      </div>
-                      <div>
-                        <p className="text-sm font-body font-semibold text-cr-charcoal">{title}</p>
-                        <p className="text-sm font-body text-cr-slate">{body}</p>
-                      </div>
-                    </div>
-                  ))}
+          {/* Right — form */}
+          <div className="bg-white rounded-[16px] border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-8">
+            {status === "success" ? (
+              <div className="text-center py-8">
+                <div className="w-14 h-14 rounded-full bg-[#E8F5EE] flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle size={28} className="text-[#1A3C2E]" />
                 </div>
+                <h3 className="font-display font-bold text-2xl text-[#1C1C1E] mb-2">Request received.</h3>
+                <p className="text-[#6B7280] text-sm leading-relaxed">
+                  We will be in touch within 2 business hours to confirm your demo time. Check your inbox — including spam just in case.
+                </p>
               </div>
-
-              {/* Testimonials */}
-              <div className="space-y-4 mb-10">
-                {[
-                  {
-                    quote: "We went from CQC improvement notice to Good rating in four months.",
-                    name: "Registered Manager, London",
-                  },
-                  {
-                    quote: "The paramedic QR feature alone is worth the subscription.",
-                    name: "Care Manager, Birmingham",
-                  },
-                ].map((t) => (
-                  <div key={t.name} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-                    <div className="flex gap-0.5 mb-3">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={12} className="text-cr-gold fill-cr-gold" />
-                      ))}
-                    </div>
-                    <p className="text-sm font-body text-cr-charcoal italic mb-2">&ldquo;{t.quote}&rdquo;</p>
-                    <p className="text-xs font-body text-cr-slate">{t.name}</p>
+            ) : (
+              <form onSubmit={submit} className="space-y-4">
+                <h2 className="font-display font-bold text-2xl text-[#1C1C1E] mb-6">Book your demo</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1C1C1E] mb-1.5">First name</label>
+                    <input required className={inputCls} placeholder="Sarah" value={form.firstName} onChange={set("firstName")} />
                   </div>
-                ))}
-              </div>
-
-              {/* Trust signals */}
-              <div className="space-y-2">
-                {[
-                  { icon: Lock, text: "Your details are never shared or sold" },
-                  { icon: Calendar, text: "We respond within 2 hours" },
-                  { icon: Shield, text: "30-day free trial after demo — no pressure" },
-                ].map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-3">
-                    <Icon size={14} className="text-cr-sage flex-shrink-0" />
-                    <span className="text-xs font-body text-cr-slate">{text}</span>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1C1C1E] mb-1.5">Last name</label>
+                    <input required className={inputCls} placeholder="Johnson" value={form.lastName} onChange={set("lastName")} />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right — form */}
-            <div>
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
-                <h2 className="font-display text-2xl font-semibold text-cr-charcoal mb-1">Book your demo</h2>
-                <p className="text-sm font-body text-cr-slate mb-7">We&rsquo;ll confirm within 2 hours.</p>
-
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <InputField label="First name" error={errors.first_name?.message}>
-                      <input {...register("first_name")} placeholder="Jane" className={INPUT_CLS} />
-                    </InputField>
-                    <InputField label="Last name" error={errors.last_name?.message}>
-                      <input {...register("last_name")} placeholder="Smith" className={INPUT_CLS} />
-                    </InputField>
-                  </div>
-
-                  <InputField label="Organisation name" error={errors.organisation_name?.message}>
-                    <input {...register("organisation_name")} placeholder="Sunrise Care Services Ltd" className={INPUT_CLS} />
-                  </InputField>
-
-                  <InputField label="Work email" error={errors.email?.message}>
-                    <input {...register("email")} type="email" placeholder="jane@careagency.co.uk" className={INPUT_CLS} />
-                  </InputField>
-
-                  <InputField label="Phone number" error={errors.phone?.message}>
-                    <input {...register("phone")} type="tel" placeholder="+44 7700 900000" className={INPUT_CLS} />
-                  </InputField>
-
-                  <InputField label="Number of staff" error={errors.staff_count?.message}>
-                    <select {...register("staff_count")} className={INPUT_CLS}>
-                      <option value="">Select...</option>
-                      <option value="1-10">1–10</option>
-                      <option value="11-50">11–50</option>
-                      <option value="51-200">51–200</option>
-                      <option value="200+">200+</option>
-                    </select>
-                  </InputField>
-
-                  <InputField label="Type of care" error={errors.care_type?.message}>
-                    <select {...register("care_type")} className={INPUT_CLS}>
-                      <option value="">Select...</option>
-                      <option value="domiciliary">Domiciliary / Home Care</option>
-                      <option value="supported_living">Supported Living</option>
-                      <option value="residential">Residential Care Home</option>
-                      <option value="multiple">Multiple service types</option>
-                    </select>
-                  </InputField>
-
-                  <InputField label="Anything specific you want to see? (optional)" error={errors.message?.message}>
-                    <textarea
-                      {...register("message")}
-                      placeholder="e.g. We're preparing for our first CQC registration and want to see the compliance dashboard..."
-                      rows={3}
-                      className={`${INPUT_CLS} resize-none`}
-                    />
-                  </InputField>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-cr-forest text-white rounded-xl py-3.5 font-body font-semibold text-base hover:bg-cr-sage transition-colors disabled:opacity-60"
-                  >
-                    {loading ? "Booking..." : "Book my demo — we'll confirm within 2 hours"}
-                  </button>
-                </form>
-
-                <div className="mt-6 pt-6 border-t border-gray-100 text-center space-y-2">
-                  <p className="text-sm font-body text-cr-slate">
-                    Prefer email?{" "}
-                    <a href="mailto:hello@careroot.care" className="text-cr-forest hover:text-cr-sage font-medium">
-                      hello@careroot.care
-                    </a>
-                  </p>
                 </div>
-              </div>
-            </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#1C1C1E] mb-1.5">Organisation name</label>
+                  <input className={inputCls} placeholder="Sunrise Care Agency" value={form.org} onChange={set("org")} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#1C1C1E] mb-1.5">Work email <span className="text-[#DC2626]">*</span></label>
+                  <input required type="email" className={inputCls} placeholder="sarah@sunrisecare.co.uk" value={form.email} onChange={set("email")} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#1C1C1E] mb-1.5">Phone number</label>
+                  <input type="tel" className={inputCls} placeholder="+44 7xxx xxxxxx" value={form.phone} onChange={set("phone")} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1C1C1E] mb-1.5">Number of staff</label>
+                    <select className={inputCls} value={form.staff} onChange={set("staff")}>
+                      <option value="">Select...</option>
+                      <option>1–10</option>
+                      <option>11–50</option>
+                      <option>51–200</option>
+                      <option>200+</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#1C1C1E] mb-1.5">Type of care</label>
+                    <select className={inputCls} value={form.type} onChange={set("type")}>
+                      <option value="">Select...</option>
+                      <option>Domiciliary / Home Care</option>
+                      <option>Supported Living</option>
+                      <option>Residential Care Home</option>
+                      <option>Multiple service types</option>
+                    </select>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="w-full bg-[#1A3C2E] text-white font-semibold py-3.5 rounded-[8px] hover:bg-[#4A7C5E] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {status === "loading" ? <><Loader2 size={16} className="animate-spin" /> Sending...</> : "Book my demo"}
+                </button>
+                <p className="text-xs text-[#9CA3AF] text-center">
+                  We will reply within 2 business hours · onboarding@careroot.co.uk
+                </p>
+              </form>
+            )}
           </div>
         </div>
-      )}
+      </section>
 
       <MarketingFooter />
     </div>

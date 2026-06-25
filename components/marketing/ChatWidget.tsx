@@ -108,7 +108,7 @@ export default function ChatWidget() {
                     borderRadius: msg.role === "user" ? "12px 12px 2px 12px" : "12px 12px 12px 2px",
                   }}
                 >
-                  {msg.content}
+                  {msg.content.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").replace(/#{1,6}\s/gm, "").replace(/^\d+\.\s/gm, "").replace(/^[-•]\s/gm, "").trim()}
                 </div>
                 <span className="text-xs text-[#6B7280] mt-1 font-body">{formatTime(msg.timestamp)}</span>
               </div>
