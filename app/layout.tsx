@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -21,8 +21,11 @@ export const metadata: Metadata = {
   description: "The complete platform for UK care providers — from care plans to CQC compliance, all in one place.",
   keywords: ["care management", "CQC compliance", "domiciliary care", "care planning", "UK care software"],
   manifest: "/manifest.json",
-  themeColor: "#1A3C2E",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Careroot" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1A3C2E",
 };
 
 export default function RootLayout({
