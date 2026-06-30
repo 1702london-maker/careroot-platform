@@ -38,7 +38,7 @@ export async function GET(req: Request) {
       const [{ data: logs }, { data: incidents }, { data: medRecords }, { data: moodRecords }, { data: nutritionRecords }, { data: shifts }] = await Promise.all([
         supabase.from("shift_logs").select("log_type, content, triggers_detected, server_timestamp").eq("client_id", client.id).gte("server_timestamp", weekStart).lte("server_timestamp", weekEnd),
         supabase.from("incidents").select("incident_type, physical_intervention_occurred, server_timestamp").eq("client_id", client.id).gte("server_timestamp", weekStart),
-        supabase.from("medication_records").select("outcome, server_timestamp").eq("client_id", client.id).gte("server_timestamp", weekStart),
+        supabase.from("medication_records").select("status, server_timestamp").eq("client_id", client.id).gte("server_timestamp", weekStart),
         supabase.from("mood_records").select("mood_term, mood_category, triggers_activated, server_timestamp").eq("client_id", client.id).gte("server_timestamp", weekStart),
         supabase.from("nutrition_records").select("meal_type, offered, consumed, concerns, server_timestamp").eq("client_id", client.id).gte("server_timestamp", weekStart),
         supabase.from("shifts").select("status, scheduled_start").contains("client_ids", [client.id]).gte("scheduled_start", weekStart).lte("scheduled_start", weekEnd),

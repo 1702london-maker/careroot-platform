@@ -17,9 +17,12 @@ export async function GET(req: NextRequest) {
 
   const supabase = createServiceClientSync();
   const now = new Date();
-  const windowEnd = new Date(now.getTime() + 30 * 60 * 1000); // next 30 minutes
+  // Look 24h ahead so a once-daily cron (Vercel Hobby) still covers the day's
+  // shifts. Idempotent — skips shifts that already have a live credential — so
+  // running more frequently (Vercel Pro, every 15 min) is also safe.
+  const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-  // Scheduled shifts starting within the next 30 minutes.
+  // Scheduled shifts starting within the look-ahead window.
   const { data: shifts } = await supabase
     .from("shifts")
     .select("id, staff_id, scheduled_start, scheduled_end")

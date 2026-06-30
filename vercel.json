@@ -47,6 +47,10 @@
     {
       "path": "/api/cron/incident-wellbeing-check",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-evidence-packs",
+      "schedule": "0 4 * * *"
     }
   ]
 }

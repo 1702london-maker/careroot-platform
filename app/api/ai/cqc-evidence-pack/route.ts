@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     supabase.from("shifts").select("status, actual_start, actual_end").eq("organisation_id", caller.organisation_id).gte("scheduled_start", since),
     supabase.from("incidents").select("incident_type, physical_intervention_occurred, pi_debrief_scheduled, staff_wellbeing_checked").gte("server_timestamp", since),
     supabase.from("safeguarding_concerns").select("status, bypass_line_manager, escalated_to_local_authority").gte("server_timestamp", since),
-    supabase.from("medication_records").select("outcome").gte("server_timestamp", since),
+    supabase.from("medication_records").select("status").gte("server_timestamp", since),
     supabase.from("staff_compliance").select("status, valid_until, compliance_item"),
     supabase.from("supervision_records").select("supervision_date, next_supervision_due").gte("supervision_date", since),
     supabase.from("handover_notes").select("outgoing_approved_at, incoming_read_confirmed_at").gte("server_timestamp", since),
@@ -60,8 +60,8 @@ export async function POST(req: Request) {
 
   const shiftsCompleted = shifts?.filter(s => s.status === "completed").length || 0;
   const shiftsMissed = shifts?.filter(s => s.status === "missed").length || 0;
-  const medAdministered = medRecords?.filter(m => m.outcome === "administered").length || 0;
-  const medRefused = medRecords?.filter(m => m.outcome === "refused").length || 0;
+  const medAdministered = medRecords?.filter(m => m.status === "administered").length || 0;
+  const medRefused = medRecords?.filter(m => m.status === "refused").length || 0;
   const piWithoutDebrief = incidents?.filter(i => i.physical_intervention_occurred && !i.pi_debrief_scheduled).length || 0;
   const expiredCompliance = staffCompliance?.filter(s => s.status === "expired" || (s.valid_until && new Date(s.valid_until) < new Date())).length || 0;
   const overdueSupervisions = supervisions?.filter(s => s.next_supervision_due && new Date(s.next_supervision_due) < new Date()).length || 0;
