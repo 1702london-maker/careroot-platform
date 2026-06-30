@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { canUseWhiteLabel } from "@/lib/plan";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -10,6 +11,13 @@ export async function POST(req: NextRequest) {
     .from("users").select("organisation_id, role").eq("id", user.id).single();
   if (userRecord?.role !== "org_admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Plan gating: white-label branding requires the paid add-on or Enterprise.
+  const { data: org } = await supabase
+    .from("organisations").select("plan, white_label, subscription_status").eq("id", userRecord.organisation_id).single();
+  if (!org || !canUseWhiteLabel(org)) {
+    return NextResponse.json({ error: "White-label branding requires the white-label add-on or an Enterprise plan. Upgrade to enable it." }, { status: 403 });
   }
 
   const body = await req.json();
