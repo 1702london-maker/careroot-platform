@@ -32,8 +32,10 @@ export async function POST(req: NextRequest) {
 
   if (authError || !authData.user) {
     console.error("[signup] Auth error:", authError);
+    const msg = authError?.message ?? "Failed to create auth account";
+    const isAlreadyExists = msg.toLowerCase().includes("already") || msg.toLowerCase().includes("exists");
     return NextResponse.json(
-      { error: authError?.message ?? "Failed to create auth account" },
+      { error: isAlreadyExists ? "An account with this email already exists. Please sign in instead." : msg },
       { status: 400 }
     );
   }
