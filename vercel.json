@@ -11,6 +11,30 @@
     {
       "path": "/api/cron/calculate-burnout-risk",
       "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/cron/cleanup-credentials",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-reports-trigger",
+      "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/cron/compliance-expiry-alerts",
+      "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/cron/sar-deadline-alerts",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/medication-escalation",
+      "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/cron/data-retention",
+      "schedule": "0 3 1 * *"
     }
   ]
 }
