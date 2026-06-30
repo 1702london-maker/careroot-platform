@@ -369,14 +369,14 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
               className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 border border-cr-forest text-cr-forest rounded-lg text-sm font-body hover:bg-cr-mint disabled:opacity-50"
             >
               {summarising ? <Loader2 size={14} className="animate-spin" /> : null}
-              {summarising ? "AI summarising..." : "Summarise with AI"}
+              {summarising ? "Summarising..." : "Summarise"}
             </button>
           </CRCard>
 
           {aiSummary && (
             <CRCard className="!p-4">
               <div className="flex items-center gap-2 mb-3">
-                <p className="text-sm font-body font-semibold text-cr-charcoal">AI Summary</p>
+                <p className="text-sm font-body font-semibold text-cr-charcoal">Summary</p>
                 <CRAIBadge size="sm" />
               </div>
               {Object.entries(aiSummary).map(([key, val]) => !!val && (

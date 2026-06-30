@@ -99,7 +99,7 @@ export function FamilyPortalView({ client, accessLevel, recentVisits, latestBrie
           </div>
         </CRCard>
 
-        {/* Latest AI briefing */}
+        {/* Latest briefing */}
         {latestBriefing && (
           <CRCard>
             <div className="flex items-center gap-2 mb-3">

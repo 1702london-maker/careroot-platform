@@ -84,7 +84,7 @@ export function ClientNotesTab({ client, visits }: Props) {
 
                 {isExpanded && aiData && (
                   <div className="mt-4 p-3 bg-cr-mint rounded-xl">
-                    <p className="text-xs font-body font-semibold text-cr-forest mb-2">AI Analysis</p>
+                    <p className="text-xs font-body font-semibold text-cr-forest mb-2">Analysis</p>
                     {Object.entries(aiData).map(([key, val]) => !!val && (
                       <div key={key} className="mb-2">
                         <p className="text-xs font-body font-medium text-cr-charcoal capitalize">{key.replace(/_/g, " ")}</p>

@@ -40,8 +40,8 @@ export default async function AIInsightsPage() {
   return (
     <div>
       <CRPageHeader
-        title="AI Insights"
-        subtitle="Risk flags, patterns, and AI-generated briefings"
+        title="Insights"
+        subtitle="Risk flags, patterns, and Auto-generated briefings"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }]}
         action={<CRAIBadge />}
       />
@@ -85,7 +85,7 @@ export default async function AIInsightsPage() {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <Sparkles size={18} className="text-cr-forest" />
-            <h2 className="font-display text-xl font-semibold text-cr-charcoal">Recent AI Briefings</h2>
+            <h2 className="font-display text-xl font-semibold text-cr-charcoal">Recent Briefings</h2>
           </div>
           <div className="space-y-3">
             {(briefings || []).map((b) => {

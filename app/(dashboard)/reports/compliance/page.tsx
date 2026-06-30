@@ -217,9 +217,9 @@ export default function ComplianceReportsPage() {
         { title: "CQC Evidence Summary", desc: "Compliance score per CQC key question with RAG status and evidence count" },
         { title: "Care Plan Compliance", desc: "Clients with active approved care plan vs those overdue for review" },
         { title: "Care Plan Views", desc: "Evidence that carers are reading care plans before visits" },
-        { title: "Safeguarding Summary", desc: "AI-flagged safeguarding concerns — open, acknowledged, and resolved" },
+        { title: "Safeguarding Summary", desc: "Flagged safeguarding concerns — open, acknowledged, and resolved" },
         { title: "Training Compliance", desc: "Required training completion percentage per carer" },
-        { title: "AI Risk Flag Summary", desc: "All AI risk flags by type and severity across the organisation" },
+        { title: "Risk Flag Summary", desc: "All risk flags by type and severity across the organisation" },
       ].map((r) => (
         <div key={r.title} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-5">
           <div className="flex items-start justify-between mb-4">

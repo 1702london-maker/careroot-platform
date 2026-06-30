@@ -70,7 +70,7 @@ export function ClientAITab({ client }: Props) {
       <CRCard>
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp size={18} className="text-cr-forest" />
-          <h3 className="font-display text-lg font-semibold text-cr-charcoal">AI Risk Analysis</h3>
+          <h3 className="font-display text-lg font-semibold text-cr-charcoal">Risk Analysis</h3>
           <CRAIBadge />
         </div>
         <p className="text-sm font-body text-cr-slate mb-4">
@@ -115,7 +115,7 @@ export function ClientAITab({ client }: Props) {
       <CRCard>
         <div className="flex items-center gap-2 mb-3">
           <Send size={18} className="text-cr-forest" />
-          <h3 className="font-display text-lg font-semibold text-cr-charcoal">AI Family Brief</h3>
+          <h3 className="font-display text-lg font-semibold text-cr-charcoal">Family Brief</h3>
           <CRAIBadge />
         </div>
         <p className="text-sm font-body text-cr-slate mb-4">

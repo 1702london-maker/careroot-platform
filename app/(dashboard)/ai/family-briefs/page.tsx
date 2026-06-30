@@ -27,10 +27,10 @@ export default async function FamilyBriefsPage() {
     <div>
       <CRPageHeader
         title="Family Briefings"
-        subtitle="AI-generated family update messages sent to clients' families"
+        subtitle="Auto-generated family update messages sent to clients' families"
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: "AI", href: "/ai/insights" },
+          { label: "Intelligence", href: "/ai/insights" },
         ]}
       />
 

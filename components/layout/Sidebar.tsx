@@ -67,11 +67,11 @@ const navigation: NavGroup[] = [
   {
     title: "Intelligence",
     items: [
-      { label: "AI Risk Flags", href: "/ai/risk-flags", icon: <Sparkles size={18} />, aiPowered: true },
-      { label: "Insights", href: "/ai/insights", icon: <TrendingUp size={18} />, aiPowered: true },
-      { label: "Weekly Reports", href: "/ai/weekly-reports", icon: <FileText size={18} />, aiPowered: true },
-      { label: "CQC Evidence", href: "/ai/cqc-evidence", icon: <Shield size={18} />, aiPowered: true },
-      { label: "Family Briefs", href: "/ai/family-briefs", icon: <BookOpen size={18} />, aiPowered: true },
+      { label: "Risk Flags", href: "/ai/risk-flags", icon: <Sparkles size={18} /> },
+      { label: "Insights", href: "/ai/insights", icon: <TrendingUp size={18} /> },
+      { label: "Weekly Reports", href: "/ai/weekly-reports", icon: <FileText size={18} /> },
+      { label: "CQC Evidence", href: "/ai/cqc-evidence", icon: <Shield size={18} /> },
+      { label: "Family Briefs", href: "/ai/family-briefs", icon: <BookOpen size={18} /> },
     ],
   },
   {
@@ -181,7 +181,6 @@ export function Sidebar({ userRole, orgPlan, isWhiteLabel }: SidebarProps) {
                 >
                   <span className="flex-shrink-0">{item.icon}</span>
                   <span className="flex-1">{item.label}</span>
-                  {item.aiPowered && <CRAIBadge size="sm" label="AI" />}
                   {item.soon && <span className="text-[10px] font-body font-semibold bg-cr-gold/20 text-cr-gold rounded-full px-1.5 py-0.5">Soon</span>}
                   {isActive && <ChevronRight size={14} className="opacity-60" />}
                 </Link>

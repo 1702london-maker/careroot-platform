@@ -30,7 +30,7 @@ export default async function AIRiskFlagsPage() {
   return (
     <div>
       <CRPageHeader
-        title="AI Risk Flags"
+        title="Risk Flags"
         subtitle={`${open.length} open · ${acknowledged.length} acknowledged`}
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Intelligence" }]}
         action={<CRAIBadge />}
@@ -40,7 +40,7 @@ export default async function AIRiskFlagsPage() {
         <CREmptyState
           icon={<Sparkles size={48} />}
           title="No risk flags"
-          description="AI will flag patterns of concern here as it analyses visit notes and care records."
+          description="Patterns of concern will appear patterns of concern here as it analyses visit notes and care records."
         />
       ) : (
         <CRCard noPadding>

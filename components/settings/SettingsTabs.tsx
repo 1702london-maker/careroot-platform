@@ -109,9 +109,9 @@ export function SettingsTabs({ organisation }: Props) {
               {[
                 { label: "Missed visit alerts", desc: "Get notified when a visit is not started on time" },
                 { label: "Emergency SOS alerts", desc: "Immediate SMS and email when emergency is triggered" },
-                { label: "AI risk flag alerts", desc: "Notifications when AI detects high/critical risk" },
+                { label: "Risk flag alerts", desc: "Notifications when system detects high/critical risk" },
                 { label: "Complaint deadline reminders", desc: "Reminders at 14 and 7 days before 28-day deadline" },
-                { label: "Weekly family briefings", desc: "Weekly AI-generated updates sent to family members" },
+                { label: "Weekly family briefings", desc: "Weekly automated updates sent to family members" },
               ].map(({ label, desc }) => (
                 <label key={label} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer">
                   <div>

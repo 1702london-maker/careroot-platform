@@ -164,7 +164,7 @@ export default async function DashboardPage() {
           variant={missedVisits > 0 ? "danger" : "default"}
         />
         <CRStatCard
-          label="AI Risk Flags"
+          label="Risk Flags"
           value={openFlags?.length ?? 0}
           icon={<Sparkles size={18} />}
           variant={highFlags > 0 ? "danger" : openFlags?.length ? "warning" : "default"}
@@ -249,12 +249,12 @@ export default async function DashboardPage() {
 
         {/* Right column */}
         <div className="space-y-6">
-          {/* AI Risk Flags */}
+          {/* Risk Flags */}
           <CRCard noPadding>
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <h2 className="font-display text-base font-semibold text-cr-charcoal flex items-center gap-1.5">
                 <Sparkles size={16} className="text-cr-gold" />
-                AI Risk Flags
+                Risk Flags
               </h2>
               <Link href="/ai/risk-flags" className="text-xs font-body text-cr-forest hover:text-cr-sage">
                 View all
@@ -333,7 +333,7 @@ export default async function DashboardPage() {
                 { label: "Schedule Visit", href: "/rota", icon: <Calendar size={14} /> },
                 { label: "Log Incident", href: "/clients", icon: <AlertTriangle size={14} /> },
                 { label: "View Compliance", href: "/compliance", icon: <Shield size={14} /> },
-                { label: "Generate AI Report", href: "/reports", icon: <FileText size={14} /> },
+                { label: "Generate Report", href: "/reports", icon: <FileText size={14} /> },
               ].map((a) => (
                 <Link
                   key={a.href}

@@ -190,15 +190,15 @@ export default async function VisitDetailPage({ params }: Props) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: notes + AI summary */}
+        {/* Left: notes + summary */}
         <div className="lg:col-span-2 space-y-6">
 
-          {/* AI visit summary */}
+          {/* Visit summary */}
           {visit.ai_summary && (
             <CRCard>
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={16} className="text-cr-gold" />
-                <h2 className="font-display text-lg font-semibold text-cr-charcoal">AI Summary</h2>
+                <h2 className="font-display text-lg font-semibold text-cr-charcoal">Visit Summary</h2>
               </div>
               <p className="text-sm font-body text-cr-charcoal leading-relaxed">{visit.ai_summary}</p>
             </CRCard>

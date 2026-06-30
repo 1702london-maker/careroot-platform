@@ -305,7 +305,7 @@ export default async function NutritionClientPage({ params }: Props) {
                           {record.consumption_level}
                         </span>
                         {!!record.ai_flag && (
-                          <AlertTriangle size={13} className="text-cr-amber" aria-label="AI flagged" />
+                          <AlertTriangle size={13} className="text-cr-amber" aria-label="Flagged" />
                         )}
                       </div>
                     </div>

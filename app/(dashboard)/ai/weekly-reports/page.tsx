@@ -31,7 +31,7 @@ export default async function WeeklyReportsPage() {
     <div>
       <CRPageHeader
         title="Weekly Reports"
-        subtitle="AI-generated weekly care reports for each client"
+        subtitle="Auto-generated weekly care reports for each client"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Intelligence" }]}
         action={<CRAIBadge />}
       />

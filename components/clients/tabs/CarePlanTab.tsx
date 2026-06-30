@@ -48,7 +48,7 @@ export function ClientCarePlanTab({ client, carePlans }: Props) {
       <CREmptyState
         icon={<FileText className="text-cr-slate" size={40} />}
         title="No care plan yet"
-        description="Complete the client onboarding to generate an AI care plan"
+        description="Complete the client onboarding to generate a care plan"
         action={{ label: "Complete onboarding", href: `/clients/new` }}
       />
     );

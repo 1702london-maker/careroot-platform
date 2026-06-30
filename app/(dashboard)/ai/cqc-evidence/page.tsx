@@ -20,7 +20,7 @@ export default async function CQCEvidencePage() {
     <div>
       <CRPageHeader
         title="CQC Evidence Pack"
-        subtitle="AI-scored compliance against the CQC Single Assessment Framework"
+        subtitle="Scored compliance against the CQC Single Assessment Framework"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Intelligence" }]}
         action={<CRAIBadge />}
       />

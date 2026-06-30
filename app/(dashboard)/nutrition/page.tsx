@@ -65,7 +65,7 @@ export default async function NutritionPage() {
           { label: "Nutrition Profiles", value: profilesCount, icon: <UtensilsCrossed size={18} />, color: "text-cr-forest" },
           { label: "Meals Recorded (7d)", value: totalMeals, icon: <CheckCircle size={18} />, color: "text-green-600" },
           { label: "Low Intake Alerts", value: lowIntakeCount, icon: <TrendingDown size={18} />, color: lowIntakeCount > 0 ? "text-cr-red" : "text-cr-slate" },
-          { label: "AI Appetite Flags", value: aiFlags?.length ?? 0, icon: <AlertTriangle size={18} />, color: aiFlags?.length ? "text-cr-amber" : "text-cr-slate" },
+          { label: "Appetite Flags", value: aiFlags?.length ?? 0, icon: <AlertTriangle size={18} />, color: aiFlags?.length ? "text-cr-amber" : "text-cr-slate" },
         ].map((stat) => (
           <CRCard key={stat.label} className="flex items-center gap-3">
             <div className={`${stat.color}`}>{stat.icon}</div>
@@ -77,14 +77,14 @@ export default async function NutritionPage() {
         ))}
       </div>
 
-      {/* AI appetite flags */}
+      {/* Appetite flags */}
       {(aiFlags?.length ?? 0) > 0 && (
         <div className="mb-6">
           <CRCard noPadding>
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
               <h2 className="font-display text-base font-semibold text-cr-charcoal flex items-center gap-2">
                 <AlertTriangle size={16} className="text-cr-amber" />
-                AI Appetite Alerts
+                Appetite Alerts
               </h2>
               <Link href="/ai/risk-flags" className="text-xs font-body text-cr-forest hover:text-cr-sage transition-colors">View all flags</Link>
             </div>

@@ -155,7 +155,7 @@ export default function ClientReportsPage() {
       {/* Remaining client reports */}
       {[
         { title: "Medication Adherence", desc: "Per client medication compliance — given, refused, and missed breakdown" },
-        { title: "Appetite and Nutrition", desc: "Clients with appetite concerns flagged by AI or carers" },
+        { title: "Appetite and Nutrition", desc: "Clients with appetite concerns flagged by carers" },
         { title: "Care Plan Review Status", desc: "Plans due or overdue for review with assigned coordinator" },
         { title: "Incident Summary", desc: "Incidents per client in the selected period, by severity" },
         { title: "Emergency Events", desc: "All emergency events by client with resolution time and outcome" },

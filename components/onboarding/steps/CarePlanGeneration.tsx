@@ -221,11 +221,11 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
     <div className="space-y-6">
       <CRCard>
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="font-display text-xl font-semibold text-cr-charcoal">AI Care Plan Generation</h2>
+          <h2 className="font-display text-xl font-semibold text-cr-charcoal">Care Plan Generation</h2>
           <CRAIBadge />
         </div>
         <p className="text-sm font-body text-cr-slate mb-6">
-          Careroot AI will analyse all information you&apos;ve provided and draft a comprehensive care plan. A manager must approve it before carers can see it.
+          Careroot will analyse all information you&apos;ve provided and draft a comprehensive care plan. A manager must approve it before carers can see it.
         </p>
 
         {!carePlanSections && (
@@ -235,9 +235,9 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
             className="cr-btn-primary flex items-center gap-2 px-6 py-3 w-full justify-center"
           >
             {generating ? (
-              <><Loader2 size={18} className="animate-spin" /> Generating care plan with AI...</>
+              <><Loader2 size={18} className="animate-spin" /> Generating care plan...</>
             ) : (
-              <><Sparkles size={18} /> Generate Care Plan with AI</>
+              <><Sparkles size={18} /> Generate Care Plan</>
             )}
           </button>
         )}

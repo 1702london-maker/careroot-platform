@@ -21,7 +21,7 @@ const TABS = [
   { id: "risk", label: "Risk" },
   { id: "nutrition", label: "Nutrition" },
   { id: "emergency", label: "Emergency" },
-  { id: "ai", label: "✦ AI" },
+  { id: "ai", label: "✦ Analysis" },
 ];
 
 interface Props {

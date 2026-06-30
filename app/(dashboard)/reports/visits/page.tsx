@@ -258,7 +258,7 @@ export default function VisitReportsPage() {
         { title: "Late Visits", desc: "Check-ins more than 15 minutes after scheduled start time" },
         { title: "Visit Frequency by Client", desc: "Scheduled vs completed visits per client per month" },
         { title: "Bank Holiday Coverage", desc: "Visit coverage on bank holidays in the selected period" },
-        { title: "Visit Notes Sentiment", desc: "AI-scored sentiment analysis of visit notes" },
+        { title: "Visit Notes Sentiment", desc: "Sentiment analysis of visit notes" },
         { title: "Handover Compliance", desc: "Percentage of visits with notes submitted within 2 hours of checkout" },
         { title: "Consecutive Missed Visits", desc: "Clients with 2 or more consecutive missed visits — red flag report" },
         { title: "Missed Visits Analysis", desc: "Missed visits by reason: No show, Late cancellation, Client unavailable" },

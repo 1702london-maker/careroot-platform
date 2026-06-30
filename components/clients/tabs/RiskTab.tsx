@@ -96,14 +96,14 @@ export function ClientRiskTab({ client, riskAssessment }: Props) {
         </>
       )}
 
-      {/* AI Risk Flags shortcut */}
+      {/* Risk flags */}
       <CRCard>
         <div className="flex items-center gap-2 mb-2">
-          <h3 className="font-display text-lg font-semibold text-cr-charcoal">AI Risk Analysis</h3>
+          <h3 className="font-display text-lg font-semibold text-cr-charcoal">Risk Analysis</h3>
           <CRAIBadge />
         </div>
         <p className="text-sm text-cr-slate mb-3">
-          Run an AI analysis using the last 30 days of visits, notes, and medication records to detect emerging risks.
+          Run an analysis using the last 30 days of visits, notes, and medication records to detect emerging risks.
         </p>
         <button
           onClick={async () => {
@@ -116,7 +116,7 @@ export function ClientRiskTab({ client, riskAssessment }: Props) {
           }}
           className="cr-btn-primary px-4 py-2 text-sm"
         >
-          Run AI Risk Analysis
+          Run Risk Analysis
         </button>
       </CRCard>
     </div>
