@@ -20,6 +20,15 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/solutions/domiciliary-care",
+        destination: "/solutions/domiciliary",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
