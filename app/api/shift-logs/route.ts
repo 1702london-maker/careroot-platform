@@ -53,14 +53,18 @@ export async function POST(req: Request) {
     }
   }
 
-  const { data, error } = await supabase.from("shift_logs").insert({
+  const logRow: Record<string, unknown> = {
     shift_id, client_id: client_id || null, staff_id: user.id,
     log_type, content,
     gps_lat: gps_lat ?? null, gps_lng: gps_lng ?? null,
     within_approved_radius: within_approved_radius ?? null,
-    triggers_detected: triggersDetected.length ? triggersDetected : null,
     server_timestamp: now,
-  }).select().single();
+  };
+  // Only attach triggers_detected when something matched, so normal logging
+  // never depends on that column being present in the live schema.
+  if (triggersDetected.length) logRow.triggers_detected = triggersDetected;
+
+  const { data, error } = await supabase.from("shift_logs").insert(logRow).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

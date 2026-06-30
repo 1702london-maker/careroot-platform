@@ -12,9 +12,9 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { shift_id, client_id, commissioned_hours, hourly_rate, mileage_claimed_miles, travel_time_minutes } = body;
-  if (!shift_id || commissioned_hours == null || hourly_rate == null) {
-    return NextResponse.json({ error: "shift_id, commissioned_hours, hourly_rate required" }, { status: 400 });
+  const { shift_id, billable_hours, hourly_rate, travel_miles, travel_allowance_per_mile, additional_charges, notes } = body;
+  if (!shift_id || !billable_hours || !hourly_rate) {
+    return NextResponse.json({ error: "shift_id, billable_hours, hourly_rate required" }, { status: 400 });
   }
 
   // Verify shift belongs to org
@@ -23,28 +23,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Auto-derive actual hours from the shift's recorded start/end (B19).
-  let actualHours: number | null = null;
-  if (shift.actual_start && shift.actual_end) {
-    actualHours = (new Date(shift.actual_end).getTime() - new Date(shift.actual_start).getTime()) / 3600000;
-    actualHours = Math.round(actualHours * 100) / 100;
-  }
-
-  // Bill on actual hours where available, else commissioned. Mileage at £0.45/mi.
-  const billHours = actualHours ?? Number(commissioned_hours);
-  const mileage = Number(mileage_claimed_miles || 0);
-  const billableAmount = Math.round((billHours * Number(hourly_rate) + mileage * 0.45) * 100) / 100;
+  const travelTotal = (travel_miles || 0) * (travel_allowance_per_mile || 0.45);
+  const totalAmount = (billable_hours * hourly_rate) + travelTotal + (additional_charges || 0);
 
   const { data, error } = await supabase.from("shift_financial_records").insert({
     shift_id,
-    client_id: client_id || null,
     staff_id: shift.staff_id,
-    commissioned_hours: Number(commissioned_hours),
-    actual_hours: actualHours,
-    travel_time_minutes: travel_time_minutes ?? null,
-    mileage_claimed_miles: mileage || null,
-    mileage_claimed_at: mileage ? new Date().toISOString() : null,
-    billable_amount: billableAmount,
+    organisation_id: caller!.organisation_id,
+    billable_hours: Number(billable_hours),
+    hourly_rate: Number(hourly_rate),
+    travel_miles: travel_miles || 0,
+    travel_allowance_per_mile: travel_allowance_per_mile || 0.45,
+    travel_total: travelTotal,
+    additional_charges: additional_charges || 0,
+    total_amount: totalAmount,
+    notes: notes || null,
+    created_by: user.id,
     created_at: new Date().toISOString(),
   }).select().single();
 

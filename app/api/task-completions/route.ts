@@ -47,7 +47,6 @@ export async function POST(req: Request) {
   const { data, error } = await supabase.from("task_completions").insert({
     shift_id, client_id: client_id || null, staff_id: user.id,
     task_name, is_authorised: isAuthorised,
-    flagged_as_role_violation: !isAuthorised,
     notes: notes || null,
     server_timestamp: now,
   }).select().single();
