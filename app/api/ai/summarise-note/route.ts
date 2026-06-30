@@ -6,7 +6,7 @@ const SYSTEM_PROMPT = `You are a clinical documentation assistant for a UK care 
 
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "AI not configured" }, { status: 503 });
+    return NextResponse.json({ error: "Service not configured" }, { status: 503 });
   }
 
   try {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     const textContent = message.content.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
-      return NextResponse.json({ error: "No AI response" }, { status: 500 });
+      return NextResponse.json({ error: "No response received" }, { status: 500 });
     }
 
     let structured: Record<string, string>;
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       const raw = textContent.text.replace(/```json|```/g, "").trim();
       structured = JSON.parse(raw);
     } catch {
-      return NextResponse.json({ error: "AI returned invalid JSON" }, { status: 500 });
+      return NextResponse.json({ error: "Invalid response format" }, { status: 500 });
     }
 
     const supabase = await createClient();
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       .eq("visit_id", visit_id)
       .eq("client_id", client_id);
 
-    // Create AI risk flag if sentiment warrants it
+    // Create risk flag if sentiment warrants it
     if (structured.sentiment === "concerning" || structured.sentiment === "urgent") {
       const severity = structured.sentiment === "urgent" ? "high" : "medium";
       await supabase.from("ai_risk_flags").insert({

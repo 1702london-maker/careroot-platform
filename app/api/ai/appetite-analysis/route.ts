@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 
-const SYSTEM_PROMPT = `You are a nutrition monitoring AI for a UK domiciliary care agency. You will receive meal consumption records for a care client over the past 14 days. Each record shows: date, meal name, consumption level (all/most/half/little/refused), and fluid intake in ml where recorded. Identify patterns of reduced appetite, consistent meal refusal, inadequate fluid intake, or sudden changes in eating behaviour that may indicate health deterioration, depression, pain, infection, or other clinical concerns. Return JSON with exactly these fields: concern_level (one of exactly: none, low, medium, high), pattern_description (string describing the specific pattern identified with dates and evidence from the records provided), recommended_actions (array of strings for the care manager), should_flag (boolean — true if concern_level is medium or high), and flag_message (string — message for the AI risk flag if should_flag is true, empty string otherwise). Return only valid JSON with no markdown formatting or backticks.`;
+const SYSTEM_PROMPT = `You are a nutrition monitoring specialist for a UK domiciliary care agency. You will receive meal consumption records for a care client over the past 14 days. Each record shows: date, meal name, consumption level (all/most/half/little/refused), and fluid intake in ml where recorded. Identify patterns of reduced appetite, consistent meal refusal, inadequate fluid intake, or sudden changes in eating behaviour that may indicate health deterioration, depression, pain, infection, or other clinical concerns. Return JSON with exactly these fields: concern_level (one of exactly: none, low, medium, high), pattern_description (string describing the specific pattern identified with dates and evidence from the records provided), recommended_actions (array of strings for the care manager), should_flag (boolean — true if concern_level is medium or high), and flag_message (string — message for the risk flag if should_flag is true, empty string otherwise). Return only valid JSON with no markdown formatting or backticks.`;
 
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "AI not configured" }, { status: 503 });
+    return NextResponse.json({ error: "Service not configured" }, { status: 503 });
   }
 
   try {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     const textContent = message.content.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
-      return NextResponse.json({ error: "No AI response" }, { status: 500 });
+      return NextResponse.json({ error: "No response received" }, { status: 500 });
     }
 
     let analysis: Record<string, unknown>;
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       const raw = textContent.text.replace(/```json|```/g, "").trim();
       analysis = JSON.parse(raw);
     } catch {
-      return NextResponse.json({ error: "AI returned invalid JSON" }, { status: 500 });
+      return NextResponse.json({ error: "Invalid response format" }, { status: 500 });
     }
 
     // Create risk flag if warranted

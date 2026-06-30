@@ -92,6 +92,6 @@ NUTRITION RECORDS: ${JSON.stringify(nutritionRecords || [])}`;
     return NextResponse.json({ report });
   } catch (err) {
     console.error("Weekly report error:", err);
-    return NextResponse.json({ error: "AI generation failed" }, { status: 500 });
+    return NextResponse.json({ error: "Generation failed" }, { status: 500 });
   }
 }

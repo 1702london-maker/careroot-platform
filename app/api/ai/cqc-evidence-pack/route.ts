@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAnthropic, MODEL } from "@/lib/anthropic";
 import { NextResponse } from "next/server";
 
-const SYSTEM = `You are a CQC compliance specialist AI for a UK domiciliary care service. You will be given operational data from the past 30 days. Score the service against the CQC Single Assessment Framework's 5 key questions and provide evidence.
+const SYSTEM = `You are a CQC compliance specialist for a UK domiciliary care service. You will be given operational data from the past 30 days. Score the service against the CQC Single Assessment Framework's 5 key questions and provide evidence.
 
 Return a JSON object with:
 - safe_score: number 0-100
@@ -119,6 +119,6 @@ Staff wellbeing checks: ${wellbeing?.length || 0} | flagged: ${wellbeing?.filter
     return NextResponse.json({ scores, narrative: scores.narrative });
   } catch (err) {
     console.error("CQC evidence pack error:", err);
-    return NextResponse.json({ error: "AI generation failed" }, { status: 500 });
+    return NextResponse.json({ error: "Generation failed" }, { status: 500 });
   }
 }

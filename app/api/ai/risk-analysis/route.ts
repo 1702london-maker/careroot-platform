@@ -4,11 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { sendSMS } from "@/lib/twilio";
 import { Resend } from "resend";
 
-const SYSTEM_PROMPT = `You are a clinical risk assessment AI for a UK domiciliary care agency under CQC regulation. You will receive visit notes, medication records, meal consumption records, and incident reports for a care client spanning the last 30 days. Identify patterns that may indicate health deterioration, safeguarding concerns, nutritional decline, medication non-compliance, or care quality issues. Return a JSON object with exactly these fields: risk_level (one of exactly: low, medium, high, critical), flags (array of objects each with fields: type string, severity string one of low/medium/high/critical, description string, evidence string citing specific data from what was provided), recommended_actions (array of strings), and summary (plain English paragraph for the care manager under 150 words). Base every flag strictly on evidence from the data provided. Do not flag concerns without evidence from the provided data. Return only valid JSON with no markdown formatting or backticks.`;
+const SYSTEM_PROMPT = `You are a clinical risk assessment specialist for a UK domiciliary care agency under CQC regulation. You will receive visit notes, medication records, meal consumption records, and incident reports for a care client spanning the last 30 days. Identify patterns that may indicate health deterioration, safeguarding concerns, nutritional decline, medication non-compliance, or care quality issues. Return a JSON object with exactly these fields: risk_level (one of exactly: low, medium, high, critical), flags (array of objects each with fields: type string, severity string one of low/medium/high/critical, description string, evidence string citing specific data from what was provided), recommended_actions (array of strings), and summary (plain English paragraph for the care manager under 150 words). Base every flag strictly on evidence from the data provided. Do not flag concerns without evidence from the provided data. Return only valid JSON with no markdown formatting or backticks.`;
 
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "AI not configured" }, { status: 503 });
+    return NextResponse.json({ error: "Service not configured" }, { status: 503 });
   }
 
   try {
@@ -57,7 +57,7 @@ INCIDENTS (${incidents?.length ?? 0} records): ${JSON.stringify(incidents ?? [])
 
     const textContent = message.content.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
-      return NextResponse.json({ error: "No AI response" }, { status: 500 });
+      return NextResponse.json({ error: "No response received" }, { status: 500 });
     }
 
     let analysis: Record<string, unknown>;
@@ -65,7 +65,7 @@ INCIDENTS (${incidents?.length ?? 0} records): ${JSON.stringify(incidents ?? [])
       const raw = textContent.text.replace(/```json|```/g, "").trim();
       analysis = JSON.parse(raw);
     } catch {
-      return NextResponse.json({ error: "AI returned invalid JSON" }, { status: 500 });
+      return NextResponse.json({ error: "Invalid response format" }, { status: 500 });
     }
 
     const flags = (analysis.flags as Array<Record<string, string>>) ?? [];
@@ -92,7 +92,7 @@ INCIDENTS (${incidents?.length ?? 0} records): ${JSON.stringify(incidents ?? [])
       if (org?.on_call_phone) {
         await sendSMS(
           org.on_call_phone,
-          `RISK ALERT: AI has flagged ${clientName} as ${riskLevel} risk. Log in to Careroot to review immediately. — ${org.name}`
+          `RISK ALERT: System has flagged ${clientName} as ${riskLevel} risk. Log in to Careroot to review immediately. — ${org.name}`
         );
       }
 

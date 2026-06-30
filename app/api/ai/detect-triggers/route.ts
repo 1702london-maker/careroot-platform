@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAnthropic, MODEL } from "@/lib/anthropic";
 import { NextResponse } from "next/server";
 
-const SYSTEM = `You are a behaviour support specialist AI for a UK care service. You will be given a shift log entry and the client's known trigger vocabulary. Identify if any known triggers or concerning patterns are present in the log.
+const SYSTEM = `You are a behaviour support specialist for a UK care service. You will be given a shift log entry and the client's known trigger vocabulary. Identify if any known triggers or concerning patterns are present in the log.
 
 Return a JSON object with:
 - triggers_detected: array of strings (trigger terms from the vocabulary that are present or implied in the log)
@@ -58,6 +58,6 @@ KNOWN TRIGGERS: ${triggerVocab.join(", ")}`;
     return NextResponse.json(result);
   } catch (err) {
     console.error("Trigger detection error:", err);
-    return NextResponse.json({ error: "AI detection failed" }, { status: 500 });
+    return NextResponse.json({ error: "Detection failed" }, { status: 500 });
   }
 }

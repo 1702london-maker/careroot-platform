@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAnthropic, MODEL } from "@/lib/anthropic";
 import { NextResponse } from "next/server";
 
-const SYSTEM = `You are a care quality analyst AI for a UK regulated care service. You will be given shift logs, incidents, medication records, mood records, and nutrition records for a care client over a recent period. Your job is to identify risk patterns that a manager needs to know about.
+const SYSTEM = `You are a care quality analyst for a UK regulated care service. You will be given shift logs, incidents, medication records, mood records, and nutrition records for a care client over a recent period. Your job is to identify risk patterns that a manager needs to know about.
 
 Identify up to 5 distinct risk flags. For each flag output a JSON object with:
 - flag_type: one of "medication_refusal_pattern", "mood_deterioration", "nutrition_concern", "behaviour_escalation", "safeguarding_indicator", "unexplained_absence", "physical_health_decline", "carer_concern"
@@ -88,6 +88,6 @@ OPEN SAFEGUARDING CONCERNS: ${safeguarding?.length || 0}`;
     return NextResponse.json({ flags: saved, count: saved?.length || 0 });
   } catch (err) {
     console.error("Risk flag generation error:", err);
-    return NextResponse.json({ error: "AI generation failed" }, { status: 500 });
+    return NextResponse.json({ error: "Generation failed" }, { status: 500 });
   }
 }

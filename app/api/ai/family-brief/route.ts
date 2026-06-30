@@ -7,7 +7,7 @@ const SYSTEM_PROMPT = `You are writing a weekly care update for the family of a 
 
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "AI not configured" }, { status: 503 });
+    return NextResponse.json({ error: "Service not configured" }, { status: 503 });
   }
 
   try {
@@ -80,7 +80,7 @@ MEDICATION REFUSALS THIS PERIOD: ${medRefusals?.length ?? 0}`;
 
     const textContent = message.content.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
-      return NextResponse.json({ error: "No AI response" }, { status: 500 });
+      return NextResponse.json({ error: "No response received" }, { status: 500 });
     }
 
     const briefingText = textContent.text.trim();

@@ -6,7 +6,7 @@ const SYSTEM_PROMPT = `You are an experienced UK care planner writing person-cen
 
 export async function POST(req: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "AI not configured" }, { status: 503 });
+    return NextResponse.json({ error: "Service not configured" }, { status: 503 });
   }
 
   try {
@@ -71,7 +71,7 @@ ${JSON.stringify(medications ?? [], null, 2)}`;
 
     const textContent = message.content.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
-      return NextResponse.json({ error: "No AI response" }, { status: 500 });
+      return NextResponse.json({ error: "No response received" }, { status: 500 });
     }
 
     let analysis: Record<string, unknown>;
@@ -81,7 +81,7 @@ ${JSON.stringify(medications ?? [], null, 2)}`;
       analysis = JSON.parse(raw);
       draft = analysis as unknown as Record<string, string>;
     } catch {
-      return NextResponse.json({ error: "AI returned invalid JSON" }, { status: 500 });
+      return NextResponse.json({ error: "Invalid response format" }, { status: 500 });
     }
 
     // Save care plan record
