@@ -42,10 +42,13 @@ export default function SignupPage() {
         body: JSON.stringify(data),
       });
 
-      const result = (await res.json().catch(() => null)) as { error?: string } | null;
+      const rawText = await res.text().catch(() => "");
+      let result: { error?: string; success?: boolean } | null = null;
+      try { result = JSON.parse(rawText); } catch { result = null; }
 
       if (!res.ok) {
-        setError(result?.error || "Failed to create account");
+        const msg = typeof result?.error === "string" ? result.error : (rawText.substring(0, 200) || `HTTP ${res.status}`);
+        setError(msg || "Failed to create account");
         setLoading(false);
         return;
       }
