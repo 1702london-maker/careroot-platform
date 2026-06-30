@@ -40,7 +40,7 @@ const navigation: NavGroup[] = [
     title: "Care",
     items: [
       { label: "Clients", href: "/clients", icon: <Users size={18} /> },
-      { label: "Visits", href: "/visits", icon: <Clock size={18} /> },
+      { label: "Shifts", href: "/shifts", icon: <Clock size={18} /> },
       { label: "Rota", href: "/rota", icon: <Calendar size={18} /> },
       { label: "Invoicing", href: "/invoicing", icon: <FileText size={18} /> },
       { label: "Payroll", href: "/payroll", icon: <Banknote size={18} /> },
