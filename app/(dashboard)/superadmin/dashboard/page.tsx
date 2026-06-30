@@ -19,6 +19,7 @@ export default async function SuperadminDashboard() {
     { count: newThisMonth },
     { count: churnedThisMonth },
     { data: activeOrgs },
+    { count: pendingApplications },
   ] = await Promise.all([
     supabase.from("organisations").select("*", { count: "exact", head: true }),
     supabase.from("organisations").select("*", { count: "exact", head: true }).eq("white_label", true),
@@ -26,6 +27,7 @@ export default async function SuperadminDashboard() {
     supabase.from("organisations").select("*", { count: "exact", head: true })
       .eq("subscription_status", "canceled").gte("updated_at", startOfMonth),
     supabase.from("organisations").select("plan, subscription_status").eq("subscription_status", "active"),
+    supabase.from("signup_applications").select("*", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   const mrr = (activeOrgs ?? []).reduce((sum, org) => {
@@ -56,8 +58,14 @@ export default async function SuperadminDashboard() {
           </CRCard>
         ))}
       </div>
-      <div className="flex gap-4">
-        <a href="/superadmin/organisations" className="cr-btn-primary px-5 py-2.5 text-sm">All organisations →</a>
+      <div className="flex flex-wrap gap-4">
+        <a href="/superadmin/applications" className="cr-btn-primary px-5 py-2.5 text-sm relative">
+          Access applications →
+          {(pendingApplications ?? 0) > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center bg-cr-amber text-white text-xs rounded-full px-2 py-0.5">{pendingApplications}</span>
+          )}
+        </a>
+        <a href="/superadmin/organisations" className="cr-btn-secondary px-5 py-2.5 text-sm">All organisations →</a>
         <a href="/superadmin/white-label" className="cr-btn-secondary px-5 py-2.5 text-sm">White label →</a>
       </div>
     </div>

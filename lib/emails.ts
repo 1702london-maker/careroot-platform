@@ -409,3 +409,57 @@ export function staffInviteEmail(data: {
     `),
   };
 }
+
+/* ─────────────────────────────────────────────
+   17. Application received (to applicant)
+───────────────────────────────────────────── */
+export function applicationReceivedEmail(firstName: string, orgName: string) {
+  return {
+    subject: "We've received your Careroot application",
+    html: body(`
+      ${h1("Application received")}
+      ${p(`Hi ${firstName}, thank you for applying to Careroot for <strong>${orgName}</strong>.`)}
+      ${p("Because Careroot handles sensitive care records, every provider is reviewed before access is granted. Our team will verify your details and respond — usually within one working day.")}
+      ${alert("You do not need to do anything right now. We'll email you the moment your account is ready.")}
+      ${p("If you have any questions in the meantime, just reply to this email.")}
+    `),
+  };
+}
+
+/* ─────────────────────────────────────────────
+   18. Application approved (to applicant) — temp password
+───────────────────────────────────────────── */
+export function applicationApprovedEmail(firstName: string, orgName: string, email: string, tempPassword: string) {
+  const loginUrl = "https://careroot.co.uk/login";
+  return {
+    subject: "Your Careroot account is ready — sign in details inside",
+    html: body(`
+      ${h1(`Welcome to Careroot, ${firstName}`)}
+      ${p(`Your application for <strong>${orgName}</strong> has been approved and your account is live.`)}
+      ${p("Sign in with the temporary password below. You'll be asked to set your own password and accept our terms before you reach the dashboard.")}
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;margin:0 0 18px;font-size:14px;color:#374151">
+        <div style="margin-bottom:8px"><strong>Email:</strong> ${email}</div>
+        <div><strong>Temporary password:</strong> <code style="background:#1A3C2E;color:#fff;padding:3px 8px;border-radius:4px;font-size:14px;letter-spacing:1px">${tempPassword}</code></div>
+      </div>
+      ${btn("Sign in to Careroot", loginUrl)}
+      ${alert("For your security, this temporary password must be changed the first time you log in.", "#FEF2F2", "#DC2626")}
+      ${p("If you did not apply for a Careroot account, please ignore this email or contact support.")}
+    `),
+  };
+}
+
+/* ─────────────────────────────────────────────
+   19. Application rejected (to applicant)
+───────────────────────────────────────────── */
+export function applicationRejectedEmail(firstName: string, orgName: string, reason?: string) {
+  return {
+    subject: "Update on your Careroot application",
+    html: body(`
+      ${h1("About your Careroot application")}
+      ${p(`Hi ${firstName}, thank you for your interest in Careroot for <strong>${orgName}</strong>.`)}
+      ${p("After reviewing your application, we're unable to approve an account at this time.")}
+      ${reason ? alert(reason) : ""}
+      ${p("If you believe this is a mistake or your circumstances change, reply to this email and we'll be happy to take another look.")}
+    `),
+  };
+}

@@ -25,6 +25,11 @@ export default async function DashboardLayout({
     redirect("/family/login");
   }
 
+  // First-login security: issued accounts must set their own password + accept terms.
+  if (userRecord?.must_change_password) {
+    redirect("/change-password");
+  }
+
   const org = userRecord?.organisations as Record<string, string> | null;
 
   return (
