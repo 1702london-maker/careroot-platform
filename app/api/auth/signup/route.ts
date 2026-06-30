@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     password,
     options: {
       data: { first_name: firstName, last_name: lastName, role: "org_admin" },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      emailRedirectTo: `https://careroot.co.uk/auth/callback`,
     },
   });
 
