@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS shifts (
 
 -- Add FK from shift_credentials to shifts now that shifts exists
 ALTER TABLE shift_credentials
-  ADD CONSTRAINT IF NOT EXISTS fk_shift_credentials_shift
+  ADD CONSTRAINT fk_shift_credentials_shift
   FOREIGN KEY (shift_id) REFERENCES shifts(id);
 
 CREATE INDEX IF NOT EXISTS idx_shifts_staff ON shifts(staff_id);

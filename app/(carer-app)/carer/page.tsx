@@ -1,23 +1,26 @@
 import { createClient } from "@/lib/supabase/server";
-import { CarerDashboard } from "@/components/carer/CarerDashboard";
+import { CarerHome } from "@/components/carer/CarerHome";
 
 export default async function CarerHomePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   const today = new Date();
-  const todayStart = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-  const todayEnd = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(23, 59, 59, 999);
 
-  const [{ data: todayVisits }, { data: userRecord }] = await Promise.all([
-    supabase.from("visits")
-      .select("*, clients(first_name, last_name, dnr_status, risk_level, address, photo_url)")
-      .eq("carer_id", user!.id)
-      .gte("scheduled_start", todayStart)
-      .lte("scheduled_start", todayEnd)
+  const [{ data: shifts }, { data: userRecord }] = await Promise.all([
+    supabase
+      .from("shifts")
+      .select(`id, scheduled_start, scheduled_end, actual_start, actual_end, status, client_ids, service_lines(name)`)
+      .eq("staff_id", user!.id)
+      .gte("scheduled_start", today.toISOString())
+      .lte("scheduled_start", tomorrow.toISOString())
       .order("scheduled_start"),
-    supabase.from("users").select("*").eq("id", user!.id).single(),
+    supabase.from("users").select("id, first_name, last_name, phone, role").eq("id", user!.id).single(),
   ]);
 
-  return <CarerDashboard visits={todayVisits || []} user={userRecord} />;
+  return <CarerHome shifts={shifts || []} user={userRecord} />;
 }

@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Users, Calendar, FileText, Settings } from "lucide-react";
+import { Home, Clock, FileText, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/carer", icon: Home, label: "Home" },
-  { href: "/carer/clients", icon: Users, label: "Clients" },
-  { href: "/carer/schedule", icon: Calendar, label: "Schedule" },
-  { href: "/carer/notes", icon: FileText, label: "Notes" },
+  { href: "/carer/shift", icon: Clock, label: "Shifts" },
+  { href: "/carer/logs", icon: FileText, label: "My Logs" },
   { href: "/carer/settings", icon: Settings, label: "Settings" },
 ];
 

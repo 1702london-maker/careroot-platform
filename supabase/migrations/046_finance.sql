@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS commissioner_invoices (
 
 -- Add FK from shift_financial_records to commissioner_invoices now that it exists
 ALTER TABLE shift_financial_records
-  ADD CONSTRAINT IF NOT EXISTS fk_sfr_invoice
+  ADD CONSTRAINT fk_sfr_invoice
   FOREIGN KEY (invoice_id) REFERENCES commissioner_invoices(id);
 
 CREATE INDEX IF NOT EXISTS idx_shift_financial_shift ON shift_financial_records(shift_id);
