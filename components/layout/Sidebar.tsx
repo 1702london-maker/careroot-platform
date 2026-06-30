@@ -8,7 +8,7 @@ import {
   Shield, FileCheck, FolderOpen, MessageSquare,
   AlertTriangle, BarChart3, Settings, LogOut,
   ChevronRight, Leaf, Crown, FileText, Banknote,
-  Stethoscope, UtensilsCrossed, Smartphone,
+  Stethoscope, UtensilsCrossed, Smartphone, ArrowRightLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -69,6 +69,16 @@ const navigation: NavGroup[] = [
       { label: "CQC", href: "/compliance/cqc", icon: <Shield size={18} /> },
       { label: "Ofsted", href: "/compliance/ofsted", icon: <FileCheck size={18} /> },
       { label: "Evidence", href: "/compliance/evidence", icon: <FolderOpen size={18} /> },
+    ],
+  },
+  {
+    title: "Safety",
+    items: [
+      { label: "Safeguarding", href: "/safeguarding", icon: <Shield size={18} /> },
+      { label: "Incidents", href: "/incidents", icon: <AlertTriangle size={18} /> },
+      { label: "Role Boundaries", href: "/role-boundaries", icon: <FileCheck size={18} /> },
+      { label: "Staff Wellbeing", href: "/wellbeing", icon: <Heart size={18} /> },
+      { label: "Handover Approvals", href: "/handover-approvals", icon: <ArrowRightLeft size={18} /> },
     ],
   },
   {
