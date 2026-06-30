@@ -51,8 +51,17 @@ const navigation: NavGroup[] = [
     title: "People",
     items: [
       { label: "Staff", href: "/staff", icon: <UserCheck size={18} /> },
+      { label: "Staff Compliance", href: "/staff/compliance", icon: <FileCheck size={18} /> },
+      { label: "Supervisions", href: "/staff/supervisions", icon: <BookOpen size={18} /> },
       { label: "Devices", href: "/devices", icon: <Smartphone size={18} /> },
       { label: "Family", href: "/settings/users", icon: <Heart size={18} /> },
+    ],
+  },
+  {
+    title: "Data & Rights",
+    items: [
+      { label: "Subject Access", href: "/sar", icon: <FolderOpen size={18} /> },
+      { label: "Consent Records", href: "/consent", icon: <Shield size={18} /> },
     ],
   },
   {
