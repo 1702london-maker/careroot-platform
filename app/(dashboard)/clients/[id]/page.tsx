@@ -40,7 +40,7 @@ export default async function ClientProfilePage({ params }: Props) {
     supabase.from("incidents").select("*").eq("client_id", id).order("reported_at", { ascending: false }).limit(10),
     supabase.from("risk_assessments").select("*").eq("client_id", id).order("created_at", { ascending: false }).limit(1),
     supabase.from("nutrition_profiles").select("*").eq("client_id", id).single(),
-    supabase.from("emergency_access_tokens").select("token").eq("client_id", id).order("created_at", { ascending: false }).limit(1).single(),
+    supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).order("created_at", { ascending: false }).limit(1).single(),
     supabase.from("family_access").select("*, users(first_name, last_name, email)").eq("client_id", id).eq("is_active", true),
   ]);
 
@@ -148,6 +148,7 @@ export default async function ClientProfilePage({ params }: Props) {
         riskAssessment={riskAssessments?.[0] || null}
         nutritionProfile={nutritionProfile}
         emergencyToken={emergencyToken?.token || null}
+        emergencyPin={emergencyToken?.pin || null}
         familyAccess={familyAccess || []}
       />
     </div>

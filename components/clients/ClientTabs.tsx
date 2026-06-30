@@ -33,12 +33,13 @@ interface Props {
   riskAssessment: Record<string, unknown> | null;
   nutritionProfile: Record<string, unknown> | null;
   emergencyToken: string | null;
+  emergencyPin: string | null;
   familyAccess: Record<string, unknown>[];
 }
 
 export function ClientTabs({
   client, carePlans, medications, recentVisits, incidents,
-  riskAssessment, nutritionProfile, emergencyToken, familyAccess,
+  riskAssessment, nutritionProfile, emergencyToken, emergencyPin, familyAccess,
 }: Props) {
   const [active, setActive] = useState("overview");
 
@@ -69,7 +70,7 @@ export function ClientTabs({
       {active === "incidents" && <ClientIncidentsTab client={client} incidents={incidents} />}
       {active === "risk" && <ClientRiskTab client={client} riskAssessment={riskAssessment} />}
       {active === "nutrition" && <ClientNutritionTab client={client} nutritionProfile={nutritionProfile} />}
-      {active === "emergency" && <ClientEmergencyTab client={client} emergencyToken={emergencyToken} />}
+      {active === "emergency" && <ClientEmergencyTab client={client} emergencyToken={emergencyToken} emergencyPin={emergencyPin} />}
       {active === "ai" && <ClientAITab client={client} />}
     </div>
   );
