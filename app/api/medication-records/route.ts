@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   const record: Record<string, unknown> = {
     shift_id, client_id, medication_schedule_id,
     staff_id: user.id,
-    outcome: outcome,
+    status: outcome, // live column is `status` (API keeps `outcome` as the field name)
     refusal_reason: refusal_reason || null,
     prn_reason: prn_reason || null,
     stock_before: stock_before ?? null,
