@@ -10,14 +10,15 @@ export async function GET(req: Request) {
 
   const supabase = await createClient();
   const now = new Date();
-  const in30Days = new Date(now.getTime() + 30 * 86400000).toISOString();
+  // Look ahead 90 days so managers get the 90 / 60 / 30-day early warnings (B17).
+  const in90Days = new Date(now.getTime() + 90 * 86400000).toISOString();
   const todayStr = now.toISOString();
 
-  // Items expiring within 30 days or already expired
+  // Items expiring within 90 days or already expired
   const { data: expiringItems } = await supabase
     .from("staff_compliance")
     .select("id, compliance_item, valid_until, status, staff:users!staff_id(id, first_name, last_name, organisation_id)")
-    .lte("valid_until", in30Days)
+    .lte("valid_until", in90Days)
     .neq("status", "expired");
 
   // Overdue supervisions
