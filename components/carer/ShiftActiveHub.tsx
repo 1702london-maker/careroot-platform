@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
 import { FileText, Pill, UtensilsCrossed, Heart, AlertTriangle, Shield, ArrowRightLeft, LogOut, Loader2 } from "lucide-react";
 import { ShiftLogForm } from "./forms/ShiftLogForm";
 import { MedicationForm } from "./forms/MedicationForm";
@@ -33,7 +34,7 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   const [screen, setScreen] = useState<Screen>("home");
   const [ending, setEnding] = useState(false);
 
-  const actions = [
+  const actions: { id: string; label: string; icon: React.ReactNode; color: string }[] = [
     { id: "log", label: "Shift Log", icon: <FileText size={22} />, color: "bg-blue-50 text-blue-700" },
     { id: "tasks", label: "Tasks", icon: <FileText size={22} />, color: "bg-indigo-50 text-indigo-700" },
     { id: "medication", label: "Medication", icon: <Pill size={22} />, color: "bg-purple-50 text-purple-700" },
@@ -107,12 +108,12 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
           <p className="text-xs text-cr-slate mb-1">Client{clients.length > 1 ? `s (${clients.length})` : ""}</p>
           <p className="font-bold text-cr-charcoal">{String(primaryClient.first_name)} {String(primaryClient.last_name)}</p>
-          {primaryClient.dnr_status && (
+          {Boolean(primaryClient.dnr_status) && (
             <div className="mt-2 px-3 py-1.5 bg-red-50 border border-red-300 rounded-lg">
               <p className="text-xs font-bold text-red-700">⚠ DNR ORDER IN PLACE</p>
             </div>
           )}
-          {primaryClient.risk_level && String(primaryClient.risk_level) !== "low" && (
+          {Boolean(primaryClient.risk_level) && String(primaryClient.risk_level) !== "low" && (
             <p className="text-xs text-amber-600 mt-1 font-medium capitalize">Risk: {String(primaryClient.risk_level)}</p>
           )}
         </div>

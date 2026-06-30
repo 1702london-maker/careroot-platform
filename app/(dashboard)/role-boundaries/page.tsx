@@ -6,18 +6,22 @@ export default async function RoleBoundariesPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: userRecord } = await supabase.from("users").select("organisation_id").eq("id", user!.id).single();
 
+  const { data: orgClients } = await supabase.from("clients").select("id").eq("organisation_id", userRecord!.organisation_id);
+  const clientIds = (orgClients || []).map(c => c.id);
+  const safeIds = clientIds.length ? clientIds : [""];
+
   const [{ data: violations }, { data: verbalAbuse }] = await Promise.all([
     supabase.from("role_boundary_violations")
       .select(`id, requested_task, requested_by, worker_response, server_timestamp, notification_sent_at,
         client:clients(id, first_name, last_name),
         staff:users!staff_id(id, first_name, last_name)`)
-      .in("client_id", supabase.from("clients").select("id").eq("organisation_id", userRecord!.organisation_id))
+      .in("client_id", safeIds)
       .order("server_timestamp", { ascending: false }),
     supabase.from("verbal_abuse_reports")
       .select(`id, perpetrator, description, resolved, server_timestamp,
         client:clients(id, first_name, last_name),
         staff:users!staff_id(id, first_name, last_name)`)
-      .in("client_id", supabase.from("clients").select("id").eq("organisation_id", userRecord!.organisation_id))
+      .in("client_id", safeIds)
       .order("server_timestamp", { ascending: false }),
   ]);
 

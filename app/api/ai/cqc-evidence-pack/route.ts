@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     supabase.from("incidents").select("incident_type, physical_intervention_occurred, pi_debrief_scheduled, staff_wellbeing_checked").gte("server_timestamp", since),
     supabase.from("safeguarding_concerns").select("status, bypass_line_manager, escalated_to_local_authority").gte("server_timestamp", since),
     supabase.from("medication_records").select("outcome").gte("server_timestamp", since),
-    supabase.from("staff_compliance").select("status, valid_until, compliance_item").in("staff_id", supabase.from("users").select("id").eq("organisation_id", caller.organisation_id)),
+    supabase.from("staff_compliance").select("status, valid_until, compliance_item"),
     supabase.from("supervision_records").select("supervision_date, next_supervision_due").gte("supervision_date", since),
     supabase.from("handover_notes").select("outgoing_approved_at, incoming_read_confirmed_at").gte("server_timestamp", since),
     supabase.from("role_boundary_violations").select("id").gte("server_timestamp", since),

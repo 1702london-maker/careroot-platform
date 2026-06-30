@@ -4,8 +4,10 @@ import { SafeguardingDashboard } from "@/components/safety/SafeguardingDashboard
 export default async function SafeguardingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   const { data: userRecord } = await supabase.from("users").select("organisation_id, role").eq("id", user!.id).single();
+
+  const { data: orgClients } = await supabase.from("clients").select("id").eq("organisation_id", userRecord!.organisation_id);
+  const clientIds = (orgClients || []).map(c => c.id);
 
   const { data: concerns } = await supabase
     .from("safeguarding_concerns")
@@ -13,7 +15,7 @@ export default async function SafeguardingPage() {
       notified_safeguarding_lead_at, notified_manager_at,
       client:clients(id, first_name, last_name),
       staff:users!staff_id(id, first_name, last_name)`)
-    .in("client_id", supabase.from("clients").select("id").eq("organisation_id", userRecord!.organisation_id))
+    .in("client_id", clientIds.length ? clientIds : [""])
     .order("server_timestamp", { ascending: false });
 
   return <SafeguardingDashboard concerns={(concerns as unknown[]) || []} />;

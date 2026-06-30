@@ -135,21 +135,21 @@ export function WeeklyReportsDashboard({ reports: rawReports, clients: rawClient
 
                 {expanded && content && (
                   <div className="mt-4 space-y-4 border-t border-gray-100 pt-4">
-                    {content.executive_summary && (
+                    {Boolean(content.executive_summary) && (
                       <div>
                         <p className="text-xs font-body font-semibold text-cr-slate uppercase tracking-wide mb-1">Summary</p>
-                        <p className="text-sm font-body text-cr-charcoal">{content.executive_summary as string}</p>
+                        <p className="text-sm font-body text-cr-charcoal">{String(content.executive_summary)}</p>
                       </div>
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {["wellbeing_overview", "nutrition_summary", "medication_summary", "mood_summary", "incidents_summary"].map(key => (
+                      {(["wellbeing_overview", "nutrition_summary", "medication_summary", "mood_summary", "incidents_summary"] as const).map(key => (
                         content[key] ? (
                           <div key={key} className="col-span-1">
                             <p className="text-xs font-body font-semibold text-cr-slate uppercase tracking-wide mb-1">
                               {key.replace(/_/g, " ")}
                             </p>
-                            <p className="text-sm font-body text-cr-charcoal">{content[key] as string}</p>
+                            <p className="text-sm font-body text-cr-charcoal">{String(content[key])}</p>
                           </div>
                         ) : null
                       ))}

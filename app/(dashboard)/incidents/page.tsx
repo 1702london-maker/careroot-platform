@@ -6,6 +6,9 @@ export default async function IncidentsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: userRecord } = await supabase.from("users").select("organisation_id").eq("id", user!.id).single();
 
+  const { data: orgClients } = await supabase.from("clients").select("id").eq("organisation_id", userRecord!.organisation_id);
+  const clientIds = (orgClients || []).map(c => c.id);
+
   const { data: incidents } = await supabase
     .from("incidents")
     .select(`id, incident_type, behaviour_description, antecedent, antecedent_trigger,
@@ -14,7 +17,7 @@ export default async function IncidentsPage() {
       staff_wellbeing_checked, staff_wellbeing_check_due, notified_manager_at, server_timestamp,
       client:clients(id, first_name, last_name),
       staff:users!staff_id(id, first_name, last_name)`)
-    .in("client_id", supabase.from("clients").select("id").eq("organisation_id", userRecord!.organisation_id))
+    .in("client_id", clientIds.length ? clientIds : [""])
     .order("server_timestamp", { ascending: false });
 
   return <IncidentsDashboard incidents={(incidents as unknown[]) || []} />;

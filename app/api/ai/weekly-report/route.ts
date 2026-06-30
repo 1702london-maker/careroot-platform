@@ -33,8 +33,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "client_id, week_start, week_end required" }, { status: 400 });
   }
 
+  const { data: client } = await supabase.from("clients").select("first_name, last_name, risk_level, service_line_id, commissioner, placing_authority").eq("id", client_id).single();
+
   const [
-    { data: client },
     { data: shifts },
     { data: logs },
     { data: incidents },
@@ -43,14 +44,13 @@ export async function POST(req: Request) {
     { data: nutritionRecords },
     { data: serviceLine },
   ] = await Promise.all([
-    supabase.from("clients").select("first_name, last_name, risk_level, service_line_id, commissioner, placing_authority").eq("id", client_id).single(),
     supabase.from("shifts").select("status, scheduled_start, actual_start, actual_end").contains("client_ids", [client_id]).gte("scheduled_start", week_start).lte("scheduled_start", week_end),
     supabase.from("shift_logs").select("log_type, content, triggers_detected, server_timestamp").eq("client_id", client_id).gte("server_timestamp", week_start).lte("server_timestamp", week_end),
     supabase.from("incidents").select("incident_type, behaviour_description, physical_intervention_occurred, antecedent, consequence_description, server_timestamp").eq("client_id", client_id).gte("server_timestamp", week_start).lte("server_timestamp", week_end),
     supabase.from("medication_records").select("outcome, refusal_reason, medication_schedule_id, server_timestamp").eq("client_id", client_id).gte("server_timestamp", week_start).lte("server_timestamp", week_end),
     supabase.from("mood_records").select("mood_term, mood_category, triggers_activated, context_notes, server_timestamp").eq("client_id", client_id).gte("server_timestamp", week_start).lte("server_timestamp", week_end),
     supabase.from("nutrition_records").select("meal_type, offered, consumed, concerns, fluid_intake_ml, server_timestamp").eq("client_id", client_id).gte("server_timestamp", week_start).lte("server_timestamp", week_end),
-    supabase.from("service_lines").select("name, regulatory_body").eq("id", client?.service_line_id || "").maybeSingle(),
+    supabase.from("service_lines").select("name, regulatory_body").eq("id", client?.service_line_id ?? "").maybeSingle(),
   ]);
 
   const context = `CLIENT: ${client?.first_name} ${client?.last_name}

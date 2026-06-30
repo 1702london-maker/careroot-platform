@@ -103,7 +103,7 @@ export function CQCEvidenceDashboard({ pack }: Props) {
                   <p className="text-sm font-body text-cr-slate">Overall Compliance Score</p>
                   <p className="text-4xl font-display font-bold text-cr-charcoal mt-0.5">{pack.overall_compliance_score}<span className="text-lg text-cr-slate font-body font-normal">/100</span></p>
                 </div>
-                <CRBadge variant={pack.inspection_ready ? "green" : "amber"} size="lg">
+                <CRBadge variant={pack.inspection_ready ? "green" : "amber"}>
                   {pack.inspection_ready ? "Inspection Ready" : "Needs Attention"}
                 </CRBadge>
               </div>

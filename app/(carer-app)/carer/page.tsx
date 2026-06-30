@@ -22,5 +22,5 @@ export default async function CarerHomePage() {
     supabase.from("users").select("id, first_name, last_name, phone, role").eq("id", user!.id).single(),
   ]);
 
-  return <CarerHome shifts={shifts || []} user={userRecord} />;
+  return <CarerHome shifts={(shifts as unknown[]) || []} user={userRecord} />;
 }
