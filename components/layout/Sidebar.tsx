@@ -60,6 +60,8 @@ const navigation: NavGroup[] = [
     items: [
       { label: "AI Risk Flags", href: "/ai/risk-flags", icon: <Sparkles size={18} />, aiPowered: true },
       { label: "Insights", href: "/ai/insights", icon: <TrendingUp size={18} />, aiPowered: true },
+      { label: "Weekly Reports", href: "/ai/weekly-reports", icon: <FileText size={18} />, aiPowered: true },
+      { label: "CQC Evidence", href: "/ai/cqc-evidence", icon: <Shield size={18} />, aiPowered: true },
       { label: "Family Briefs", href: "/ai/family-briefs", icon: <BookOpen size={18} />, aiPowered: true },
     ],
   },
