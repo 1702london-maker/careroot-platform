@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { notify, messages } from "@/lib/notifications";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -36,5 +37,25 @@ export async function POST(req: Request) {
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Dual notification — manager + safeguarding lead simultaneously (B12).
+  const { data: client } = await supabase
+    .from("clients").select("organisation_id, first_name, last_name").eq("id", client_id).single();
+  const { data: me } = await supabase
+    .from("users").select("first_name, last_name").eq("id", user.id).single();
+  if (client?.organisation_id) {
+    const staffName = me ? `${me.first_name} ${me.last_name}` : "A worker";
+    await notify(supabase, {
+      organisationId: client.organisation_id,
+      recipientGroups: ["manager", "safeguarding_lead"],
+      message: messages.incidentLogged(
+        incident_type || "behaviour",
+        `${client.first_name} ${client.last_name}`,
+        now,
+        staffName
+      ),
+    });
+  }
+
   return NextResponse.json({ incident: data });
 }

@@ -7,44 +7,37 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-  const { shift_id, client_id, concern_description, bypass_line_manager, gps_lat, gps_lng } = await req.json();
-  if (!shift_id || !client_id || !concern_description) {
-    return NextResponse.json({ error: "shift_id, client_id, concern_description required" }, { status: 400 });
+  const { shift_id, client_id, perpetrator, description, gps_lat, gps_lng } = await req.json();
+  if (!shift_id || !client_id || !perpetrator || !description) {
+    return NextResponse.json({ error: "shift_id, client_id, perpetrator, description required" }, { status: 400 });
   }
 
   const now = new Date().toISOString();
-  const bypass = bypass_line_manager ?? false;
 
-  const { data, error } = await supabase.from("safeguarding_concerns").insert({
+  const { data, error } = await supabase.from("verbal_abuse_reports").insert({
     shift_id, client_id, staff_id: user.id,
-    concern_description,
-    bypass_line_manager: bypass,
-    notified_safeguarding_lead_at: now,
-    notified_manager_at: bypass ? null : now,
+    perpetrator, description,
     gps_lat: gps_lat ?? null, gps_lng: gps_lng ?? null,
     server_timestamp: now,
-    status: "open",
+    notification_sent_at: now,
+    resolved: false,
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Fire the actual alert. Bypass routes to the safeguarding lead ONLY
-  // (line manager is excluded — they may be the subject of the concern).
+  // Tri-party notification: manager + HR lead + compliance lead (B10).
   const { data: client } = await supabase
     .from("clients").select("organisation_id, first_name, last_name").eq("id", client_id).single();
   const { data: me } = await supabase
     .from("users").select("first_name, last_name").eq("id", user.id).single();
   if (client?.organisation_id) {
     const staffName = me ? `${me.first_name} ${me.last_name}` : "A worker";
-    const clientName = `${client.first_name} ${client.last_name}`;
     await notify(supabase, {
       organisationId: client.organisation_id,
-      recipientGroups: bypass ? ["safeguarding_lead"] : ["safeguarding_lead", "manager"],
-      message: bypass
-        ? messages.safeguardingBypass(staffName, clientName)
-        : messages.safeguardingStandard(staffName, clientName, now),
+      recipientGroups: ["manager", "hr_lead", "compliance_lead"],
+      message: messages.verbalAbuse(staffName, perpetrator, `${client.first_name} ${client.last_name}`),
     });
   }
 
-  return NextResponse.json({ concern: data });
+  return NextResponse.json({ report: data });
 }

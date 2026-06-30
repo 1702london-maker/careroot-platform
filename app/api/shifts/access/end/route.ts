@@ -21,6 +21,26 @@ export async function POST(req: Request) {
   if (!shift) return NextResponse.json({ error: "Shift not found" }, { status: 404 });
   if (shift.status === "completed") return NextResponse.json({ error: "Shift already ended" }, { status: 400 });
 
+  // Handover gating (BUILD_SPEC B14): a shift cannot be completed until the
+  // outgoing worker has signed off a handover note. Auto-logout bypasses this
+  // (the worker may be offline/out of time) and is flagged in the access log.
+  if (!auto_logout) {
+    const { data: handover } = await supabase
+      .from("handover_notes")
+      .select("id, outgoing_approved_at")
+      .eq("shift_id", shift_id)
+      .not("outgoing_approved_at", "is", null)
+      .limit(1)
+      .maybeSingle();
+
+    if (!handover) {
+      return NextResponse.json(
+        { error: "Complete and sign off your handover note before ending this shift." },
+        { status: 422 }
+      );
+    }
+  }
+
   await Promise.all([
     supabase.from("shifts").update({ actual_end: now, status: "completed" }).eq("id", shift_id),
     supabase.from("shift_credentials").update({ invalidated_at: now }).eq("shift_id", shift_id).is("invalidated_at", null),

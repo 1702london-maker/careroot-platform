@@ -55,8 +55,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ allowed: false, reason: "Incorrect PIN" }, { status: 401 });
   }
 
-  // Validate IMEI if provided
-  if (imei) {
+  // Validate IMEI — mandatory (BUILD_SPEC: access blocked if IMEI not registered).
+  if (!imei) {
+    await supabase.from("shift_access_log").insert({
+      shift_id, staff_id: user.id, action_type: "access_denied_no_imei",
+      gps_lat: gps_lat || null, gps_lng: gps_lng || null, server_timestamp: now,
+    });
+    return NextResponse.json({ allowed: false, reason: "Device identifier required" }, { status: 401 });
+  }
+  {
     const { data: device } = await supabase
       .from("registered_devices")
       .select("id, is_active")
