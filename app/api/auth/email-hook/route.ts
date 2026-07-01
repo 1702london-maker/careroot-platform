@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createHmac } from "crypto";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL || "onboarding@careroot.co.uk";
 
 type HookPayload = {
@@ -33,6 +32,12 @@ export async function POST(req: NextRequest) {
   if (!email || !email_data?.token_hash) {
     return NextResponse.json({ error: "Missing email or token" }, { status: 400 });
   }
+
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json({ error: "Email service not configured" }, { status: 503 });
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   const confirmUrl = `https://ayorrmtdpfvubgdxthro.supabase.co/auth/v1/verify?token=${email_data.token_hash}&type=${email_data.token_type || "signup"}&redirect_to=${email_data.redirect_to || "https://careroot.co.uk/auth/callback"}`;
 

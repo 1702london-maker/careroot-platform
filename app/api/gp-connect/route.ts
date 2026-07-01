@@ -2,16 +2,18 @@ import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { name, email, organisation, clients, notes, source } = body;
 
   if (!email) return Response.json({ error: "Email required" }, { status: 400 });
+  if (!process.env.RESEND_API_KEY) {
+    return Response.json({ error: "Email service not configured" }, { status: 503 });
+  }
 
   try {
     const supabase = await createClient();
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     await supabase.from("gp_connect_requests").insert({
       status: "coming_soon",

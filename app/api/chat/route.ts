@@ -1,10 +1,6 @@
 import OpenAI from "openai";
 import { NextRequest } from "next/server";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 const SYSTEM_PROMPT = `You are the Careroot assistant — a helpful, warm, and knowledgeable care management specialist for Careroot, a UK care management platform.
 
 Your role is to help care agency managers, registered managers, operations directors, and new care agency founders understand how Careroot can help them.
@@ -52,6 +48,10 @@ export async function POST(req: NextRequest) {
         message: "Hi there — our assistant is being set up. In the meantime you can email us at onboarding@careroot.co.uk or book a demo at careroot.co.uk/demo and we will get back to you within 2 hours.",
       });
     }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
