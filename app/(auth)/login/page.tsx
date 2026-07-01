@@ -19,6 +19,9 @@ type FormData = z.infer<typeof schema>;
 export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
+  const redirectTo = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("redirectTo") ?? "/dashboard"
+    : "/dashboard";
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +45,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(redirectTo);
     router.refresh();
   };
 
