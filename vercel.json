@@ -38,15 +38,15 @@
     },
     {
       "path": "/api/cron/credential-generation",
-      "schedule": "*/15 * * * *"
+      "schedule": "15 1 * * *"
     },
     {
       "path": "/api/cron/shift-access-expiry",
-      "schedule": "*/5 * * * *"
+      "schedule": "30 1 * * *"
     },
     {
       "path": "/api/cron/incident-wellbeing-check",
-      "schedule": "*/30 * * * *"
+      "schedule": "45 1 * * *"
     },
     {
       "path": "/api/cron/refresh-evidence-packs",
