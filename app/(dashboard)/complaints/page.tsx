@@ -78,9 +78,9 @@ export default async function ComplaintsPage() {
                   return (
                     <tr key={c.id} className={`hover:bg-gray-50/50 transition-colors ${isOverdue ? "bg-red-50/30" : ""}`}>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-body font-semibold text-cr-forest">
+                        <Link href={`/complaints/${c.id}`} className="text-sm font-body font-semibold text-cr-forest hover:underline">
                           {c.reference_number}
-                        </span>
+                        </Link>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm font-body text-cr-charcoal capitalize">
