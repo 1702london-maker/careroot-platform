@@ -35,7 +35,7 @@ function addDays(base: Date, n: number) {
 }
 
 function fmt(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" });
 }
 
 function isoDate(d: Date) {
@@ -135,7 +135,7 @@ export function RotaClient({ initialShifts, staff, clients, serviceLines, weekSt
     setSubmitting(false);
   };
 
-  const weekLabel = `${weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${addDays(weekStart, 6).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`;
+  const weekLabel = `${weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/London" })} – ${addDays(weekStart, 6).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/London" })}`;
 
   const isCurrentWeek = isoDate(mondayOf(today)) === isoDate(weekStart);
 
@@ -265,7 +265,7 @@ export function RotaClient({ initialShifts, staff, clients, serviceLines, weekSt
               <div>
                 <h2 className="font-display font-semibold text-lg text-cr-charcoal">Add Shift</h2>
                 <p className="text-xs text-cr-slate font-body mt-0.5">
-                  {staff.find(s => s.id === modal.staffId)?.first_name} {staff.find(s => s.id === modal.staffId)?.last_name} · {new Date(modal.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}
+                  {staff.find(s => s.id === modal.staffId)?.first_name} {staff.find(s => s.id === modal.staffId)?.last_name} · {new Date(modal.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", timeZone: "Europe/London" })}
                 </p>
               </div>
               <button onClick={() => setModal(null)} className="text-cr-slate hover:text-cr-charcoal"><X size={20} /></button>

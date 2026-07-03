@@ -4,13 +4,13 @@ export function cn(...inputs: ClassValue[]) {
   return inputs.filter(Boolean).join(" ");
 }
 
+const TZ = "Europe/London";
+
 export function formatDateUK(date: string | Date | null | undefined): string {
   if (!date) return "—";
   const d = new Date(date);
   return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
+    day: "2-digit", month: "2-digit", year: "numeric", timeZone: TZ,
   });
 }
 
@@ -18,18 +18,15 @@ export function formatDateTimeUK(date: string | Date | null | undefined): string
   if (!date) return "—";
   const d = new Date(date);
   return d.toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit", timeZone: TZ,
   });
 }
 
 export function formatTimeUK(date: string | Date | null | undefined): string {
   if (!date) return "—";
   const d = new Date(date);
-  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
 }
 
 export function formatCurrencyGBP(amount: number): string {
