@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClientSync } from "@/lib/supabase/server";
 import { getResend, FROM_EMAIL } from "@/lib/resend";
 import { staffInviteEmail } from "@/lib/emails";
 
@@ -45,7 +45,8 @@ export async function POST(req: NextRequest) {
     const orgName = (org?.name as string) ?? "your organisation";
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care";
 
-    const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
+    const serviceClient = createServiceClientSync();
+    const { data: inviteData, error: inviteError } = await serviceClient.auth.admin.inviteUserByEmail(email, {
       data: {
         first_name,
         last_name,
