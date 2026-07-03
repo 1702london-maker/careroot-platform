@@ -6,18 +6,19 @@ import { staffInviteEmail } from "@/lib/emails";
 export async function POST(req: NextRequest) {
   try {
     const { email, first_name, last_name, role } = await req.json();
-    if (!email || !role) return NextResponse.json({ error: "email and role required" }, { status: 400 });
+    if (!email || !role) return NextResponse.json({ error: "Email and role are required" }, { status: 400 });
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-    const { data: inviter } = await supabase.from("users")
-      .select("first_name, last_name, organisation_id, organisations(name, max_staff)")
+    const { data: inviter } = await supabase
+      .from("users")
+      .select("first_name, last_name, organisation_id, organisations(name, plan, max_staff)")
       .eq("id", user.id)
       .single();
 
-    if (!inviter) return NextResponse.json({ error: "Inviter not found" }, { status: 404 });
+    if (!inviter?.organisation_id) return NextResponse.json({ error: "Inviter organisation not found" }, { status: 404 });
 
     const org = inviter.organisations as unknown as Record<string, string | number> | null;
     const orgId = inviter.organisation_id;
@@ -25,7 +26,6 @@ export async function POST(req: NextRequest) {
     const plan = (org?.plan as string) ?? "seed";
     const maxStaff = (org?.max_staff as number) ?? PLAN_LIMITS[plan] ?? 10;
 
-    // Enforce staff limit — count active users for this org
     const { count: currentStaff } = await supabase
       .from("users")
       .select("*", { count: "exact", head: true })
@@ -35,42 +35,67 @@ export async function POST(req: NextRequest) {
 
     if ((currentStaff ?? 0) >= maxStaff) {
       return NextResponse.json({
-        error: `Staff limit reached. Your ${org?.name} plan allows ${maxStaff} staff members. Upgrade your plan to invite more.`,
-        limit_reached: true,
-        current: currentStaff,
-        max: maxStaff,
+        error: `Staff limit reached (${currentStaff}/${maxStaff}). Upgrade your plan to invite more.`,
       }, { status: 403 });
     }
 
-    const orgName = (org?.name as string) ?? "your organisation";
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care";
+    const service = createServiceClientSync();
+    const appUrl = "https://www.careroot.co.uk";
 
-    const serviceClient = createServiceClientSync();
-    const { data: inviteData, error: inviteError } = await serviceClient.auth.admin.inviteUserByEmail(email, {
-      data: {
-        first_name,
-        last_name,
-        role,
-        organisation_id: orgId,
+    // Generate a magic invite link — no password needed on their end
+    const { data: linkData, error: linkError } = await service.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: {
+        data: { first_name, last_name, role, organisation_id: orgId },
+        redirectTo: `${appUrl}/login`,
       },
-      redirectTo: `${appUrl}/signup/complete`,
     });
 
-    if (inviteError) return NextResponse.json({ error: inviteError.message }, { status: 400 });
+    if (linkError || !linkData) {
+      console.error("Supabase invite link error:", linkError);
+      return NextResponse.json({
+        error: `Could not generate invite link: ${linkError?.message ?? "unknown error"}`,
+      }, { status: 500 });
+    }
+
+    // Create public.users row so the carer can log in immediately
+    await service.from("users").upsert({
+      id: linkData.user.id,
+      email,
+      first_name: first_name ?? "",
+      last_name: last_name ?? "",
+      organisation_id: orgId,
+      role,
+      is_active: true,
+      must_change_password: false,
+    });
+
+    const orgName = (org?.name as string) ?? "your organisation";
+    const inviteLink = linkData.properties?.action_link ?? `${appUrl}/login`;
 
     const tpl = staffInviteEmail({
       inviteeName: first_name ?? email,
       inviterName: `${inviter.first_name} ${inviter.last_name}`,
       orgName,
       role,
-      inviteLink: `${appUrl}/signup/complete`,
+      inviteLink,
     });
 
-    await getResend().emails.send({ from: FROM_EMAIL, to: email, ...tpl });
+    const { error: emailError } = await getResend().emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      ...tpl,
+    });
 
-    return NextResponse.json({ success: true, user_id: inviteData.user?.id });
-  } catch (error) {
-    console.error("staff invite error:", error);
-    return NextResponse.json({ error: "Failed to send invite" }, { status: 500 });
+    if (emailError) {
+      console.error("Resend error:", emailError);
+      return NextResponse.json({ error: "Invite created but email failed to send. Contact support." }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, user_id: linkData.user.id });
+  } catch (err) {
+    console.error("staff invite error:", err);
+    return NextResponse.json({ error: "Unexpected error. Please try again." }, { status: 500 });
   }
 }
