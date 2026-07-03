@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
-import { CRAIBadge } from "@/components/ui/CRAIBadge";
+
 import { CQCEvidenceDashboard } from "@/components/intelligence/CQCEvidenceDashboard";
 
 export default async function CQCEvidencePage() {
@@ -22,7 +22,7 @@ export default async function CQCEvidencePage() {
         title="CQC Evidence Pack"
         subtitle="Scored compliance against the CQC Single Assessment Framework"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Intelligence" }]}
-        action={<CRAIBadge />}
+        
       />
       <CQCEvidenceDashboard pack={pack} />
     </div>

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
-import { CRAIBadge } from "@/components/ui/CRAIBadge";
+
 import { WeeklyReportsDashboard } from "@/components/intelligence/WeeklyReportsDashboard";
 
 export default async function WeeklyReportsPage() {
@@ -31,9 +31,9 @@ export default async function WeeklyReportsPage() {
     <div>
       <CRPageHeader
         title="Weekly Reports"
-        subtitle="Auto-generated weekly care reports for each client"
+        subtitle="Weekly care reports for each client"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Intelligence" }]}
-        action={<CRAIBadge />}
+        
       />
       <WeeklyReportsDashboard
         reports={(reports as unknown[]) || []}

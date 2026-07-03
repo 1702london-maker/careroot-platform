@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
-import { CRAIBadge } from "@/components/ui/CRAIBadge";
+
 import { CREmptyState } from "@/components/ui/CREmptyState";
 import { Mail } from "lucide-react";
 import Link from "next/link";
@@ -69,7 +69,7 @@ export default async function FamilyBriefsPage() {
                       ) : (
                         <span className="font-body font-semibold text-cr-charcoal">Unknown client</span>
                       )}
-                      {brief.ai_generated && <CRAIBadge />}
+                      
                       <CRBadge variant="slate" size="sm">Sent</CRBadge>
                     </div>
                     <p className="text-xs text-cr-slate mb-2">

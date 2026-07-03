@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
-import { CRAIBadge } from "@/components/ui/CRAIBadge";
+
 import { RiskFlagActions } from "@/components/ai/RiskFlagActions";
 import { formatDateUK } from "@/lib/utils";
 import { Sparkles, TrendingUp } from "lucide-react";
@@ -41,9 +41,9 @@ export default async function AIInsightsPage() {
     <div>
       <CRPageHeader
         title="Insights"
-        subtitle="Risk flags, patterns, and Auto-generated briefings"
+        subtitle="Risk flags, patterns, and briefings"
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }]}
-        action={<CRAIBadge />}
+        
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

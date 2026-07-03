@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge, riskVariant } from "@/components/ui/CRBadge";
-import { CRAIBadge } from "@/components/ui/CRAIBadge";
+
 import { CREmptyState } from "@/components/ui/CREmptyState";
 import { Sparkles } from "lucide-react";
 import { formatDateTimeUK } from "@/lib/utils";
@@ -33,7 +33,7 @@ export default async function AIRiskFlagsPage() {
         title="Risk Flags"
         subtitle={`${open.length} open · ${acknowledged.length} acknowledged`}
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Intelligence" }]}
-        action={<CRAIBadge />}
+        
       />
 
       {flags?.length === 0 ? (
