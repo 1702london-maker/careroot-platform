@@ -21,7 +21,7 @@ export default async function StaffPage() {
     .from("users")
     .select("*")
     .eq("organisation_id", userRecord?.organisation_id)
-    .neq("role", "family")
+    .in("role", ["carer", "coordinator", "manager", "nurse", "support_worker"])
     .order("last_name");
 
   const roleVariant = (r: string) => {
@@ -33,11 +33,11 @@ export default async function StaffPage() {
   };
 
   const roleLabel = (r: string) => ({
-    org_admin: "Admin",
     manager: "Manager",
     coordinator: "Coordinator",
     carer: "Carer",
-    superadmin: "Super Admin",
+    nurse: "Nurse",
+    support_worker: "Support Worker",
   }[r] || r);
 
   return (

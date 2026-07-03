@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
-import { CRAIBadge } from "@/components/ui/CRAIBadge";
 import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
-import { Loader2, CheckCircle, QrCode, Printer, Sparkles } from "lucide-react";
+import { Loader2, CheckCircle, QrCode, Printer, FileText } from "lucide-react";
 import QRCode from "qrcode";
 
 interface CarePlanSection {
@@ -48,7 +47,7 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
         body: JSON.stringify({ client_id: clientId, ...onboardingData }),
       });
 
-      if (!res.ok) throw new Error("AI generation failed");
+      if (!res.ok) throw new Error("Care plan generation failed");
       const data = await res.json();
 
       const sections: CarePlanSection[] = Object.entries(data.sections || {}).map(([key, val]) => ({
@@ -58,7 +57,7 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
 
       setCarePlanSections(sections);
     } catch {
-      setError("Failed to generate care plan. Please try again.");
+      setError("Failed to generate care plan — please check all information has been completed and try again.");
     } finally {
       setGenerating(false);
     }
@@ -222,10 +221,9 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
       <CRCard>
         <div className="flex items-center gap-3 mb-4">
           <h2 className="font-display text-xl font-semibold text-cr-charcoal">Care Plan Generation</h2>
-          <CRAIBadge />
         </div>
         <p className="text-sm font-body text-cr-slate mb-6">
-          Careroot will analyse all information you&apos;ve provided and draft a comprehensive care plan. A manager must approve it before carers can see it.
+          Careroot will compile all information provided and produce a comprehensive, person-centred care plan meeting CQC and Ofsted standards. A manager must review and approve it before carers can access it.
         </p>
 
         {!carePlanSections && (
@@ -235,9 +233,9 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
             className="cr-btn-primary flex items-center gap-2 px-6 py-3 w-full justify-center"
           >
             {generating ? (
-              <><Loader2 size={18} className="animate-spin" /> Generating care plan...</>
+              <><Loader2 size={18} className="animate-spin" /> Compiling care plan...</>
             ) : (
-              <><Sparkles size={18} /> Generate Care Plan</>
+              <><FileText size={18} /> Generate Care Plan</>
             )}
           </button>
         )}

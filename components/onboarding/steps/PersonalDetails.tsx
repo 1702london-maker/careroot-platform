@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
+import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 
 const schema = z.object({
@@ -15,17 +16,27 @@ const schema = z.object({
   nhs_number: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
-  address_line1: z.string().optional(),
+  address_line1: z.string().min(1, "Address is required"),
   address_line2: z.string().optional(),
   city: z.string().optional(),
-  postcode: z.string().optional(),
+  postcode: z.string().min(1, "Postcode is required"),
   cultural_background: z.string().optional(),
   language_preferences: z.string().optional(),
   communication_needs: z.string().optional(),
-  gp_name: z.string().optional(),
+  gp_name: z.string().min(1, "GP name is required"),
   gp_surgery: z.string().optional(),
-  gp_phone: z.string().optional(),
+  gp_phone: z.string().min(1, "GP phone is required"),
   gp_email: z.string().optional(),
+  // Power of Attorney
+  poa_name: z.string().optional(),
+  poa_relationship: z.string().optional(),
+  poa_phone: z.string().optional(),
+  poa_email: z.string().email().optional().or(z.literal("")),
+  poa_type: z.string().optional(),
+  // Care plan recipient
+  care_plan_recipient_name: z.string().optional(),
+  care_plan_recipient_email: z.string().email("Must be a valid email").optional().or(z.literal("")),
+  care_plan_recipient_relationship: z.string().optional(),
   emergency_contacts: z.array(z.object({
     name: z.string().min(1),
     relationship: z.string().min(1),
@@ -85,6 +96,18 @@ export function StepPersonalDetails({ onComplete }: Props) {
           phone: data.gp_phone,
           email: data.gp_email,
         },
+        power_of_attorney: data.poa_name ? {
+          name: data.poa_name,
+          relationship: data.poa_relationship,
+          phone: data.poa_phone,
+          email: data.poa_email,
+          type: data.poa_type,
+        } : null,
+        care_plan_recipient: data.care_plan_recipient_email ? {
+          name: data.care_plan_recipient_name,
+          email: data.care_plan_recipient_email,
+          relationship: data.care_plan_recipient_relationship,
+        } : null,
         emergency_contact: data.emergency_contacts,
         onboarding_step: 2,
         status: "active",
@@ -104,7 +127,19 @@ export function StepPersonalDetails({ onComplete }: Props) {
     }
   };
 
-  const Field = ({ label, name, type = "text", required = false }: { label: string; name: keyof FormData; type?: string; required?: boolean }) => (
+  const Field = ({
+    label,
+    name,
+    type = "text",
+    required = false,
+    placeholder,
+  }: {
+    label: string;
+    name: keyof FormData;
+    type?: string;
+    required?: boolean;
+    placeholder?: string;
+  }) => (
     <div>
       <label className="block text-sm font-body font-medium text-cr-charcoal mb-1">
         {label}{required && <span className="text-cr-red ml-1">*</span>}
@@ -112,9 +147,12 @@ export function StepPersonalDetails({ onComplete }: Props) {
       <input
         {...register(name)}
         type={type}
+        placeholder={placeholder}
         className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest"
       />
-      {errors[name] && <p className="mt-1 text-xs text-cr-red">{String((errors[name] as { message?: string })?.message)}</p>}
+      {errors[name] && (
+        <p className="mt-1 text-xs text-cr-red">{String((errors[name] as { message?: string })?.message)}</p>
+      )}
     </div>
   );
 
@@ -126,46 +164,82 @@ export function StepPersonalDetails({ onComplete }: Props) {
           <Field label="First name" name="first_name" required />
           <Field label="Last name" name="last_name" required />
           <Field label="Date of birth" name="date_of_birth" type="date" required />
-          <Field label="NHS number" name="nhs_number" />
+          <Field label="NHS number" name="nhs_number" placeholder="e.g. 485 777 3456" />
           <Field label="Phone number" name="phone" type="tel" />
           <Field label="Email address" name="email" type="email" />
         </div>
       </CRCard>
 
       <CRCard>
-        <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-5">Address</h2>
+        <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-5">Home Address</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2"><Field label="Address line 1" name="address_line1" /></div>
-          <div className="md:col-span-2"><Field label="Address line 2" name="address_line2" /></div>
-          <Field label="City" name="city" />
-          <Field label="Postcode" name="postcode" />
-        </div>
-      </CRCard>
-
-      <CRCard>
-        <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-5">Communication & Culture</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Cultural background" name="cultural_background" />
-          <Field label="Languages spoken" name="language_preferences" />
-          <div className="md:col-span-2">
-            <label className="block text-sm font-body font-medium text-cr-charcoal mb-1">Communication needs</label>
-            <textarea
-              {...register("communication_needs")}
-              rows={3}
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest"
-              placeholder="e.g. hard of hearing, needs large print, prefers short sentences..."
-            />
-          </div>
+          <div className="md:col-span-2"><Field label="Address line 1" name="address_line1" required placeholder="House number and street name" /></div>
+          <div className="md:col-span-2"><Field label="Address line 2" name="address_line2" placeholder="Flat, apartment, floor (optional)" /></div>
+          <Field label="City / Town" name="city" />
+          <Field label="Postcode" name="postcode" required placeholder="e.g. SW1A 1AA" />
         </div>
       </CRCard>
 
       <CRCard>
         <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-5">GP Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="GP name" name="gp_name" />
-          <Field label="Surgery name" name="gp_surgery" />
-          <Field label="GP phone" name="gp_phone" type="tel" />
-          <Field label="GP email" name="gp_email" type="email" />
+          <Field label="GP name" name="gp_name" required placeholder="e.g. Dr Sarah Thompson" />
+          <Field label="Surgery / practice name" name="gp_surgery" placeholder="e.g. Elm Park Surgery" />
+          <Field label="GP phone" name="gp_phone" type="tel" required placeholder="e.g. 020 7123 4567" />
+          <Field label="GP email" name="gp_email" type="email" placeholder="optional" />
+        </div>
+      </CRCard>
+
+      <CRCard>
+        <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-2">Power of Attorney</h2>
+        <p className="text-xs text-cr-slate mb-4">If a Lasting Power of Attorney (LPA) is in place, record the details here. Leave blank if none.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field label="PoA holder name" name="poa_name" placeholder="Full legal name" />
+          <Field label="Relationship to service user" name="poa_relationship" placeholder="e.g. Daughter, Son, Solicitor" />
+          <Field label="PoA contact phone" name="poa_phone" type="tel" />
+          <Field label="PoA contact email" name="poa_email" type="email" />
+          <div className="md:col-span-2">
+            <label className="block text-sm font-body font-medium text-cr-charcoal mb-1">Type of LPA</label>
+            <select {...register("poa_type")} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cr-forest/30">
+              <option value="">Select type</option>
+              <option value="health_welfare">Health & Welfare LPA</option>
+              <option value="property_financial">Property & Financial Affairs LPA</option>
+              <option value="both">Both Health & Welfare AND Property & Financial</option>
+              <option value="court_appointed">Court of Protection — Deputy</option>
+            </select>
+          </div>
+        </div>
+      </CRCard>
+
+      <CRCard>
+        <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-2">Care Plan Recipient</h2>
+        <CRAlertBanner
+          variant="blue"
+          title="Who should receive the completed care plan?"
+          description="The finalised care plan will be sent to this person by email once a manager approves it. This is typically the next of kin or the PoA holder."
+          className="mb-4"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Field label="Recipient name" name="care_plan_recipient_name" placeholder="Full name" />
+          <Field label="Recipient email" name="care_plan_recipient_email" type="email" placeholder="Email address for care plan delivery" />
+          <Field label="Relationship to service user" name="care_plan_recipient_relationship" placeholder="e.g. Daughter, Next of kin" />
+        </div>
+      </CRCard>
+
+      <CRCard>
+        <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-5">Communication & Culture</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field label="Cultural background" name="cultural_background" placeholder="e.g. Nigerian, British Jamaican, British Indian..." />
+          <Field label="Languages spoken" name="language_preferences" placeholder="e.g. English, Yoruba, Bengali..." />
+          <div className="md:col-span-2">
+            <label className="block text-sm font-body font-medium text-cr-charcoal mb-1">Communication needs</label>
+            <textarea
+              {...register("communication_needs")}
+              rows={3}
+              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest"
+              placeholder="e.g. hard of hearing, needs large print, prefers short sentences, uses Makaton, non-verbal..."
+            />
+          </div>
         </div>
       </CRCard>
 
