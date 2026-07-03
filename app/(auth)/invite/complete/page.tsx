@@ -1,58 +1,75 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Leaf, Loader2, CheckCircle2 } from "lucide-react";
 
 export default function InviteCompletePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
   const [stage, setStage] = useState<"loading" | "set-password" | "done" | "error">("loading");
+  const [errorMsg, setErrorMsg] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [error, setError] = useState("");
+  const [fieldError, setFieldError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [userRole, setUserRole] = useState("");
+  const [userRole, setUserRole] = useState("carer");
 
   useEffect(() => {
-    // Supabase puts the session in the URL hash after invite link click
-    // auth.onAuthStateChange fires with SIGNED_IN when the token is exchanged
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        // Get their role to redirect correctly after password set
+    const token = searchParams.get("token");
+    const type = searchParams.get("type");
+
+    if (!token || type !== "invite") {
+      setErrorMsg("Invalid or missing invite link. Ask your manager to resend the invitation.");
+      setStage("error");
+      return;
+    }
+
+    supabase.auth
+      .verifyOtp({ token_hash: token, type: "invite" })
+      .then(async ({ data, error }) => {
+        if (error || !data.session) {
+          setErrorMsg(
+            error?.message?.includes("expired")
+              ? "This invite link has expired. Ask your manager to resend it."
+              : (error?.message ?? "Invalid invite link.")
+          );
+          setStage("error");
+          return;
+        }
+
         const { data: userRecord } = await supabase
           .from("users")
           .select("role")
-          .eq("id", session.user.id)
+          .eq("id", data.session.user.id)
           .single();
+
         setUserRole(userRecord?.role ?? "carer");
         setStage("set-password");
-      } else if (event === "USER_UPDATED") {
-        setStage("done");
-        const role = userRole || "carer";
-        setTimeout(() => {
-          router.push(role === "carer" ? "/carer" : "/dashboard");
-        }, 1500);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [userRole]);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    if (password.length < 8) { setError("Password must be at least 8 characters"); return; }
-    if (password !== confirm) { setError("Passwords do not match"); return; }
+    setFieldError("");
+    if (password.length < 8) { setFieldError("Password must be at least 8 characters"); return; }
+    if (password !== confirm) { setFieldError("Passwords do not match"); return; }
 
     setSubmitting(true);
-    const { error: updateError } = await supabase.auth.updateUser({ password });
-    if (updateError) {
-      setError(updateError.message);
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      setFieldError(error.message);
       setSubmitting(false);
+      return;
     }
-    // USER_UPDATED event above handles the redirect
+
+    setStage("done");
+    setTimeout(() => {
+      router.push(userRole === "carer" ? "/carer" : "/dashboard");
+    }, 1500);
   };
 
   return (
@@ -102,9 +119,9 @@ export default function InviteCompletePage() {
                     className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition"
                   />
                 </div>
-                {error && (
+                {fieldError && (
                   <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                    <p className="text-xs font-body text-cr-red">{error}</p>
+                    <p className="text-xs font-body text-cr-red">{fieldError}</p>
                   </div>
                 )}
                 <button
@@ -128,8 +145,9 @@ export default function InviteCompletePage() {
           )}
 
           {stage === "error" && (
-            <div className="text-center py-4">
-              <p className="text-sm font-body text-cr-red">This invite link has expired or is invalid. Ask your manager to resend the invitation.</p>
+            <div className="text-center py-6">
+              <p className="text-sm font-body text-cr-red font-medium mb-2">Invite link issue</p>
+              <p className="text-sm font-body text-cr-slate">{errorMsg}</p>
             </div>
           )}
 

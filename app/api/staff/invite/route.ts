@@ -72,7 +72,19 @@ export async function POST(req: NextRequest) {
     });
 
     const orgName = (org?.name as string) ?? "your organisation";
-    const inviteLink = linkData.properties?.action_link ?? `${appUrl}/login`;
+    // Extract token from action_link and build our own URL so we bypass
+    // Supabase's redirect allowlist restriction entirely.
+    let inviteLink = `${appUrl}/invite/complete`;
+    const rawActionLink = linkData.properties?.action_link;
+    if (rawActionLink) {
+      try {
+        const u = new URL(rawActionLink);
+        const token = u.searchParams.get("token");
+        if (token) inviteLink = `${appUrl}/invite/complete?token=${encodeURIComponent(token)}&type=invite`;
+      } catch {
+        // fall back to appUrl/invite/complete — page will show error
+      }
+    }
 
     const tpl = staffInviteEmail({
       inviteeName: first_name ?? email,
