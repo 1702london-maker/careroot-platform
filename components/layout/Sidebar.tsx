@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Calendar, Clock,
-  UserCheck, Heart, BookOpen,
+  UserCheck, Heart, Sparkles, TrendingUp, BookOpen,
   Shield, FileCheck, FolderOpen, MessageSquare,
   AlertTriangle, BarChart3, Settings, LogOut,
   ChevronRight, Leaf, Crown, FileText, Banknote,
@@ -13,12 +13,14 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { CRAIBadge } from "@/components/ui/CRAIBadge";
 import { useWhiteLabel } from "@/components/providers/WhiteLabelProvider";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  aiPowered?: boolean;
   soon?: boolean;
 }
 
@@ -60,6 +62,16 @@ const navigation: NavGroup[] = [
     items: [
       { label: "Subject Access", href: "/sar", icon: <FolderOpen size={18} /> },
       { label: "Consent Records", href: "/consent", icon: <Shield size={18} /> },
+    ],
+  },
+  {
+    title: "Intelligence",
+    items: [
+      { label: "Risk Flags", href: "/ai/risk-flags", icon: <Sparkles size={18} /> },
+      { label: "Insights", href: "/ai/insights", icon: <TrendingUp size={18} /> },
+      { label: "Weekly Reports", href: "/ai/weekly-reports", icon: <FileText size={18} /> },
+      { label: "CQC Evidence", href: "/ai/cqc-evidence", icon: <Shield size={18} /> },
+      { label: "Family Briefs", href: "/ai/family-briefs", icon: <BookOpen size={18} /> },
     ],
   },
   {

@@ -20,15 +20,32 @@ interface WeeklyPoint {
   completed: number;
 }
 
+interface ComplianceScore {
+  safe: number;
+  effective: number;
+  caring: number;
+  responsive: number;
+  wellLed: number;
+}
+
 interface DashboardChartsProps {
   visitStatus: VisitStatusData;
   weeklyVisits: WeeklyPoint[];
+  compliance: ComplianceScore;
 }
 
 const PIE_COLORS: Record<string, string> = {
   completed: "#1A3C2E",
   in_progress: "#4A7C5E",
   scheduled: "#E8F5EE",
+  missed: "#DC2626",
+  cancelled: "#9CA3AF",
+};
+
+const PIE_LABEL_COLORS: Record<string, string> = {
+  completed: "#1A3C2E",
+  in_progress: "#4A7C5E",
+  scheduled: "#6B7280",
   missed: "#DC2626",
   cancelled: "#9CA3AF",
 };
@@ -47,19 +64,20 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   );
 };
 
-export function DashboardCharts({ visitStatus, weeklyVisits }: DashboardChartsProps) {
+export function DashboardCharts({ visitStatus, weeklyVisits, compliance }: DashboardChartsProps) {
   const pieData = Object.entries(visitStatus)
     .filter(([, v]) => v > 0)
     .map(([name, value]) => ({ name: name.replace("_", " "), value, key: name }));
 
-  const totalVisits = Object.values(visitStatus).reduce((a, b) => a + b, 0);
-  const completionRate = totalVisits > 0
-    ? Math.round((visitStatus.completed / totalVisits) * 100)
-    : 0;
+  const complianceData = [
+    { label: "Safe", value: compliance.safe },
+    { label: "Effective", value: compliance.effective },
+    { label: "Caring", value: compliance.caring },
+    { label: "Responsive", value: compliance.responsive },
+    { label: "Well-led", value: compliance.wellLed },
+  ];
 
-  const weekTotal = weeklyVisits.reduce((a, b) => a + b.visits, 0);
-  const weekCompleted = weeklyVisits.reduce((a, b) => a + b.completed, 0);
-  const weekRate = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+  const totalVisits = Object.values(visitStatus).reduce((a, b) => a + b, 0);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -115,45 +133,28 @@ export function DashboardCharts({ visitStatus, weeklyVisits }: DashboardChartsPr
         </ResponsiveContainer>
       </CRCard>
 
-      {/* Completion rate summary */}
+      {/* CQC compliance bars */}
       <CRCard>
-        <h3 className="font-display text-base font-semibold text-cr-charcoal mb-1">Completion Rate</h3>
-        <p className="text-xs font-body text-cr-slate mb-5">Today and this week</p>
-        <div className="space-y-5">
-          {[
-            { label: "Today", rate: completionRate, completed: visitStatus.completed, total: totalVisits },
-            { label: "This week", rate: weekRate, completed: weekCompleted, total: weekTotal },
-          ].map(({ label, rate, completed, total }) => {
-            const color = rate >= 90 ? "#1A3C2E" : rate >= 70 ? "#F59E0B" : "#DC2626";
+        <h3 className="font-display text-base font-semibold text-cr-charcoal mb-1">CQC Scores</h3>
+        <p className="text-xs font-body text-cr-slate mb-4">All 5 key questions</p>
+        <div className="space-y-3">
+          {complianceData.map(({ label, value }) => {
+            const color = value >= 80 ? "#1A3C2E" : value >= 60 ? "#F59E0B" : "#DC2626";
             return (
               <div key={label}>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-sm font-body font-medium text-cr-charcoal">{label}</span>
-                  <span className="text-sm font-body font-semibold" style={{ color }}>
-                    {completed}/{total} <span className="text-xs font-normal">({rate}%)</span>
-                  </span>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-body text-cr-charcoal">{label}</span>
+                  <span className="text-xs font-body font-semibold" style={{ color }}>{value}%</span>
                 </div>
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${rate}%`, backgroundColor: color }}
+                    style={{ width: `${value}%`, backgroundColor: color }}
                   />
                 </div>
               </div>
             );
           })}
-          <div className="pt-2 border-t border-gray-100">
-            <div className="flex justify-between text-xs font-body text-cr-slate">
-              <span>Missed today</span>
-              <span className={visitStatus.missed > 0 ? "text-cr-red font-semibold" : "text-cr-slate"}>
-                {visitStatus.missed}
-              </span>
-            </div>
-            <div className="flex justify-between text-xs font-body text-cr-slate mt-1">
-              <span>In progress</span>
-              <span>{visitStatus.in_progress}</span>
-            </div>
-          </div>
         </div>
       </CRCard>
     </div>
