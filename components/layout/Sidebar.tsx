@@ -54,7 +54,7 @@ const navigation: NavGroup[] = [
       { label: "Staff Compliance", href: "/staff/compliance", icon: <FileCheck size={18} /> },
       { label: "Supervisions", href: "/staff/supervisions", icon: <BookOpen size={18} /> },
       { label: "Devices", href: "/devices", icon: <Smartphone size={18} /> },
-      { label: "Family", href: "/settings/users", icon: <Heart size={18} /> },
+      { label: "Family", href: "/family", icon: <Heart size={18} /> },
     ],
   },
   {
