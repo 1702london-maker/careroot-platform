@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
+// Full prefix match — all sub-routes are also public
 const PUBLIC_PATHS = [
   "/",
   "/features",
@@ -10,10 +11,9 @@ const PUBLIC_PATHS = [
   "/signup",
   "/forgot-password",
   "/change-password",
+  "/onboarding",
   "/family/login",
   "/about",
-  "/reports",
-  "/gp-connect",
   "/custom-app",
   "/white-label",
   "/contact",
@@ -23,6 +23,9 @@ const PUBLIC_PATHS = [
   "/solutions",
   "/cookies",
 ];
+
+// Exact-match only — sub-routes are protected dashboard pages
+const PUBLIC_EXACT_ONLY = ["/reports", "/gp-connect"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -39,10 +42,9 @@ export async function middleware(request: NextRequest) {
 
   const { supabaseResponse, user } = await updateSession(request);
 
-  // Public marketing and auth pages
-  const isPublicPath = PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  );
+  const isPublicPath =
+    PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/")) ||
+    PUBLIC_EXACT_ONLY.some((p) => pathname === p);
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
@@ -51,8 +53,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Logged-in users hitting /login or /signup go to dashboard
-  if (user && (pathname === "/login" || pathname === "/signup")) {
+  // Logged-in users hitting /login go to dashboard
+  if (user && pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

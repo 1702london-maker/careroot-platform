@@ -27,7 +27,7 @@ export default async function DashboardPage() {
     .single();
 
   const orgId = userRecord?.organisation_id;
-  if (!orgId) redirect("/signup");
+  if (!orgId) redirect("/onboarding");
 
   const today = new Date();
   const todayStart = new Date(today.setHours(0, 0, 0, 0)).toISOString();
