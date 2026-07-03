@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       email,
       options: {
         data: { first_name, last_name, role, organisation_id: orgId },
-        redirectTo: `${appUrl}/login`,
+        redirectTo: `${appUrl}/invite/complete`,
       },
     });
 

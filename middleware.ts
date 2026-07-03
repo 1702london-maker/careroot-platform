@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
   "/forgot-password",
   "/change-password",
   "/onboarding",
+  "/invite/complete",
   "/family/login",
   "/about",
   "/custom-app",
