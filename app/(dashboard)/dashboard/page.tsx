@@ -7,8 +7,8 @@ import { CRBadge, riskVariant, statusVariant } from "@/components/ui/CRBadge";
 import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
 import { CRAvatar } from "@/components/ui/CRAvatar";
 import {
-  Users, Clock, AlertTriangle, Sparkles,
-  Shield, MessageSquare, UserCheck, Plus,
+  Users, Clock, AlertTriangle,
+  Shield, MessageSquare, Plus,
   Calendar, FileText
 } from "lucide-react";
 import { formatDateTimeUK, formatTimeUK, getDaysSince } from "@/lib/utils";
@@ -37,10 +37,9 @@ export default async function DashboardPage() {
   const [
     { count: activeClients },
     { data: todayVisits },
-    { data: openFlags },
     { data: openComplaints },
     { data: recentIncidents },
-    { data: emergencyEvents },
+    { data: emergencyEvents }, // eslint-disable-line @typescript-eslint/no-unused-vars
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true })
       .eq("organisation_id", orgId).eq("status", "active"),
@@ -49,9 +48,6 @@ export default async function DashboardPage() {
       .gte("scheduled_start", todayStart)
       .lte("scheduled_start", todayEnd)
       .order("scheduled_start"),
-    supabase.from("ai_risk_flags").select("*, clients(first_name, last_name)")
-      .eq("organisation_id", orgId).eq("status", "open")
-      .order("created_at", { ascending: false }).limit(5),
     supabase.from("complaints").select("*")
       .eq("organisation_id", orgId).eq("status", "open")
       .order("created_at", { ascending: false }).limit(5),
@@ -66,7 +62,6 @@ export default async function DashboardPage() {
   const completedVisits = todayVisits?.filter(v => v.status === "completed").length ?? 0;
   const missedVisits = todayVisits?.filter(v => v.status === "missed").length ?? 0;
   const totalVisits = todayVisits?.length ?? 0;
-  const highFlags = openFlags?.filter(f => f.severity === "high" || f.severity === "critical").length ?? 0;
 
   // Chart data — visit status breakdown
   const visitStatus = {
@@ -102,25 +97,6 @@ export default async function DashboardPage() {
   });
   const weeklyVisits = Object.entries(weeklyMap).map(([day, data]) => ({ day, ...data }));
 
-  // CQC compliance scores per key question
-  const { data: cqcEvidence } = await supabase
-    .from("compliance_evidence")
-    .select("category, status")
-    .eq("organisation_id", orgId)
-    .eq("framework", "cqc");
-
-  const calcScore = (cat: string) => {
-    const items = cqcEvidence?.filter(e => e.category === cat) ?? [];
-    if (!items.length) return 0;
-    return Math.round((items.filter(e => e.status === "compliant").length / items.length) * 100);
-  };
-  const compliance = {
-    safe: calcScore("safe"),
-    effective: calcScore("effective"),
-    caring: calcScore("caring"),
-    responsive: calcScore("responsive"),
-    wellLed: calcScore("well-led"),
-  };
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -163,19 +139,12 @@ export default async function DashboardPage() {
           icon={<AlertTriangle size={18} />}
           variant={missedVisits > 0 ? "danger" : "default"}
         />
-        <CRStatCard
-          label="Risk Flags"
-          value={openFlags?.length ?? 0}
-          icon={<Sparkles size={18} />}
-          variant={highFlags > 0 ? "danger" : openFlags?.length ? "warning" : "default"}
-        />
       </div>
 
       {/* Charts row */}
       <DashboardCharts
         visitStatus={visitStatus}
         weeklyVisits={weeklyVisits}
-        compliance={compliance}
       />
 
       {/* Missed visit alert */}
@@ -249,45 +218,6 @@ export default async function DashboardPage() {
 
         {/* Right column */}
         <div className="space-y-6">
-          {/* Risk Flags */}
-          <CRCard noPadding>
-            <div className="flex items-center justify-between p-4 border-b border-gray-100">
-              <h2 className="font-display text-base font-semibold text-cr-charcoal flex items-center gap-1.5">
-                <Sparkles size={16} className="text-cr-gold" />
-                Risk Flags
-              </h2>
-              <Link href="/ai/risk-flags" className="text-xs font-body text-cr-forest hover:text-cr-sage">
-                View all
-              </Link>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {openFlags?.length === 0 ? (
-                <div className="p-6 text-center">
-                  <p className="text-xs font-body text-cr-slate">No open flags</p>
-                </div>
-              ) : (
-                openFlags?.slice(0, 4).map((flag) => {
-                  const client = flag.clients as Record<string, string> | null;
-                  return (
-                    <div key={flag.id} className="px-4 py-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-body font-medium text-cr-charcoal">
-                          {client?.first_name} {client?.last_name}
-                        </p>
-                        <CRBadge variant={riskVariant(flag.severity)} size="sm">
-                          {flag.severity}
-                        </CRBadge>
-                      </div>
-                      <p className="text-xs font-body text-cr-slate mt-0.5 line-clamp-2">
-                        {flag.description}
-                      </p>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </CRCard>
-
           {/* Open Complaints */}
           <CRCard noPadding>
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
