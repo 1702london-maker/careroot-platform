@@ -144,6 +144,7 @@ const TABS = [
   { key: "overview", label: "Overview", icon: User },
   { key: "documents", label: "Documents", icon: FileText },
   { key: "training", label: "Training", icon: Award },
+  { key: "policies", label: "Policies", icon: Shield },
   { key: "supervision", label: "Supervision", icon: BookOpen },
   { key: "incidents", label: "Incidents", icon: AlertTriangle },
   { key: "payroll", label: "Payroll", icon: Banknote },
@@ -515,6 +516,85 @@ export function StaffProfileClient({ staffMember, documents, training, supervisi
               </CRCard>
             );
           })}
+        </div>
+      )}
+
+      {/* ── TAB: Policies ── */}
+      {activeTab === "policies" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-cr-slate">
+              {policies.filter(p => p.acknowledged_at).length} of {policies.length} policies signed
+            </p>
+            {policies.filter(p => !p.acknowledged_at).length > 0 && (
+              <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2 py-1 rounded-full">
+                {policies.filter(p => !p.acknowledged_at).length} awaiting signature
+              </span>
+            )}
+          </div>
+
+          {policies.length === 0 ? (
+            <CRCard>
+              <div className="text-center py-8">
+                <Shield className="mx-auto mb-2 text-cr-slate opacity-40" size={32} />
+                <p className="text-sm text-cr-slate">No policies assigned yet</p>
+                <p className="text-xs text-cr-slate mt-1">Policies are assigned and sent to staff for acknowledgement</p>
+              </div>
+            </CRCard>
+          ) : (
+            <div className="space-y-3">
+              {/* Unsigned */}
+              {policies.filter(p => !p.acknowledged_at).length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-cr-charcoal mb-2">Awaiting signature</p>
+                  {policies.filter(p => !p.acknowledged_at).map(p => (
+                    <div key={p.id} className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-medium text-cr-charcoal">{p.policy_name}</p>
+                          {p.policy_version && <p className="text-xs text-cr-slate">Version {p.policy_version}</p>}
+                          {p.is_new && (
+                            <span className="text-[10px] bg-amber-200 text-amber-800 font-semibold px-2 py-0.5 rounded-full">UPDATED</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {p.policy_url && (
+                            <a href={p.policy_url} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-cr-forest hover:underline">View</a>
+                          )}
+                          <span className="text-[10px] bg-red-100 text-cr-red font-semibold px-2 py-0.5 rounded-full">Unsigned</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Signed */}
+              {policies.filter(p => p.acknowledged_at).length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-cr-charcoal mb-2">Signed policies</p>
+                  {policies.filter(p => p.acknowledged_at).map(p => (
+                    <div key={p.id} className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 mb-2">
+                      <CheckCircle size={15} className="text-green-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-cr-charcoal font-medium">{p.policy_name}</p>
+                        {p.acknowledged_at && (
+                          <p className="text-xs text-cr-slate">
+                            Signed: {new Date(p.acknowledged_at).toLocaleDateString("en-GB")}
+                          </p>
+                        )}
+                      </div>
+                      {p.policy_url && (
+                        <a href={p.policy_url} target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-cr-forest hover:underline flex-shrink-0">View</a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

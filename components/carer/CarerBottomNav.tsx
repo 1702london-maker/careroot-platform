@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Clock, FileText, Settings, AlertTriangle, Calendar } from "lucide-react";
+import { Home, Clock, FileText, Settings, AlertTriangle, Calendar, Pill, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/carer", icon: Home, label: "Home", sos: false },
   { href: "/carer/rota", icon: Calendar, label: "Rota", sos: false },
-  { href: "/carer/my-documents", icon: FileText, label: "Docs", sos: false },
+  { href: "/carer/emar", icon: Pill, label: "eMAR", sos: false },
+  { href: "/carer/handover", icon: ArrowRightLeft, label: "Handover", sos: false },
   { href: "/carer/sos", icon: AlertTriangle, label: "SOS", sos: true },
-  { href: "/carer/settings", icon: Settings, label: "Settings", sos: false },
 ];
 
 export function CarerBottomNav() {

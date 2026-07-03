@@ -52,7 +52,7 @@ const navigation: NavGroup[] = [
     items: [
       { label: "Staff", href: "/staff", icon: <UserCheck size={18} /> },
       { label: "Documents & DBS", href: "/staff/compliance", icon: <FileCheck size={18} /> },
-      { label: "Training Matrix", href: "/staff/compliance", icon: <Crown size={18} /> },
+      { label: "Training Matrix", href: "/staff/training", icon: <Crown size={18} /> },
       { label: "Supervisions", href: "/staff/supervisions", icon: <BookOpen size={18} /> },
       { label: "Lone Working", href: "/emergency", icon: <AlertTriangle size={18} /> },
       { label: "Devices", href: "/devices", icon: <Smartphone size={18} /> },

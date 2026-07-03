@@ -28,9 +28,46 @@ export default async function VisitPage({ params }: Props) {
 
   const client = visit.clients as Record<string, unknown>;
 
-  // Fetch active care plan if user has access
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: userRecord } = await supabase.from("users").select("role").eq("id", user!.id).single();
+  const { data: userRecord } = await supabase.from("users").select("role, organisation_id").eq("id", user!.id).single();
+
+  // ── Shift-based access guard ────────────────────────────────────────────────
+  // Admins/managers/coordinators always have access
+  const isAdmin = ["org_admin", "superadmin", "manager", "coordinator"].includes(userRecord?.role ?? "");
+
+  if (!isAdmin) {
+    const now = new Date();
+    const thirtyMinsAgo = new Date(now.getTime() - 30 * 60 * 1000);
+
+    const { data: activeShift } = await supabase
+      .from("shifts")
+      .select("id, status, actual_end, scheduled_end, client_ids")
+      .eq("staff_id", user!.id)
+      .in("status", ["active", "completed"])
+      .gte("scheduled_end", thirtyMinsAgo.toISOString())
+      .limit(10);
+
+    const hasAccess = activeShift?.some(shift => {
+      const ended = shift.actual_end || shift.scheduled_end;
+      const endTime = new Date(ended).getTime();
+      const withinWindow = shift.status === "active" || endTime >= thirtyMinsAgo.getTime();
+      const clientOnShift = (shift.client_ids ?? []).includes(String(client.id));
+      return withinWindow && clientOnShift;
+    });
+
+    if (!hasAccess) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-gray-50">
+          <div className="text-4xl mb-4">🔒</div>
+          <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-2">Access Restricted</h2>
+          <p className="text-sm text-cr-slate max-w-xs">
+            You can only view client information during an active shift for this client, or up to 30 minutes after your shift ends.
+          </p>
+          <a href="/carer" className="cr-btn-primary mt-6 px-6 py-2.5">Back to Home</a>
+        </div>
+      );
+    }
+  }
 
   const { data: carePlan } = await supabase
     .from("care_plans")

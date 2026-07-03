@@ -13,6 +13,7 @@ import { ClientEmergencyTab } from "./tabs/EmergencyTab";
 import { ClientAITab } from "./tabs/AITab";
 import { ClientDocumentsTab } from "./tabs/DocumentsTab";
 import { ClientFamilyTab } from "./tabs/FamilyTab";
+import { ClientBodyMapTab } from "./tabs/BodyMapTab";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -22,6 +23,7 @@ const TABS = [
   { id: "incidents", label: "Incidents" },
   { id: "risk", label: "Risk" },
   { id: "nutrition", label: "Nutrition" },
+  { id: "bodymap", label: "Body Map" },
   { id: "documents", label: "Documents" },
   { id: "family", label: "Family" },
   { id: "emergency", label: "Emergency" },
@@ -74,6 +76,7 @@ export function ClientTabs({
       {active === "incidents" && <ClientIncidentsTab client={client} incidents={incidents} />}
       {active === "risk" && <ClientRiskTab client={client} riskAssessment={riskAssessment} />}
       {active === "nutrition" && <ClientNutritionTab client={client} nutritionProfile={nutritionProfile} />}
+      {active === "bodymap" && <ClientBodyMapTab client={client} bodyMapInjuries={(client.bodyMapInjuries ?? []) as Record<string, unknown>[]} />}
       {active === "documents" && <ClientDocumentsTab client={client} />}
       {active === "family" && <ClientFamilyTab client={client} familyAccess={familyAccess as never} />}
       {active === "emergency" && <ClientEmergencyTab client={client} emergencyToken={emergencyToken} emergencyPin={emergencyPin} />}

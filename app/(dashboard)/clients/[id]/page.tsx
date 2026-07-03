@@ -33,6 +33,7 @@ export default async function ClientProfilePage({ params }: Props) {
     { data: nutritionProfile },
     { data: emergencyToken },
     { data: familyAccess },
+    { data: bodyMapInjuries },
   ] = await Promise.all([
     supabase.from("care_plans").select("*").eq("client_id", id).order("created_at", { ascending: false }),
     supabase.from("medications").select("*").eq("client_id", id).eq("is_active", true).order("name"),
@@ -41,7 +42,8 @@ export default async function ClientProfilePage({ params }: Props) {
     supabase.from("risk_assessments").select("*").eq("client_id", id).order("created_at", { ascending: false }).limit(1),
     supabase.from("nutrition_profiles").select("*").eq("client_id", id).single(),
     supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).order("created_at", { ascending: false }).limit(1).single(),
-    supabase.from("family_access").select("*, users(first_name, last_name, email)").eq("client_id", id).eq("is_active", true),
+    supabase.from("family_access").select("*, users(first_name, last_name, email, phone)").eq("client_id", id),
+    supabase.from("body_map_injuries").select("*").eq("client_id", id).order("created_at"),
   ]);
 
   const address = client.address as Record<string, string> | null;
@@ -140,7 +142,7 @@ export default async function ClientProfilePage({ params }: Props) {
 
       {/* Tabs */}
       <ClientTabs
-        client={client}
+        client={{ ...client, bodyMapInjuries: bodyMapInjuries || [] }}
         carePlans={carePlans || []}
         medications={medications || []}
         recentVisits={recentVisits || []}
