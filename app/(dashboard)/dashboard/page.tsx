@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 
   const { data: userRecord } = await supabase
     .from("users")
-    .select("organisation_id, first_name, role")
+    .select("organisation_id, first_name, role, is_active")
     .eq("id", user.id)
     .single();
 

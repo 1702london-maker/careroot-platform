@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         organisation_id: org.id,
         role: "org_admin",
-        status: "active",
+        is_active: true,
         must_change_password: false,
         terms_accepted_at: new Date().toISOString(),
       });
