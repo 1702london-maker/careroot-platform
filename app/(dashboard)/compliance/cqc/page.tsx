@@ -5,6 +5,7 @@ import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { Shield, CheckCircle, AlertTriangle, XCircle, ChevronRight, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { CQCSelfAssessment } from "@/components/compliance/CQCSelfAssessment";
 
 const CQC_FRAMEWORK = [
   {
@@ -115,6 +116,12 @@ export default async function CQCDetailPage() {
     .eq("organisation_id", userRecord?.organisation_id)
     .eq("framework", "cqc");
 
+  // Self-assessment records (requirement = "_self_assessment")
+  const selfAssessments: Record<string, { rating: string; notes: string; action_points?: unknown[] }> = {};
+  evidence?.filter(e => e.requirement === "_self_assessment").forEach(e => {
+    selfAssessments[e.category] = { rating: e.status, notes: e.notes ?? "", action_points: e.action_points ?? [] };
+  });
+
   const evidenceMap: Record<string, Record<string, string>> = {};
   evidence?.forEach((e) => {
     evidenceMap[e.category] = evidenceMap[e.category] ?? {};
@@ -211,6 +218,13 @@ export default async function CQCDetailPage() {
           </div>
         ))}
       </div>
+
+      {/* Self-assessment panel */}
+      <CQCSelfAssessment
+        orgId={userRecord?.organisation_id ?? ""}
+        sections={CQC_FRAMEWORK}
+        existingSelfAssessments={selfAssessments}
+      />
 
       <div className="mt-6 flex items-center justify-between text-sm font-body text-cr-slate">
         <Link href="/compliance" className="flex items-center gap-1.5 hover:text-cr-forest transition-colors">

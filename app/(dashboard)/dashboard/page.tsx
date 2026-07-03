@@ -34,6 +34,9 @@ export default async function DashboardPage() {
   const todayEnd = new Date(today.setHours(23, 59, 59, 999)).toISOString();
 
   // Parallel data fetches
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   const [
     { count: activeClients },
     { data: todayVisits },
@@ -41,6 +44,10 @@ export default async function DashboardPage() {
     { data: openComplaints },
     { data: recentIncidents },
     { data: emergencyEvents },
+    { count: staffOnShift },
+    { data: recentMedications },
+    { data: overdueSupervisions },
+    { data: sosTriggers },
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true })
       .eq("organisation_id", orgId).eq("status", "active"),
@@ -61,12 +68,35 @@ export default async function DashboardPage() {
     supabase.from("emergency_events").select("*, clients(first_name, last_name)")
       .eq("organisation_id", orgId)
       .order("triggered_at", { ascending: false }).limit(5),
+    supabase.from("shifts").select("*", { count: "exact", head: true })
+      .eq("organisation_id", orgId).eq("status", "active"),
+    supabase.from("medication_administration").select("id, status, administered_at, clients(first_name, last_name)")
+      .eq("organisation_id", orgId)
+      .gte("administered_at", thirtyDaysAgo.toISOString())
+      .order("administered_at", { ascending: false })
+      .limit(200),
+    supabase.from("staff_supervision").select("id, staff_id, next_due_date, users!staff_supervision_staff_id_fkey(first_name, last_name)")
+      .eq("organisation_id", orgId)
+      .lt("next_due_date", todayStart)
+      .order("next_due_date")
+      .limit(5),
+    supabase.from("lone_working_check_ins").select("id, status, triggered_at, users!lone_working_check_ins_staff_id_fkey(first_name, last_name)")
+      .eq("organisation_id", orgId)
+      .eq("status", "sos_triggered")
+      .order("triggered_at", { ascending: false })
+      .limit(3),
   ]);
 
   const completedVisits = todayVisits?.filter(v => v.status === "completed").length ?? 0;
   const missedVisits = todayVisits?.filter(v => v.status === "missed").length ?? 0;
   const totalVisits = todayVisits?.length ?? 0;
   const highFlags = openFlags?.filter(f => f.severity === "high" || f.severity === "critical").length ?? 0;
+
+  // Medication compliance rate (last 30 days)
+  const totalMedAdmin = recentMedications?.length ?? 0;
+  const givenMedAdmin = recentMedications?.filter(m => m.status === "given").length ?? 0;
+  const medComplianceRate = totalMedAdmin > 0 ? Math.round((givenMedAdmin / totalMedAdmin) * 100) : null;
+  const missedHighRiskMeds = recentMedications?.filter(m => m.status === "refused" || m.status === "missed").length ?? 0;
 
   // Chart data — visit status breakdown
   const visitStatus = {
@@ -145,7 +175,7 @@ export default async function DashboardPage() {
       />
 
       {/* KPI Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
         <CRStatCard
           label="Active Clients"
           value={activeClients ?? 0}
@@ -169,7 +199,49 @@ export default async function DashboardPage() {
           icon={<Sparkles size={18} />}
           variant={highFlags > 0 ? "danger" : openFlags?.length ? "warning" : "default"}
         />
+        <CRStatCard
+          label="Staff On Shift"
+          value={staffOnShift ?? 0}
+          icon={<UserCheck size={18} />}
+        />
+        <CRStatCard
+          label="Med Compliance"
+          value={medComplianceRate !== null ? `${medComplianceRate}%` : "—"}
+          icon={<Shield size={18} />}
+          variant={medComplianceRate !== null && medComplianceRate < 85 ? "danger" : medComplianceRate !== null && medComplianceRate < 95 ? "warning" : "default"}
+        />
       </div>
+
+      {/* Intelligence alerts */}
+      {(sosTriggers && sosTriggers.length > 0) || (overdueSupervisions && overdueSupervisions.length > 0) || missedHighRiskMeds > 5 ? (
+        <div className="mb-6 space-y-2">
+          {sosTriggers && sosTriggers.length > 0 && sosTriggers.map((sos) => {
+            const u = sos.users as Record<string, string> | null;
+            return (
+              <CRAlertBanner
+                key={sos.id}
+                variant="red"
+                title={`SOS triggered — ${u?.first_name} ${u?.last_name}`}
+                description={`Lone working emergency triggered at ${new Date(sos.triggered_at).toLocaleTimeString("en-GB")}. Check carer status immediately.`}
+              />
+            );
+          })}
+          {missedHighRiskMeds > 5 && (
+            <CRAlertBanner
+              variant="amber"
+              title={`${missedHighRiskMeds} missed or refused medications in last 30 days`}
+              description="Review medication administration records for high-risk clients."
+            />
+          )}
+          {overdueSupervisions && overdueSupervisions.length > 0 && (
+            <CRAlertBanner
+              variant="amber"
+              title={`${overdueSupervisions.length} staff supervision${overdueSupervisions.length > 1 ? "s" : ""} overdue`}
+              description="Overdue supervisions may affect CQC compliance. Review staff supervision records."
+            />
+          )}
+        </div>
+      ) : null}
 
       {/* Charts row */}
       <DashboardCharts
@@ -319,6 +391,68 @@ export default async function DashboardPage() {
                   );
                 })
               )}
+            </div>
+          </CRCard>
+
+          {/* Intelligence panel */}
+          <CRCard noPadding>
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <h2 className="font-display text-base font-semibold text-cr-charcoal flex items-center gap-1.5">
+                <Sparkles size={16} className="text-cr-forest" />
+                Intelligence
+              </h2>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {/* Med compliance */}
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-cr-charcoal">Medication compliance</p>
+                  <span className={`text-sm font-bold ${medComplianceRate !== null && medComplianceRate < 85 ? "text-cr-red" : medComplianceRate !== null && medComplianceRate < 95 ? "text-amber-600" : "text-green-600"}`}>
+                    {medComplianceRate !== null ? `${medComplianceRate}%` : "No data"}
+                  </span>
+                </div>
+                <p className="text-xs text-cr-slate mt-0.5">
+                  {givenMedAdmin}/{totalMedAdmin} administrations recorded · 30 days
+                </p>
+              </div>
+              {/* Supervisions overdue */}
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-cr-charcoal">Supervisions overdue</p>
+                  <span className={`text-sm font-bold ${(overdueSupervisions?.length ?? 0) > 0 ? "text-cr-red" : "text-green-600"}`}>
+                    {overdueSupervisions?.length ?? 0}
+                  </span>
+                </div>
+                {overdueSupervisions && overdueSupervisions.length > 0 && (
+                  <div className="mt-1 space-y-0.5">
+                    {overdueSupervisions.slice(0, 3).map(s => {
+                      const u = s.users as Record<string, string> | null;
+                      return (
+                        <p key={s.id} className="text-xs text-cr-slate">
+                          {u?.first_name} {u?.last_name} · Due {new Date(s.next_due_date).toLocaleDateString("en-GB")}
+                        </p>
+                      );
+                    })}
+                    {overdueSupervisions.length > 3 && (
+                      <Link href="/staff/supervisions" className="text-xs text-cr-forest hover:underline">
+                        +{overdueSupervisions.length - 3} more
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* Open incidents */}
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-cr-charcoal">Recent incidents</p>
+                  <span className={`text-sm font-bold ${(recentIncidents?.length ?? 0) > 0 ? "text-amber-600" : "text-green-600"}`}>
+                    {recentIncidents?.length ?? 0}
+                  </span>
+                </div>
+                <p className="text-xs text-cr-slate mt-0.5">
+                  <Link href="/incidents" className="text-cr-forest hover:underline">Review all incidents</Link>
+                </p>
+              </div>
             </div>
           </CRCard>
 

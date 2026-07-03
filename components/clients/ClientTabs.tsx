@@ -11,6 +11,8 @@ import { ClientRiskTab } from "./tabs/RiskTab";
 import { ClientNutritionTab } from "./tabs/NutritionTab";
 import { ClientEmergencyTab } from "./tabs/EmergencyTab";
 import { ClientAITab } from "./tabs/AITab";
+import { ClientDocumentsTab } from "./tabs/DocumentsTab";
+import { ClientFamilyTab } from "./tabs/FamilyTab";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -20,6 +22,8 @@ const TABS = [
   { id: "incidents", label: "Incidents" },
   { id: "risk", label: "Risk" },
   { id: "nutrition", label: "Nutrition" },
+  { id: "documents", label: "Documents" },
+  { id: "family", label: "Family" },
   { id: "emergency", label: "Emergency" },
   { id: "ai", label: "✦ Analysis" },
 ];
@@ -70,6 +74,8 @@ export function ClientTabs({
       {active === "incidents" && <ClientIncidentsTab client={client} incidents={incidents} />}
       {active === "risk" && <ClientRiskTab client={client} riskAssessment={riskAssessment} />}
       {active === "nutrition" && <ClientNutritionTab client={client} nutritionProfile={nutritionProfile} />}
+      {active === "documents" && <ClientDocumentsTab client={client} />}
+      {active === "family" && <ClientFamilyTab client={client} familyAccess={familyAccess as never} />}
       {active === "emergency" && <ClientEmergencyTab client={client} emergencyToken={emergencyToken} emergencyPin={emergencyPin} />}
       {active === "ai" && <ClientAITab client={client} />}
     </div>
