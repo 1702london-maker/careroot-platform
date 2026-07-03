@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
       .from("organisations")
       .insert({
         name: orgName,
-        org_type: orgType,
+        type: orgType,
         cqc_provider_id: cqcProviderId || null,
         plan: "seed",
-        status: "active",
+        plan_status: "active",
       })
       .select("id")
       .single();
