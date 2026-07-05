@@ -30,7 +30,7 @@ export default async function ClientsPage({
 
   let query = supabase
     .from("clients")
-    .select("*, users!clients_organisation_id_fkey(first_name, last_name)")
+    .select("*")
     .eq("organisation_id", orgId)
     .order("last_name");
 

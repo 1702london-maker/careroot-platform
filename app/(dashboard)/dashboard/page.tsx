@@ -152,18 +152,13 @@ export default async function DashboardPage() {
     wellLed: calcScore("well-led"),
   };
 
-  const greeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    return "Good evening";
-  };
+  const greeting = "Welcome";
 
   return (
     <div>
       <CRPageHeader
-        title={`${greeting()}, ${userRecord?.first_name || ""}` }
-        subtitle={`${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`}
+        title={`${greeting}, ${userRecord?.first_name || ""}`}
+        subtitle={new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         action={
           <div className="flex gap-2">
             <Link href="/clients/new" className="cr-btn-primary flex items-center gap-1.5 text-sm">

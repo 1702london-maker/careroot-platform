@@ -42,7 +42,7 @@ export default function SignupPage() {
         email: data.email,
         password: data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
           data: {
             first_name: data.firstName,
             last_name: data.lastName,

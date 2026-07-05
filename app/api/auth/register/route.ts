@@ -12,10 +12,13 @@ export async function POST(request: NextRequest) {
 
     const service = createServiceClientSync();
 
-    // Verify the auth user exists
+    // Verify the auth user exists AND the submitted email matches — prevents userId spoofing
     const { data: authUser, error: authErr } = await service.auth.admin.getUserById(userId);
     if (authErr || !authUser) {
       return NextResponse.json({ error: "Auth user not found" }, { status: 400 });
+    }
+    if (authUser.user.email?.toLowerCase() !== email.toLowerCase()) {
+      return NextResponse.json({ error: "User identity mismatch" }, { status: 403 });
     }
 
     // Check not already set up
