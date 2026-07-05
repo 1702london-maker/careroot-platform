@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Leaf, Eye, EyeOff } from "lucide-react";
+import { Leaf, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,12 +16,9 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function LoginPage() {
+export default function CarerLoginPage() {
   const router = useRouter();
   const supabase = createClient();
-  const redirectTo = typeof window !== "undefined"
-    ? new URLSearchParams(window.location.search).get("redirectTo") ?? "/dashboard"
-    : "/dashboard";
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,28 +42,31 @@ export default function LoginPage() {
       return;
     }
 
-    router.push(redirectTo);
+    router.push("/carer");
     router.refresh();
   };
 
   return (
-    <div className="min-h-screen bg-cr-ivory flex items-center justify-center p-4">
+    <div className="min-h-screen bg-cr-forest flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-cr-forest rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
             <Leaf size={22} className="text-white" />
           </div>
-          <span className="font-display text-2xl font-semibold text-cr-charcoal">Careroot</span>
+          <span className="font-display text-2xl font-semibold text-white">Careroot</span>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          <h1 className="font-display text-2xl font-semibold text-cr-charcoal mb-1">
-            Welcome back
-          </h1>
+          <div className="flex items-center gap-2 mb-1">
+            <ShieldCheck size={18} className="text-cr-forest" />
+            <h1 className="font-display text-2xl font-semibold text-cr-charcoal">
+              Staff Login
+            </h1>
+          </div>
           <p className="text-sm font-body text-cr-slate mb-6">
-            Sign in to your care management dashboard
+            Sign in to access your shifts, tasks and care records
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -136,28 +136,12 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
-
-          <p className="mt-6 text-center text-sm font-body text-cr-slate">
-            New to Careroot?{" "}
-            <Link href="/signup" className="text-cr-forest font-medium hover:text-cr-sage transition-colors">
-              Create your account
-            </Link>
-          </p>
         </div>
 
-        <div className="mt-4 flex flex-col items-center gap-2 text-xs font-body text-cr-slate">
-          <p>
-            Care staff?{" "}
-            <Link href="/carer-login" className="text-cr-forest font-medium hover:text-cr-sage transition-colors">
-              Staff login
-            </Link>
-          </p>
-          <p>
-            Family member?{" "}
-            <Link href="/family/login" className="text-cr-forest hover:text-cr-sage transition-colors">
-              Access family portal
-            </Link>
-          </p>
+        <div className="mt-4 flex justify-center gap-4 text-xs font-body text-white/70">
+          <Link href="/login" className="hover:text-white transition-colors">Admin login</Link>
+          <span>·</span>
+          <Link href="/family/login" className="hover:text-white transition-colors">Family portal</Link>
         </div>
       </div>
     </div>
