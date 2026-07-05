@@ -6,13 +6,24 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-  const { data: caller } = await supabase.from("users").select("role").eq("id", user.id).single();
+  const { data: caller } = await supabase
+    .from("users").select("role, organisation_id").eq("id", user.id).single();
   if (!caller || !["superadmin", "org_admin", "manager", "coordinator"].includes(caller.role)) {
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
 
   const body = await req.json();
-  const { data, error } = await supabase.from("safeguarding_concerns").update(body).eq("id", params.id).select().single();
+  const ALLOWED = ["status", "outcome", "action_taken", "referred_to", "referral_date", "closed_at", "review_notes"];
+  const safe: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) { if (ALLOWED.includes(k)) safe[k] = v; }
+  if (Object.keys(safe).length === 0) return NextResponse.json({ error: "No valid fields" }, { status: 400 });
+
+  const { data, error } = await supabase
+    .from("safeguarding_concerns")
+    .update(safe)
+    .eq("id", params.id)
+    .eq("organisation_id", caller.organisation_id)
+    .select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ concern: data });
 }

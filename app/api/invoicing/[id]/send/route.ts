@@ -2,9 +2,25 @@ import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: caller } = await supabase
+    .from("users").select("role, organisation_id").eq("id", user.id).single();
+  if (!caller || !["superadmin", "org_admin", "manager", "coordinator"].includes(caller.role)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { email, subject, message } = await req.json();
+  if (!email || typeof email !== "string") {
+    return Response.json({ error: "Recipient email required" }, { status: 400 });
+  }
 
   if (!process.env.RESEND_API_KEY) {
     return Response.json({ error: "Email service not configured" }, { status: 503 });
@@ -12,10 +28,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
+  // Org-scoped — caller can only send invoices for their own org
   const { data: inv } = await supabase
     .from("invoices")
     .select("*, clients(first_name, last_name), invoice_line_items(*)")
     .eq("id", params.id)
+    .eq("organisation_id", caller.organisation_id)
     .single();
 
   if (!inv) return Response.json({ error: "Invoice not found" }, { status: 404 });
@@ -35,8 +53,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     subject: subject ?? `Invoice ${inv.invoice_number} from Careroot`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-        <h2 style="color:#1A3C2E">${subject ?? `Invoice ${inv.invoice_number}`}</h2>
-        <p>${message ?? `Please find your invoice ${inv.invoice_number} attached.`}</p>
+        <h2 style="color:#1A3C2E">${escapeHtml(subject ?? `Invoice ${inv.invoice_number}`)}</h2>
+        <p>${escapeHtml(message ?? `Please find your invoice ${inv.invoice_number} attached.`)}</p>
         <table style="width:100%;border-collapse:collapse;margin:24px 0">
           <thead><tr style="background:#E8F5EE">
             <th style="padding:8px 12px;text-align:left;font-size:12px">Date</th>

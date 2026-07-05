@@ -3,7 +3,17 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { client_id, period_start, period_end, funder_type, organisation_id } = await req.json();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: caller } = await supabase
+    .from("users").select("role, organisation_id").eq("id", user.id).single();
+  if (!caller || !["superadmin", "org_admin", "manager", "coordinator"].includes(caller.role)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { client_id, period_start, period_end, funder_type } = await req.json();
+  const organisation_id = caller.organisation_id; // always from session, never from body
 
   if (!client_id || !period_start || !period_end) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });

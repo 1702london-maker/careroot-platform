@@ -3,7 +3,18 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { organisation_id, period_start, period_end, carer_ids } = await req.json();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: caller } = await supabase
+    .from("users").select("role, organisation_id").eq("id", user.id).single();
+  if (!caller || !["superadmin", "org_admin", "manager"].includes(caller.role)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // organisation_id always comes from the authenticated session — never trust client body
+  const organisation_id = caller.organisation_id;
+  const { period_start, period_end, carer_ids } = await req.json();
 
   const summaries = await Promise.all(
     carer_ids.map(async (carer_id: string) => {

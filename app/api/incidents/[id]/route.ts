@@ -1,18 +1,43 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+const ALLOWED_FIELDS = new Set([
+  "status", "severity", "outcome", "reviewed_by", "reviewed_at",
+  "action_taken", "investigation_notes", "closed_at", "referral_made",
+  "referral_agency", "referral_date",
+]);
+
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-  const { data: caller } = await supabase.from("users").select("role").eq("id", user.id).single();
+  const { data: caller } = await supabase
+    .from("users").select("role, organisation_id").eq("id", user.id).single();
   if (!caller || !["superadmin", "org_admin", "manager", "coordinator"].includes(caller.role)) {
     return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
   }
 
   const body = await req.json();
-  const { data, error } = await supabase.from("incidents").update(body).eq("id", params.id).select().single();
+
+  // Allowlist — only safe operational fields can be patched
+  const safe: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (ALLOWED_FIELDS.has(k)) safe[k] = v;
+  }
+  if (Object.keys(safe).length === 0) {
+    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+  }
+
+  // Scope to caller's org — prevents cross-org writes
+  const { data, error } = await supabase
+    .from("incidents")
+    .update(safe)
+    .eq("id", params.id)
+    .eq("organisation_id", caller.organisation_id)
+    .select()
+    .single();
+
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ incident: data });
 }
