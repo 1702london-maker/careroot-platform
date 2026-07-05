@@ -19,7 +19,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (!granted && !withdrawn_at) update.withdrawn_at = new Date().toISOString();
   if (notes !== undefined) update.notes = notes;
 
-  const { error } = await supabase.from("consent_records").update(update).eq("id", params.id);
+  const { error } = await supabase.from("consent_records").update(update).eq("id", params.id).eq("organisation_id", caller!.organisation_id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

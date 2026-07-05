@@ -4,7 +4,7 @@ import { getResend, FROM_EMAIL } from "@/lib/resend";
 
 export async function POST(req: NextRequest) {
   try {
-    const { first_name, last_name, email, phone, relationship, client_id, access_level, organisation_id } = await req.json();
+    const { first_name, last_name, email, phone, relationship, client_id, access_level } = await req.json();
     if (!email || !first_name || !client_id) {
       return NextResponse.json({ error: "First name, email and client are required" }, { status: 400 });
     }
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       .select("first_name, last_name, organisation_id, organisations(name)")
       .eq("id", user.id).single();
 
-    const orgId = organisation_id ?? inviter?.organisation_id;
+    const orgId = inviter?.organisation_id;
     const orgName = (inviter?.organisations as unknown as { name: string } | null)?.name ?? "your organisation";
     const appUrl = "https://www.careroot.co.uk";
 

@@ -23,7 +23,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (data_provided_at) update.data_provided_at = data_provided_at;
   if (status === "completed" && !data_provided_at) update.data_provided_at = new Date().toISOString();
 
-  const { error } = await supabase.from("sar_requests").update(update).eq("id", params.id);
+  const { error } = await supabase.from("sar_requests").update(update).eq("id", params.id).eq("organisation_id", caller!.organisation_id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

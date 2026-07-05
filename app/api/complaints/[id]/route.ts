@@ -8,10 +8,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
+  const { data: userRecord } = await supabase
+    .from("users").select("organisation_id, role").eq("id", user.id).single();
+
+  if (!["org_admin", "manager", "compliance_lead", "coordinator"].includes(userRecord?.role ?? "")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { data, error } = await supabase
     .from("complaints")
     .select("*, clients(first_name, last_name), users!submitted_by(first_name, last_name)")
     .eq("id", id)
+    .eq("organisation_id", userRecord!.organisation_id)
     .single();
 
   if (error || !data) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -43,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const { data, error } = await supabase
-    .from("complaints").update(update).eq("id", id).select().single();
+    .from("complaints").update(update).eq("id", id).eq("organisation_id", userRecord!.organisation_id).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
