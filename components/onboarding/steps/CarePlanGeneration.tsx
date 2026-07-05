@@ -70,8 +70,6 @@ export function StepCarePlanGeneration({ clientId, onboardingData, onComplete, o
       const { data: userRecord } = await supabase.from("users")
         .select("organisation_id, id, role").eq("id", user!.id).single();
 
-      const status = userRecord?.role === "carer" ? "draft" : "draft";
-
       await supabase.from("care_plans").insert({
         client_id: clientId,
         organisation_id: userRecord?.organisation_id,

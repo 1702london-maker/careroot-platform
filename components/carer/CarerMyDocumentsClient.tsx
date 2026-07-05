@@ -11,7 +11,7 @@ type Policy = { id: string; policy_key: string; policy_name: string; policy_vers
 type User = Record<string, unknown>;
 
 interface Props {
-  user: User | null;
+  user?: User | null;
   documents: Document[];
   training: Training[];
   policies: Policy[];
@@ -42,7 +42,7 @@ const TRAINING_STATUS_CLASS: Record<string, string> = {
   not_started: "bg-gray-100 text-gray-500",
 };
 
-export function CarerMyDocumentsClient({ user, documents, training, policies }: Props) {
+export function CarerMyDocumentsClient({ documents, training, policies }: Props) {
   const [activeTab, setActiveTab] = useState("documents");
   const [acknowledging, setAcknowledging] = useState<string | null>(null);
   const supabase = createClient();

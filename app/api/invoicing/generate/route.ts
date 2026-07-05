@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { client_id, period_start, period_end, funder_type } = await req.json();
+  const { client_id, period_start, period_end } = await req.json();
   const organisation_id = caller.organisation_id; // always from session, never from body
 
   if (!client_id || !period_start || !period_end) {

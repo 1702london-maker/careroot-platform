@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, X, Loader2, Clock, User2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, Loader2, Clock } from "lucide-react";
 import { CRBadge } from "@/components/ui/CRBadge";
 
 type StaffMember = { id: string; first_name: string; last_name: string; role: string };

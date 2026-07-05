@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
 
       const hourlyRate = payRate?.hourly_rate ?? 11.44; // NLW fallback
       const overtimeRate = payRate?.overtime_rate ?? hourlyRate * 1.5;
-      const travelRate = payRate?.travel_rate_per_mile ?? 0;
       const overtimeThreshold = 40;
 
       let totalHours = 0;

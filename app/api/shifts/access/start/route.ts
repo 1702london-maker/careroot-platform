@@ -106,6 +106,22 @@ export async function POST(req: Request) {
     }
   }
 
+  // Block if GPS was provided and carer is confirmed outside approved radius
+  if (withinApprovedRadius === false) {
+    await supabase.from("shift_access_log").insert({
+      shift_id, staff_id: user.id, device_imei: imei || null,
+      action_type: "access_denied_outside_radius",
+      gps_lat: gps_lat || null, gps_lng: gps_lng || null,
+      gps_accuracy_metres: gps_accuracy_metres || null,
+      within_approved_radius: false,
+      server_timestamp: now,
+    });
+    return NextResponse.json({
+      allowed: false,
+      reason: "You are outside the approved radius for this client's address. Move closer and try again, or contact your manager.",
+    }, { status: 401 });
+  }
+
   // Mark credential used and update shift actual_start
   await Promise.all([
     supabase.from("shift_credentials").update({ used_at: now }).eq("id", credential.id).is("used_at", null),

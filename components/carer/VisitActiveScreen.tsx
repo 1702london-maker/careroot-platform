@@ -11,8 +11,8 @@ import { CRStepList } from "@/components/ui/CRStepList";
 import { CRAIBadge } from "@/components/ui/CRAIBadge";
 import { formatTimeUK } from "@/lib/utils";
 import {
-  Play, CheckCircle, Mic, MicOff, Loader2, ChevronDown, ChevronUp,
-  Pill, Utensils, FileText, Phone, AlertTriangle
+  Play, CheckCircle, Mic, MicOff, Loader2,
+  Pill, FileText, Phone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +25,10 @@ interface Props {
   medications: Record<string, unknown>[];
   mealPreferences: Record<string, unknown>[];
   nutritionProfile: Record<string, unknown> | null;
-  carerRole: string;
+  carerRole?: string;
 }
 
-export function VisitActiveScreen({ visit, client, carePlan, medications, mealPreferences, nutritionProfile, carerRole }: Props) {
+export function VisitActiveScreen({ visit, client, carePlan, medications, mealPreferences, nutritionProfile }: Props) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -48,7 +48,6 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
   const allergies = (client.allergies as Array<Record<string, string>>) || [];
   const careNeeds = client.care_needs as Record<string, unknown> | null;
   const emergencyContacts = (client.emergency_contact as Array<Record<string, string>>) || [];
-  const gpDetails = client.gp_details as Record<string, string> | null;
 
   const startVisit = async () => {
     await supabase.from("visits").update({

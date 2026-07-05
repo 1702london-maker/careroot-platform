@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
-import { Shield, AlertTriangle, CheckCircle, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Shield, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 
 type Concern = {
   id: string;

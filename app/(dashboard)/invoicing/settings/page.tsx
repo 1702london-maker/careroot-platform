@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2 } from "lucide-react";
 import type { RateCard } from "@/types";
 
 const TABS = ["Rate Cards", "Client Billing", "Invoice Settings"];

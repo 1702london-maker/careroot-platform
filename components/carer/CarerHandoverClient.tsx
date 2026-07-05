@@ -24,11 +24,11 @@ type Handover = {
 
 interface Props {
   handovers: Handover[];
-  userId: string;
+  userId?: string;
   hasActiveShift: boolean;
 }
 
-export function CarerHandoverClient({ handovers, userId, hasActiveShift }: Props) {
+export function CarerHandoverClient({ handovers, hasActiveShift }: Props) {
   const supabase = createClient();
   const [expanded, setExpanded] = useState<string | null>(handovers[0]?.id ?? null);
   const [confirming, setConfirming] = useState<string | null>(null);

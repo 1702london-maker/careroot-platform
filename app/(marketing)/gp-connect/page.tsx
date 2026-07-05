@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { FileText, RefreshCw, Shield, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -76,7 +75,7 @@ export default function GPConnectMarketingPage() {
             GP Connect.<br />Coming to Careroot.
           </h1>
           <p className="text-lg text-cr-slate font-body max-w-2xl mx-auto mb-4">
-            Direct access to your clients' GP records — medications, allergies, conditions, and recent consultations — without hours of back-and-forth phone calls.
+            Direct access to your clients&apos; GP records — medications, allergies, conditions, and recent consultations — without hours of back-and-forth phone calls.
           </p>
           <p className="text-sm text-cr-slate font-body max-w-xl mx-auto bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
             <strong>Important:</strong> GP Connect is not available in Careroot yet. We have applied for NHS Assured Supplier status. This page describes what the integration will do once approved. Estimated go-live is Q4 2026 — this is an estimate, not a guarantee.
@@ -138,8 +137,8 @@ export default function GPConnectMarketingPage() {
           {submitted ? (
             <div className="bg-white/10 rounded-xl p-8 text-center">
               <CheckCircle size={40} className="mx-auto text-cr-gold mb-3" />
-              <h3 className="font-body font-semibold text-white text-lg mb-1">You're on the list!</h3>
-              <p className="text-cr-mint text-sm font-body">We'll notify you as soon as GP Connect is available for your organisation.</p>
+              <h3 className="font-body font-semibold text-white text-lg mb-1">You&apos;re on the list!</h3>
+              <p className="text-cr-mint text-sm font-body">We&apos;ll notify you as soon as GP Connect is available for your organisation.</p>
             </div>
           ) : (
             <form onSubmit={submit} className="bg-white/10 rounded-xl p-6 space-y-4">

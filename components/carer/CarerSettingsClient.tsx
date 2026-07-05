@@ -23,7 +23,7 @@ export function CarerSettingsClient({ user }: { user: UserRecord }) {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  const [currentPw, setCurrentPw] = useState("");
+  const [, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [pwSaving, setPwSaving] = useState(false);

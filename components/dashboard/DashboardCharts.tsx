@@ -42,13 +42,7 @@ const PIE_COLORS: Record<string, string> = {
   cancelled: "#9CA3AF",
 };
 
-const PIE_LABEL_COLORS: Record<string, string> = {
-  completed: "#1A3C2E",
-  in_progress: "#4A7C5E",
-  scheduled: "#6B7280",
-  missed: "#DC2626",
-  cancelled: "#9CA3AF",
-};
+
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) => {
   if (!active || !payload?.length) return null;

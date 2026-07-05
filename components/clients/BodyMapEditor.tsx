@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
-import { CheckCircle, AlertCircle, XCircle, Plus, Trash2 } from "lucide-react";
+import { CheckCircle, AlertCircle, XCircle, Trash2 } from "lucide-react";
 
 export type BodyRegion = {
   id: string;
@@ -63,7 +63,7 @@ const ALERT_COLORS: Record<string, { fill: string; stroke: string; text: string 
   none: { fill: "#F3F4F6", stroke: "#D1D5DB", text: "text-cr-slate" },
 };
 
-export function BodyMapEditor({ clientId, orgId, solutionType, initialInjuries = [], readonly = false }: Props) {
+export function BodyMapEditor({ clientId, orgId, initialInjuries = [], readonly = false }: Props) {
   const supabase = createClient();
   const [view, setView] = useState<"front" | "back">("front");
   const [injuries, setInjuries] = useState<BodyRegion[]>(initialInjuries);

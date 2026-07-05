@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import { AlertTriangle, Phone, CheckCircle, Clock } from "lucide-react";
+import { AlertTriangle, Phone, Clock } from "lucide-react";
 import { formatDateUK } from "@/lib/utils";
 
 interface PatientData {

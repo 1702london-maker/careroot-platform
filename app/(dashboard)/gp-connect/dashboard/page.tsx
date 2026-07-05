@@ -51,7 +51,7 @@ export default function DashboardGPConnectPage() {
         <div>
           <h2 className="font-body font-semibold text-xl text-cr-charcoal mb-2">GP Connect — Coming Q4 2026</h2>
           <p className="text-sm text-cr-slate font-body leading-relaxed max-w-xl">
-            Direct integration with your clients' GP records is coming to Careroot. You will be able to pull current medications, allergies, medical history, and recent consultations directly into each client's profile — without phone calls or delays.
+            Direct integration with your clients&apos; GP records is coming to Careroot. You will be able to pull current medications, allergies, medical history, and recent consultations directly into each client&apos;s profile — without phone calls or delays.
           </p>
           <div className="mt-4 flex gap-3 flex-wrap text-sm font-body">
             {["Live medication lists", "Allergy alerts", "Recent consultations", "Automatic updates"].map((f) => (
@@ -64,12 +64,12 @@ export default function DashboardGPConnectPage() {
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
           <h3 className="font-body font-semibold text-cr-charcoal mb-1">Register your interest</h3>
-          <p className="text-xs text-cr-slate font-body mb-4">We'll notify you as soon as GP Connect is available for your account.</p>
+          <p className="text-xs text-cr-slate font-body mb-4">We&apos;ll notify you as soon as GP Connect is available for your account.</p>
           {submitted ? (
             <div className="text-center py-6">
               <CheckCircle size={32} className="mx-auto text-cr-forest mb-2" />
-              <p className="text-sm font-body font-medium text-cr-charcoal">You're on the list!</p>
-              <p className="text-xs text-cr-slate mt-1">We'll be in touch when GP Connect goes live.</p>
+              <p className="text-sm font-body font-medium text-cr-charcoal">You&apos;re on the list!</p>
+              <p className="text-xs text-cr-slate mt-1">We&apos;ll be in touch when GP Connect goes live.</p>
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-3">
@@ -82,7 +82,7 @@ export default function DashboardGPConnectPage() {
                 <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="you@carecompany.co.uk" className={inputCls} />
               </div>
               <div>
-                <label className="block text-xs font-body font-medium text-cr-slate mb-1">Anything you'd like us to know?</label>
+                <label className="block text-xs font-body font-medium text-cr-slate mb-1">Anything you&apos;d like us to know?</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} placeholder="e.g. number of clients, specific use case…" className={inputCls + " resize-none"} />
               </div>
               <button type="submit" disabled={submitting} className="w-full bg-cr-forest text-white font-body font-medium py-2.5 rounded-lg hover:bg-cr-sage transition-colors flex items-center justify-center gap-2 disabled:opacity-60 text-sm">

@@ -4,7 +4,7 @@ import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CREmptyState } from "@/components/ui/CREmptyState";
 import { CRAvatar } from "@/components/ui/CRAvatar";
-import { formatDateUK, formatTimeUK } from "@/lib/utils";
+import { formatTimeUK } from "@/lib/utils";
 import { Calendar, Plus } from "lucide-react";
 import Link from "next/link";
 

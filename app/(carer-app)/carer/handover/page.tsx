@@ -7,9 +7,6 @@ export default async function CarerHandoverPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: userRecord } = await supabase
-    .from("users").select("id, organisation_id").eq("id", user.id).single();
-
   const now = new Date();
   const thirtyMinsAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
@@ -55,7 +52,6 @@ export default async function CarerHandoverPage() {
       <div className="px-4 py-4">
         <CarerHandoverClient
           handovers={(handovers ?? []) as unknown as Parameters<typeof CarerHandoverClient>[0]["handovers"]}
-          userId={user.id}
           hasActiveShift={accessibleClientIds.length > 0}
         />
       </div>

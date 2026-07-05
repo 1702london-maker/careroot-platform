@@ -76,7 +76,7 @@ export default function NewInvoicePage() {
   const vatAmount = subtotal * (vatRate / 100);
   const total = subtotal + vatAmount;
 
-  const save = async (send = false) => {
+  const save = async () => {
     setSaving(true);
     const invNum = `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
     const { data: inv, error } = await supabase.from("invoices").insert({
@@ -225,11 +225,11 @@ export default function NewInvoicePage() {
                 <div className="flex justify-between font-semibold text-cr-charcoal text-base border-t border-gray-100 pt-2 mt-2"><span>Total</span><span>£{total.toFixed(2)}</span></div>
               </div>
               <div className="flex flex-col gap-3 mt-8">
-                <button onClick={() => save(false)} disabled={saving || lineItems.length === 0}
+                <button onClick={() => save()} disabled={saving || lineItems.length === 0}
                   className="w-full py-2.5 rounded-lg text-sm font-body font-medium border border-cr-forest text-cr-forest hover:bg-cr-mint transition-colors disabled:opacity-50">
                   {saving ? "Saving…" : "Save as Draft"}
                 </button>
-                <button onClick={() => save(true)} disabled={saving || lineItems.length === 0}
+                <button onClick={() => save()} disabled={saving || lineItems.length === 0}
                   className="w-full py-2.5 rounded-lg text-sm font-body font-medium bg-cr-forest text-white hover:bg-cr-sage transition-colors disabled:opacity-50">
                   {saving ? <><Loader2 size={14} className="animate-spin inline mr-2" />Creating…</> : "Create Invoice"}
                 </button>

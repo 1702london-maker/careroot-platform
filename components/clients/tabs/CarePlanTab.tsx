@@ -8,14 +8,13 @@ import { CRAIBadge } from "@/components/ui/CRAIBadge";
 import { CREmptyState } from "@/components/ui/CREmptyState";
 import { formatDateUK } from "@/lib/utils";
 import { FileText, CheckCircle, Clock, Loader2 } from "lucide-react";
-import Link from "next/link";
 
 interface Props {
   client: Record<string, unknown>;
   carePlans: Record<string, unknown>[];
 }
 
-export function ClientCarePlanTab({ client, carePlans }: Props) {
+export function ClientCarePlanTab({ carePlans }: Props) {
   const [approving, setApproving] = useState<string | null>(null);
   const supabase = createClient();
 

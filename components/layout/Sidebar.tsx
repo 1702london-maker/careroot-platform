@@ -13,7 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { CRAIBadge } from "@/components/ui/CRAIBadge";
 import { useWhiteLabel } from "@/components/providers/WhiteLabelProvider";
 
 interface NavItem {

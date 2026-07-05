@@ -6,7 +6,7 @@ import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge, riskVariant, statusVariant } from "@/components/ui/CRBadge";
 import { CRAvatar } from "@/components/ui/CRAvatar";
 import { CREmptyState } from "@/components/ui/CREmptyState";
-import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
+
 import { Users, Plus, Search } from "lucide-react";
 import { formatDateUK } from "@/lib/utils";
 

@@ -28,7 +28,6 @@ export async function GET(req: NextRequest) {
 
   const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
   const from = process.env.RESEND_FROM_EMAIL ?? "noreply@careroot.care";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care";
   let missedCount = 0;
 
   for (const visit of missedVisits) {

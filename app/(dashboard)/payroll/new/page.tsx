@@ -141,7 +141,7 @@ export default function NewPayrollPage() {
               <label key={c.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 cursor-pointer">
                 <input type="checkbox" checked={selectedCarers.has(c.id)} onChange={(e) => {
                   const s = new Set(selectedCarers);
-                  e.target.checked ? s.add(c.id) : s.delete(c.id);
+                  if (e.target.checked) { s.add(c.id); } else { s.delete(c.id); }
                   setSelectedCarers(s);
                 }} className="w-4 h-4 accent-cr-forest" />
                 <span className="font-body text-sm text-cr-charcoal">{c.first_name} {c.last_name}</span>

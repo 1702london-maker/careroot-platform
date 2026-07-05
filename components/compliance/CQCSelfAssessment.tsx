@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ChevronDown, ChevronUp, CheckCircle, AlertTriangle, XCircle, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckCircle, Plus, Trash2 } from "lucide-react";
 
 type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate" | "";
 

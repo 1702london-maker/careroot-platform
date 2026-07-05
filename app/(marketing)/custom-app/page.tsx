@@ -129,7 +129,7 @@ export default function CustomAppPage() {
             ))}
           </div>
           <p className="text-sm text-center text-[#6B7280] font-body mt-6 leading-relaxed">
-            Everything underneath stays the same. All the AI. All the compliance tools. All the emergency features. All the care management. 100% of Careroot's capability under your name.
+            Everything underneath stays the same. All the AI. All the compliance tools. All the emergency features. All the care management. 100% of Careroot&apos;s capability under your name.
           </p>
         </div>
       </section>

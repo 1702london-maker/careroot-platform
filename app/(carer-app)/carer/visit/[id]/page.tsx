@@ -99,7 +99,6 @@ export default async function VisitPage({ params }: Props) {
       medications={medications || []}
       mealPreferences={mealPreferences || []}
       nutritionProfile={nutritionProfile}
-      carerRole={userRecord?.role || "carer"}
     />
   );
 }

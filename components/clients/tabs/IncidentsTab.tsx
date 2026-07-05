@@ -11,7 +11,7 @@ interface Props {
   incidents: Record<string, unknown>[];
 }
 
-export function ClientIncidentsTab({ client, incidents }: Props) {
+export function ClientIncidentsTab({ incidents }: Props) {
   if (incidents.length === 0) {
     return (
       <CREmptyState

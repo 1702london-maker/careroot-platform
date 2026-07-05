@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Download, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Download, ShieldCheck } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 function exportCSV(data: Record<string, unknown>[], filename: string) {

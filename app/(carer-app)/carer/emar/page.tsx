@@ -7,9 +7,6 @@ export default async function CarerEmarPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: userRecord } = await supabase
-    .from("users").select("id, organisation_id, role").eq("id", user.id).single();
-
   const now = new Date();
   const thirtyMinsAgo = new Date(now.getTime() - 30 * 60 * 1000);
 

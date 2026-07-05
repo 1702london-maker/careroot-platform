@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, Lock, AlertCircle, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Loader2, Lock, AlertCircle, MapPin, Copy, CheckCircle } from "lucide-react";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -15,6 +15,25 @@ export function ShiftLoginScreen({ shift, credential, onSuccess }: Props) {
   const [error, setError] = useState("");
   const [gpsStatus, setGpsStatus] = useState<"idle" | "getting" | "got" | "denied">("idle");
   const [gps, setGps] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+  const [deviceId, setDeviceId] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  // Generate or retrieve a stable browser device ID
+  useEffect(() => {
+    let id = localStorage.getItem("careroot_device_id");
+    if (!id) {
+      id = "WEB-" + Array.from(crypto.getRandomValues(new Uint8Array(8)))
+        .map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+      localStorage.setItem("careroot_device_id", id);
+    }
+    setDeviceId(id);
+  }, []);
+
+  function copyDeviceId() {
+    navigator.clipboard.writeText(deviceId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const scheduledStart = new Date(shift.scheduled_start as string);
   const scheduledEnd = new Date(shift.scheduled_end as string);
@@ -54,6 +73,7 @@ export function ShiftLoginScreen({ shift, credential, onSuccess }: Props) {
         shift_id: shift.id,
         pin,
         token: credential.token,
+        imei: deviceId,
         gps_lat: gpsData?.lat ?? null,
         gps_lng: gpsData?.lng ?? null,
         gps_accuracy_metres: gpsData?.accuracy ?? null,
@@ -149,6 +169,20 @@ export function ShiftLoginScreen({ shift, credential, onSuccess }: Props) {
         <p className="text-center text-xs text-cr-slate mt-4">
           PIN was sent via SMS before your shift. Contact your manager if you haven&apos;t received it.
         </p>
+
+        {/* Device ID — shown so manager can register this browser as an approved device */}
+        {deviceId && (
+          <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+            <p className="text-[10px] font-semibold text-cr-slate uppercase tracking-wider mb-1">Your Device ID</p>
+            <div className="flex items-center gap-2">
+              <code className="text-xs font-mono text-cr-charcoal flex-1 break-all">{deviceId}</code>
+              <button onClick={copyDeviceId} className="flex-shrink-0 text-cr-slate hover:text-cr-forest transition-colors">
+                {copied ? <CheckCircle size={14} className="text-green-600" /> : <Copy size={14} />}
+              </button>
+            </div>
+            <p className="text-[10px] text-cr-slate mt-1">Share this with your manager to register this device.</p>
+          </div>
+        )}
       </div>
     </div>
   );

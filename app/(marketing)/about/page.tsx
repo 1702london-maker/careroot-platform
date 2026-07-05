@@ -52,7 +52,7 @@ export default function AboutPage() {
             {/* Right content col */}
             <div className="lg:col-span-7 space-y-6">
               <p className="text-lg text-[#4B5563] leading-relaxed">
-                Care workers are some of the most important people in our society. They show up every day — in people's homes, in care homes, in supported living services — and do work that demands expertise, compassion, and extraordinary attention to detail.
+                Care workers are some of the most important people in our society. They show up every day — in people&apos;s homes, in care homes, in supported living services — and do work that demands expertise, compassion, and extraordinary attention to detail.
               </p>
               <p className="text-lg text-[#4B5563] leading-relaxed">
                 The people they support deserve to be known. Not as a record number or a care category — but as a whole person with preferences, memories, relationships, and dignity. Careroot is built to capture that wholeness and put it in the hands of every carer who walks through the door.
@@ -64,7 +64,7 @@ export default function AboutPage() {
               {/* Pull quote */}
               <div className="border-l-[3px] border-[#1A3C2E] pl-8 py-2 mt-8">
                 <p className="font-display text-[26px] md:text-[30px] leading-relaxed text-[#1C1C1E] italic">
-                  "Care is not an industry. It is a human act. The technology supporting it should honour that."
+                  &quot;Care is not an industry. It is a human act. The technology supporting it should honour that.&quot;
                 </p>
                 <p className="text-sm text-[#9CA3AF] mt-4 font-medium">
                   — Careroot founding principle
@@ -297,7 +297,7 @@ export default function AboutPage() {
 
           <div className="border-t border-white/10 pt-8">
             <p className="text-white/60 text-sm">
-              Don't see a role that fits?{" "}
+              Don&apos;t see a role that fits?{" "}
               <a
                 href="mailto:onboarding@careroot.co.uk?subject=Speculative Application"
                 className="text-white font-medium underline underline-offset-2 hover:no-underline"

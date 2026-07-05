@@ -11,16 +11,13 @@ export default async function CarerHomePage() {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(23, 59, 59, 999);
 
-  const [{ data: shifts }, { data: userRecord }] = await Promise.all([
-    supabase
-      .from("shifts")
-      .select(`id, scheduled_start, scheduled_end, actual_start, actual_end, status, client_ids, service_lines(name)`)
-      .eq("staff_id", user!.id)
-      .gte("scheduled_start", today.toISOString())
-      .lte("scheduled_start", tomorrow.toISOString())
-      .order("scheduled_start"),
-    supabase.from("users").select("id, first_name, last_name, phone, role").eq("id", user!.id).single(),
-  ]);
+  const { data: shifts } = await supabase
+    .from("shifts")
+    .select(`id, scheduled_start, scheduled_end, actual_start, actual_end, status, client_ids, service_lines(name)`)
+    .eq("staff_id", user!.id)
+    .gte("scheduled_start", today.toISOString())
+    .lte("scheduled_start", tomorrow.toISOString())
+    .order("scheduled_start");
 
-  return <CarerHome shifts={(shifts as unknown[]) || []} user={userRecord} />;
+  return <CarerHome shifts={(shifts as unknown[]) || []} />;
 }

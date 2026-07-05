@@ -13,7 +13,7 @@ type Shift = {
   service_lines: { name: string } | null;
 };
 
-export function CarerHome({ shifts: rawShifts, user }: { shifts: unknown[]; user: Record<string, unknown> | null }) {
+export function CarerHome({ shifts: rawShifts }: { shifts: unknown[] }) {
   const shifts = rawShifts as Shift[];
   const completed = shifts.filter(s => s.status === "completed").length;
   const active = shifts.find(s => s.status === "active");

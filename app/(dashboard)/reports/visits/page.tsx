@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Download, ChevronDown, ChevronUp } from "lucide-react";
+import { Download } from "lucide-react";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -20,31 +20,8 @@ function exportCSV(data: Record<string, unknown>[], filename: string) {
   a.click();
 }
 
-function ReportSection({ title, description, children, onExport }: { title: string; description: string; children: React.ReactNode; onExport: () => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-5">
-      <div className="flex items-start justify-between mb-1">
-        <div>
-          <h3 className="font-body font-semibold text-cr-charcoal text-lg">{title}</h3>
-          <p className="text-xs text-cr-slate mt-0.5">{description}</p>
-        </div>
-        <button onClick={onExport} className="text-xs font-body font-medium border border-gray-200 rounded-lg px-3 py-1.5 text-cr-charcoal hover:border-cr-forest transition-colors flex items-center gap-1.5">
-          <Download size={12} /> Export CSV
-        </button>
-      </div>
-      {children}
-      <button onClick={() => setOpen(!open)} className="mt-4 text-xs font-body text-cr-forest flex items-center gap-1 hover:opacity-70">
-        {open ? <><ChevronUp size={14} /> Hide data table</> : <><ChevronDown size={14} /> View data table</>}
-      </button>
-      {open && <div className="mt-3 overflow-x-auto border border-gray-100 rounded-lg">{/* Table slot rendered inside children or below */}</div>}
-    </div>
-  );
-}
-
 export default function VisitReportsPage() {
   const supabase = createClient();
-  const [orgId, setOrgId] = useState("");
   const [completionData, setCompletionData] = useState<{ week: string; scheduled: number; completed: number; missed: number; rate: number }[]>([]);
   const [carerWorkload, setCarerWorkload] = useState<{ name: string; visits: number; hours: number }[]>([]);
   const [durationData, setDurationData] = useState<{ name: string; scheduled: number; actual: number }[]>([]);
@@ -56,7 +33,6 @@ export default function VisitReportsPage() {
       if (!user) return;
       const { data: u } = await supabase.from("users").select("organisation_id").eq("id", user.id).single();
       if (!u) return;
-      setOrgId(u.organisation_id);
 
       const now = new Date();
       const start = dateRange === "week"

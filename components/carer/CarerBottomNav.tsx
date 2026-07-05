@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Clock, FileText, Settings, AlertTriangle, Calendar, Pill, ArrowRightLeft } from "lucide-react";
+import { Home, AlertTriangle, Calendar, Pill, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [

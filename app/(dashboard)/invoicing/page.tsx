@@ -3,9 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
 import { CRStatCard } from "@/components/ui/CRStatCard";
-import { CRBadge } from "@/components/ui/CRBadge";
 import { TrendingUp, Clock, AlertCircle, CheckCircle, Plus, Eye, Download } from "lucide-react";
-import { formatDateUK } from "@/lib/utils";
 import type { Invoice } from "@/types";
 
 function fmtGBP(n: number) {

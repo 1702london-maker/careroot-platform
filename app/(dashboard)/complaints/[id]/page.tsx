@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, AlertTriangle, CheckCircle2, Loader2, Save } from "lucide-react";
 import { CRCard } from "@/components/ui/CRCard";
@@ -30,7 +30,6 @@ const STATUS_OPTIONS = ["open", "acknowledged", "investigating", "escalated", "r
 
 export default function ComplaintDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const [complaint, setComplaint] = useState<Complaint | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

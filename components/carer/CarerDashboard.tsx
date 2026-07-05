@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
-import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
 import { CRAvatar } from "@/components/ui/CRAvatar";
 import { formatTimeUK } from "@/lib/utils";
 import { MapPin, Clock, ChevronRight, CheckCircle, AlertTriangle } from "lucide-react";
@@ -12,12 +10,10 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   visits: Record<string, unknown>[];
-  user: Record<string, unknown> | null;
 }
 
-export function CarerDashboard({ visits, user }: Props) {
+export function CarerDashboard({ visits }: Props) {
   const completed = visits.filter((v) => v.status === "completed").length;
-  const upcoming = visits.filter((v) => v.status === "scheduled");
   const total = visits.length;
 
   return (

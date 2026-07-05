@@ -6,8 +6,8 @@ import { CRBadge } from "@/components/ui/CRBadge";
 import { CRAvatar } from "@/components/ui/CRAvatar";
 import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
 import {
-  User, FileText, BookOpen, Award, Calendar, AlertTriangle,
-  Banknote, CheckCircle, XCircle, Clock, Upload, Plus,
+  User, FileText, BookOpen, Award, AlertTriangle,
+  Banknote, CheckCircle, XCircle, Upload, Plus,
   AlertCircle, Shield, FileCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";

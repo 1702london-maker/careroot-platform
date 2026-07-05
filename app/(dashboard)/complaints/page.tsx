@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { CRPageHeader } from "@/components/ui/CRPageHeader";
+
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CREmptyState } from "@/components/ui/CREmptyState";

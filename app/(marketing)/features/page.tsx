@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 import Link from "next/link";
 import {
-  Brain, ShieldCheck, AlertTriangle, Heart, Smartphone,
-  UtensilsCrossed, MessageSquare, Users, Lock, CheckCircle,
-  QrCode, Shield, Mic, FileText, Zap, Eye, Clock,
+  Brain, AlertTriangle, Heart,
+  Users, Lock, CheckCircle,
+  QrCode, Shield, Mic, FileText, Eye,
 } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -223,7 +223,7 @@ export default function FeaturesPage() {
 
           <div className="bg-[#1A3C2E] text-white rounded-[12px] px-6 py-4">
             <p className="text-sm font-medium">
-              The CQC's 2026 Single Assessment Framework requires digital evidence at the centre of how services are assessed. Careroot generates that evidence from every interaction — automatically.
+              The CQC&apos;s 2026 Single Assessment Framework requires digital evidence at the centre of how services are assessed. Careroot generates that evidence from every interaction — automatically.
             </p>
           </div>
         </div>
@@ -330,7 +330,7 @@ export default function FeaturesPage() {
           {/* Mock screens */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
             <div className="bg-[#1A3C2E] rounded-[20px] p-4 text-white">
-              <p className="text-xs text-white/60 mb-3 font-semibold uppercase tracking-wide">Today's visits</p>
+              <p className="text-xs text-white/60 mb-3 font-semibold uppercase tracking-wide">Today&apos;s visits</p>
               {[
                 { name: "Margaret Davies", time: "09:00", risk: "High", status: "Done" },
                 { name: "John Smith", time: "11:30", risk: "Medium", status: "Active" },
@@ -367,7 +367,7 @@ export default function FeaturesPage() {
 
             <div className="bg-[#F9F7F4] rounded-[20px] p-4">
               <p className="text-xs text-[#6B7280] font-semibold uppercase tracking-wide mb-2">Meal preparation</p>
-              <p className="font-semibold text-[#1C1C1E] mb-1">Scrambled Eggs — John's way</p>
+              <p className="font-semibold text-[#1C1C1E] mb-1">Scrambled Eggs — John&apos;s way</p>
               <p className="text-xs text-[#9CA3AF] mb-3">Breakfast · Est. 8 minutes</p>
               <div className="bg-red-50 border border-red-100 rounded-[8px] p-2 text-xs text-[#DC2626] font-semibold mb-3">
                 ⚠ ALLERGY: Dairy — use oat milk only
@@ -400,7 +400,7 @@ export default function FeaturesPage() {
             Give families the visibility they deserve.
           </h2>
           <p className="text-[#6B7280] leading-relaxed max-w-xl mb-12">
-            When families can see what's happening, they trust your agency. When they trust your agency, they refer you to others.
+            When families can see what&apos;s happening, they trust your agency. When they trust your agency, they refer you to others.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
@@ -425,9 +425,9 @@ export default function FeaturesPage() {
 
           <div className="bg-white border border-gray-100 rounded-[16px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] max-w-2xl">
             <p className="text-2xl mb-2">🍲</p>
-            <p className="font-semibold text-[#1C1C1E] mb-2">"She loves Nigerian pepper soup on cold days."</p>
+            <p className="font-semibold text-[#1C1C1E] mb-2">&quot;She loves Nigerian pepper soup on cold days.&quot;</p>
             <p className="text-sm text-[#6B7280] leading-relaxed">
-              The client's daughter submits the recipe with steps. Manager approves. It appears on the carer's visit screen the next morning. That is person-centred care.
+              The client&apos;s daughter submits the recipe with steps. Manager approves. It appears on the carer&apos;s visit screen the next morning. That is person-centred care.
             </p>
           </div>
         </div>
@@ -466,7 +466,7 @@ export default function FeaturesPage() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-xs text-[#9CA3AF]">Meal Preparation</p>
-                  <h4 className="font-semibold text-[#1C1C1E]">Scrambled Eggs — John's way</h4>
+                  <h4 className="font-semibold text-[#1C1C1E]">Scrambled Eggs — John&apos;s way</h4>
                   <p className="text-xs text-[#9CA3AF]">Breakfast · Est. 8 minutes</p>
                 </div>
               </div>

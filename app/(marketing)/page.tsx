@@ -9,8 +9,7 @@ export const metadata: Metadata = {
 import Link from "next/link";
 import {
   Brain, ShieldCheck, AlertTriangle, Heart, Smartphone,
-  CheckCircle, Shield, QrCode, UtensilsCrossed, Clock,
-  Users, FileText, Zap,
+  Shield, UtensilsCrossed, Clock,
 } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";

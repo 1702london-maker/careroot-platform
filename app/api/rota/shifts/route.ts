@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   // Resolve client names for the first client in each shift
   const allClientIds = Array.from(new Set((shifts ?? []).flatMap((s) => (s.client_ids as string[] | null) ?? [])));
-  let clientMap: Record<string, { first_name: string; last_name: string }> = {};
+  const clientMap: Record<string, { first_name: string; last_name: string }> = {};
   if (allClientIds.length) {
     const { data: clientRows } = await supabase
       .from("clients").select("id, first_name, last_name").in("id", allClientIds);

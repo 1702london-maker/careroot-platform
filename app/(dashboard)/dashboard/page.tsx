@@ -11,7 +11,7 @@ import {
   Shield, MessageSquare, UserCheck, Plus,
   Calendar, FileText
 } from "lucide-react";
-import { formatDateTimeUK, formatTimeUK, getDaysSince } from "@/lib/utils";
+import { formatTimeUK, getDaysSince } from "@/lib/utils";
 import Link from "next/link";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 
@@ -43,7 +43,8 @@ export default async function DashboardPage() {
     { data: openFlags },
     { data: openComplaints },
     { data: recentIncidents },
-    { data: emergencyEvents },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    { data: _emergencyData },
     { count: staffOnShift },
     { data: recentMedications },
     { data: overdueSupervisions },

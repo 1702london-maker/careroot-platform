@@ -57,7 +57,7 @@ export default async function RotaPage() {
 
   // Enrich initial shifts with client names
   const allClientIds = Array.from(new Set((shiftsRaw ?? []).flatMap((s) => (s.client_ids as string[] | null) ?? [])));
-  let clientMap: Record<string, { first_name: string; last_name: string }> = {};
+  const clientMap: Record<string, { first_name: string; last_name: string }> = {};
   if (allClientIds.length) {
     const { data: clientRows } = await supabase
       .from("clients").select("id, first_name, last_name").in("id", allClientIds);

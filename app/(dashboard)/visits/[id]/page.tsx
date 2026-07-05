@@ -7,9 +7,9 @@ import { CRBadge, statusVariant, riskVariant } from "@/components/ui/CRBadge";
 import { CRAvatar } from "@/components/ui/CRAvatar";
 import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
 import { CREmptyState } from "@/components/ui/CREmptyState";
-import { formatDateTimeUK, formatTimeUK, formatDateUK } from "@/lib/utils";
+import { formatDateTimeUK, formatTimeUK } from "@/lib/utils";
 import {
-  Clock, MapPin, User2, FileText, Pill,
+  Clock, MapPin, FileText, Pill,
   Utensils, AlertTriangle, CheckCircle2, XCircle,
   Mic, Sparkles, ArrowLeft
 } from "lucide-react";
@@ -54,14 +54,6 @@ export default async function VisitDetailPage({ params }: Props) {
   const client = visit.clients as Record<string, unknown> | null;
   const carer = visit.users as Record<string, string> | null;
   const address = client?.address as Record<string, string> | null;
-
-  const statusColors: Record<string, string> = {
-    completed: "text-green-600 bg-green-50 border-green-200",
-    in_progress: "text-blue-600 bg-blue-50 border-blue-200",
-    scheduled: "text-gray-600 bg-gray-50 border-gray-200",
-    missed: "text-cr-red bg-red-50 border-red-200",
-    cancelled: "text-cr-slate bg-gray-50 border-gray-200",
-  };
 
   const duration = visit.actual_start && visit.actual_end
     ? Math.round((new Date(visit.actual_end).getTime() - new Date(visit.actual_start).getTime()) / 60000)

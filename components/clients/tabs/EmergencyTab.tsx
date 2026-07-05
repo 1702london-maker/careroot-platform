@@ -30,7 +30,6 @@ export function ClientEmergencyTab({ client, emergencyToken, emergencyPin }: Pro
   const emergencyContacts = (client.emergency_contact as Array<Record<string, string>>) || [];
   const gpDetails = client.gp_details as Record<string, string> | null;
   const allergies = (client.allergies as Array<Record<string, string>>) || [];
-  const medications = (client.medications as Array<Record<string, string>>) || [];
 
   const printCard = () => {
     const win = window.open("", "_blank");

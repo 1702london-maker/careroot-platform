@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Heart, Clock, FileText, MessageSquare, Shield, ChevronRight,
-  Loader2, CheckCircle2, AlertTriangle, Utensils, Pill, LogOut, User2
+  Loader2, CheckCircle2, AlertTriangle, Utensils, Pill, LogOut
 } from "lucide-react";
 import { formatDateTimeUK } from "@/lib/utils";
 import { useRouter } from "next/navigation";

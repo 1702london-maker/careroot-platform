@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
-import { CheckCircle, XCircle, Clock, AlertCircle, RefreshCw } from "lucide-react";
+import { Clock, RefreshCw } from "lucide-react";
 
 type Client = { id: string; first_name: string; last_name: string; date_of_birth?: string };
 type Medication = {
@@ -162,7 +162,6 @@ export function CarerEmarClient({ clients, medications, initialAdministrations, 
         <div className="space-y-3">
           {clientMeds.map(med => {
             const admin = adminMap[med.id];
-            const status = admin?.status ?? "pending";
 
             return (
               <CRCard key={med.id}>

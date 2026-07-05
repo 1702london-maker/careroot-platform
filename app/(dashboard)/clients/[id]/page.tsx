@@ -6,7 +6,7 @@ import { CRAvatar } from "@/components/ui/CRAvatar";
 import { CRBadge, riskVariant, statusVariant } from "@/components/ui/CRBadge";
 import { ClientTabs } from "@/components/clients/ClientTabs";
 import { formatDateUK, getDaysSince } from "@/lib/utils";
-import { Phone, MapPin, User2, AlertTriangle } from "lucide-react";
+import { Phone, MapPin, User2 } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
