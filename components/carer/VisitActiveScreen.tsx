@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
@@ -36,6 +36,9 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
   const [visitStatus, setVisitStatus] = useState(String(visit.status));
   const [noteText, setNoteText] = useState("");
   const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const [summarising, setSummarising] = useState(false);
   const [aiSummary, setAiSummary] = useState<Record<string, unknown> | null>(null);
   const [saving, setSaving] = useState(false);
@@ -56,8 +59,57 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
   };
 
   const transcribeVoice = async () => {
-    // In production: record audio, send to /api/voice/transcribe
-    setRecording(!recording);
+    if (recording) {
+      // Stop recording — triggers ondataavailable then onstop
+      mediaRecorderRef.current?.stop();
+      setRecording(false);
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/ogg";
+      const recorder = new MediaRecorder(stream, { mimeType });
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setTranscribing(true);
+        try {
+          const blob = new Blob(chunksRef.current, { type: mimeType });
+          const formData = new FormData();
+          formData.append("audio", blob, "voice-note.webm");
+          formData.append("visit_id", String(visit.id));
+          formData.append("client_id", String(client.id));
+
+          const res = await fetch("/api/voice/transcribe", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (res.ok) {
+            const { text } = await res.json();
+            if (text) {
+              setNoteText((prev) => prev ? `${prev}\n\n${text}` : text);
+            }
+          }
+        } catch {
+          // Silently fail — user can still type manually
+        } finally {
+          setTranscribing(false);
+        }
+      };
+
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setRecording(true);
+    } catch {
+      alert("Microphone access denied. Please allow microphone access in your browser settings.");
+    }
   };
 
   const summariseWithAI = async () => {
@@ -348,9 +400,18 @@ export function VisitActiveScreen({ visit, client, carePlan, medications, mealPr
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-body font-semibold text-cr-charcoal">Visit Note</h3>
               <div className="flex items-center gap-2">
+                {transcribing && (
+                  <span className="text-xs text-cr-slate font-body animate-pulse">Transcribing...</span>
+                )}
                 <button
                   onClick={transcribeVoice}
-                  className={cn("p-2 rounded-full", recording ? "bg-cr-red text-white" : "bg-gray-100 text-cr-charcoal")}
+                  disabled={transcribing}
+                  title={recording ? "Tap to stop and transcribe" : "Tap to start voice note"}
+                  className={cn(
+                    "p-2 rounded-full transition-all",
+                    recording ? "bg-cr-red text-white animate-pulse" : "bg-gray-100 text-cr-charcoal",
+                    transcribing && "opacity-50 cursor-not-allowed"
+                  )}
                 >
                   {recording ? <MicOff size={16} /> : <Mic size={16} />}
                 </button>

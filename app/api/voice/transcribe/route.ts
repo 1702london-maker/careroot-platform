@@ -1,31 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
-  if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json({ error: "Voice transcription not configured" }, { status: 503 });
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const formData = await req.formData();
+  const audio = formData.get("audio") as File | null;
+
+  if (!audio) {
+    return NextResponse.json({ error: "No audio file" }, { status: 400 });
   }
 
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "Transcription not configured" }, { status: 503 });
+  }
 
-  try {
-    const formData = await req.formData();
-    const audioFile = formData.get("audio") as File;
+  // Forward to OpenAI Whisper
+  const whisperForm = new FormData();
+  whisperForm.append("file", audio, "voice-note.webm");
+  whisperForm.append("model", "whisper-1");
+  whisperForm.append("language", "en");
 
-    if (!audioFile) {
-      return NextResponse.json({ error: "No audio file provided" }, { status: 400 });
-    }
+  const whisperRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: whisperForm,
+  });
 
-    const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
-      model: "whisper-1",
-      language: "en",
-      response_format: "text",
-    });
-
-    return NextResponse.json({ transcript: transcription });
-  } catch (error) {
-    console.error("transcribe error:", error);
+  if (!whisperRes.ok) {
+    const err = await whisperRes.text();
+    console.error("Whisper error:", err);
     return NextResponse.json({ error: "Transcription failed" }, { status: 500 });
   }
+
+  const result = await whisperRes.json();
+  return NextResponse.json({ text: result.text ?? "" });
 }
