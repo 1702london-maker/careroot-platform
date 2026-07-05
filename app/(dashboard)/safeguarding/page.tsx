@@ -1,12 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import { SafeguardingDashboard } from "@/components/safety/SafeguardingDashboard";
 
 export default async function SafeguardingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: userRecord } = await supabase.from("users").select("organisation_id, role").eq("id", user!.id).single();
+  if (!user) redirect("/login");
 
-  const { data: orgClients } = await supabase.from("clients").select("id").eq("organisation_id", userRecord!.organisation_id);
+  const { data: userRecord } = await supabase.from("users").select("organisation_id, role").eq("id", user.id).single();
+  if (!userRecord?.organisation_id) redirect("/login");
+
+  const { data: orgClients } = await supabase.from("clients").select("id").eq("organisation_id", userRecord.organisation_id);
   const clientIds = (orgClients || []).map(c => c.id);
 
   const { data: concerns } = await supabase

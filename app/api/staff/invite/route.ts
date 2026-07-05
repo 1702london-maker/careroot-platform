@@ -14,11 +14,20 @@ export async function POST(req: NextRequest) {
 
     const { data: inviter } = await supabase
       .from("users")
-      .select("first_name, last_name, organisation_id, organisations(name, plan, max_staff)")
+      .select("first_name, last_name, role, organisation_id, organisations(name, plan, max_staff)")
       .eq("id", user.id)
       .single();
 
     if (!inviter?.organisation_id) return NextResponse.json({ error: "Inviter organisation not found" }, { status: 404 });
+
+    if (!["org_admin", "manager", "superadmin"].includes(inviter.role ?? "")) {
+      return NextResponse.json({ error: "Forbidden: only managers and admins can invite staff" }, { status: 403 });
+    }
+
+    const INVITABLE_ROLES = ["carer", "senior_carer", "coordinator", "nurse", "manager", "support_worker", "driver", "admin"];
+    if (!INVITABLE_ROLES.includes(role)) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
 
     const org = inviter.organisations as unknown as Record<string, string | number> | null;
     const orgId = inviter.organisation_id;

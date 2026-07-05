@@ -25,7 +25,9 @@ export default async function ClientsPage({
     .eq("id", user.id)
     .single();
 
-  const orgId = userRecord?.organisation_id;
+  if (!userRecord?.organisation_id) redirect("/login");
+
+  const orgId = userRecord.organisation_id;
   const params = await searchParams;
 
   let query = supabase

@@ -17,9 +17,20 @@ export async function POST(req: NextRequest) {
       .select("first_name, last_name, organisation_id, organisations(name)")
       .eq("id", user.id).single();
 
-    const orgId = inviter?.organisation_id;
+    if (!inviter?.organisation_id) {
+      return NextResponse.json({ error: "Inviter organisation not found" }, { status: 403 });
+    }
+
+    const orgId = inviter.organisation_id;
     const orgName = (inviter?.organisations as unknown as { name: string } | null)?.name ?? "your organisation";
     const appUrl = "https://www.careroot.co.uk";
+
+    // Verify the client belongs to the inviter's organisation — prevent cross-org family access grants
+    const { data: clientCheck } = await supabase
+      .from("clients").select("id").eq("id", client_id).eq("organisation_id", orgId).single();
+    if (!clientCheck) {
+      return NextResponse.json({ error: "Client not found in your organisation" }, { status: 404 });
+    }
 
     const service = createServiceClientSync();
 

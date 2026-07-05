@@ -10,11 +10,12 @@ export default async function WeeklyReportsPage() {
   if (!user) redirect("/login");
 
   const { data: userRecord } = await supabase.from("users").select("organisation_id").eq("id", user.id).single();
+  if (!userRecord?.organisation_id) redirect("/login");
 
   const { data: clients } = await supabase
     .from("clients")
     .select("id, first_name, last_name")
-    .eq("organisation_id", userRecord!.organisation_id)
+    .eq("organisation_id", userRecord.organisation_id)
     .eq("is_active", true)
     .order("first_name");
 
