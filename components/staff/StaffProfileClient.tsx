@@ -274,8 +274,8 @@ export function StaffProfileClient({ staffMember, documents, training, supervisi
               </CRBadge>
             </div>
             <p className="text-sm text-cr-slate capitalize mt-0.5">{String(fm.role ?? "").replace(/_/g, " ")}</p>
-            {fm.email && <p className="text-xs text-cr-slate mt-1">{String(fm.email)}</p>}
-            {fm.phone && <p className="text-xs text-cr-slate">{String(fm.phone)}</p>}
+            {Boolean(fm.email) && <p className="text-xs text-cr-slate mt-1">{String(fm.email)}</p>}
+            {Boolean(fm.phone) && <p className="text-xs text-cr-slate">{String(fm.phone)}</p>}
           </div>
           <div className="text-right flex-shrink-0 space-y-1">
             <div className="text-xs text-cr-slate">Docs uploaded</div>
@@ -320,9 +320,9 @@ export function StaffProfileClient({ staffMember, documents, training, supervisi
                 ["Contract type", String(fm.contract_type ?? "—")],
                 ["Staff ID", String(fm.id ?? "—").slice(0, 8) + "..."],
               ].map(([label, val]) => (
-                <div key={label}>
-                  <dt className="text-cr-slate text-xs mb-0.5">{label}</dt>
-                  <dd className="font-medium text-cr-charcoal capitalize">{val}</dd>
+                <div key={label as string}>
+                  <dt className="text-cr-slate text-xs mb-0.5">{label as string}</dt>
+                  <dd className="font-medium text-cr-charcoal capitalize">{val as string}</dd>
                 </div>
               ))}
             </dl>
@@ -337,7 +337,7 @@ export function StaffProfileClient({ staffMember, documents, training, supervisi
               <p className={`text-sm font-medium ${fm.dbs_expiry ? "text-green-600" : "text-gray-400"}`}>
                 {fm.dbs_number ? `Disclosed: ${String(fm.dbs_number).slice(0, 6)}...` : "Not recorded"}
               </p>
-              {fm.dbs_expiry && (
+              {Boolean(fm.dbs_expiry) && (
                 <p className="text-xs text-cr-slate mt-0.5">
                   Expires: {new Date(String(fm.dbs_expiry)).toLocaleDateString("en-GB")}
                 </p>

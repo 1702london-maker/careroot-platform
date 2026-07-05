@@ -56,7 +56,7 @@ export default async function RotaPage() {
   ]);
 
   // Enrich initial shifts with client names
-  const allClientIds = [...new Set((shiftsRaw ?? []).flatMap((s) => (s.client_ids as string[] | null) ?? []))];
+  const allClientIds = Array.from(new Set((shiftsRaw ?? []).flatMap((s) => (s.client_ids as string[] | null) ?? [])));
   let clientMap: Record<string, { first_name: string; last_name: string }> = {};
   if (allClientIds.length) {
     const { data: clientRows } = await supabase
@@ -76,7 +76,7 @@ export default async function RotaPage() {
         breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }]}
       />
       <RotaClient
-        initialShifts={shifts as Parameters<typeof RotaClient>[0]["initialShifts"]}
+        initialShifts={shifts as unknown as Parameters<typeof RotaClient>[0]["initialShifts"]}
         staff={staff ?? []}
         clients={clients ?? []}
         serviceLines={serviceLines ?? []}

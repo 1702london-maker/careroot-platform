@@ -31,7 +31,7 @@ export default async function CarerLogsPage() {
         </div>
       ) : (
         visits.map((v) => {
-          const client = v.clients as { first_name: string; last_name: string } | null;
+          const client = v.clients as unknown as { first_name: string; last_name: string } | null;
           return (
             <div key={v.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
               <div className="flex items-start justify-between mb-2">

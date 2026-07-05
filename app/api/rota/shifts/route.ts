@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // Resolve client names for the first client in each shift
-  const allClientIds = [...new Set((shifts ?? []).flatMap((s) => (s.client_ids as string[] | null) ?? []))];
+  const allClientIds = Array.from(new Set((shifts ?? []).flatMap((s) => (s.client_ids as string[] | null) ?? [])));
   let clientMap: Record<string, { first_name: string; last_name: string }> = {};
   if (allClientIds.length) {
     const { data: clientRows } = await supabase

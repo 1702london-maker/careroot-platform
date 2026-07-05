@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Heart, Clock, FileText, MessageSquare, Shield, ChevronRight,
@@ -119,13 +119,15 @@ export function FamilyPortalClient({
     router.push("/family/login");
   };
 
-  const TAB_CONFIG: { id: Tab; label: string; icon: React.ReactNode; show: boolean }[] = [
-    { id: "overview", label: "Overview", icon: <Heart size={18} />, show: true },
-    { id: "visits", label: "Visits", icon: <Clock size={18} />, show: true },
-    { id: "care", label: "Care Info", icon: <Utensils size={18} />, show: accessLevel === "full" },
-    { id: "complaint", label: "Raise Concern", icon: <MessageSquare size={18} />, show: accessLevel !== "limited" },
-    { id: "sar", label: "Request SAR", icon: <Shield size={18} />, show: accessLevel === "full" },
-  ].filter(t => t.show);
+  const TAB_CONFIG: { id: Tab; label: string; icon: ReactNode; show: boolean }[] = (
+    [
+      { id: "overview" as Tab, label: "Overview", icon: <Heart size={18} />, show: true },
+      { id: "visits" as Tab, label: "Visits", icon: <Clock size={18} />, show: true },
+      { id: "care" as Tab, label: "Care Info", icon: <Utensils size={18} />, show: accessLevel === "full" },
+      { id: "complaint" as Tab, label: "Raise Concern", icon: <MessageSquare size={18} />, show: accessLevel !== "limited" },
+      { id: "sar" as Tab, label: "Request SAR", icon: <Shield size={18} />, show: accessLevel === "full" },
+    ] satisfies { id: Tab; label: string; icon: ReactNode; show: boolean }[]
+  ).filter(t => t.show);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -188,13 +190,13 @@ export function FamilyPortalClient({
                 <p className="text-xs font-body font-semibold text-cr-slate uppercase tracking-wide mb-1">Service user</p>
                 <p className="text-sm font-body font-semibold text-cr-charcoal">{clientName}</p>
               </div>
-              {client.primary_diagnosis && (
+              {Boolean(client.primary_diagnosis) && (
                 <div className="px-4 py-3">
                   <p className="text-xs font-body font-semibold text-cr-slate uppercase tracking-wide mb-1">Primary diagnosis</p>
                   <p className="text-sm font-body text-cr-charcoal">{client.primary_diagnosis as string}</p>
                 </div>
               )}
-              {client.dietary_requirements && (
+              {Boolean(client.dietary_requirements) && (
                 <div className="px-4 py-3 flex items-start gap-2">
                   <Utensils size={14} className="text-cr-forest mt-0.5 flex-shrink-0" />
                   <div>
@@ -203,7 +205,7 @@ export function FamilyPortalClient({
                   </div>
                 </div>
               )}
-              {client.medications_summary && (
+              {Boolean(client.medications_summary) && (
                 <div className="px-4 py-3 flex items-start gap-2">
                   <Pill size={14} className="text-cr-forest mt-0.5 flex-shrink-0" />
                   <div>
@@ -252,7 +254,7 @@ export function FamilyPortalClient({
                       {(v.status as string)?.replace("_", " ")}
                     </span>
                   </div>
-                  {v.notes && (
+                  {Boolean(v.notes) && (
                     <p className="text-xs font-body text-cr-slate border-t border-gray-50 pt-2 mt-2 leading-relaxed">{v.notes as string}</p>
                   )}
                 </div>

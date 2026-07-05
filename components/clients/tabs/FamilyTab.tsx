@@ -98,7 +98,7 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
   return (
     <div className="space-y-5">
       {/* Family portal link */}
-      {client.emergency_token && (
+      {Boolean(client.emergency_token) && (
         <CRCard>
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -141,7 +141,7 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
                       <span className="text-[10px] bg-cr-forest text-white font-semibold px-1.5 py-0.5 rounded-full">Primary</span>
                     )}
                     {member.emergency_contact && (
-                      <Shield size={12} className="text-cr-red" title="Emergency contact" />
+                      <span title="Emergency contact"><Shield size={12} className="text-cr-red" /></span>
                     )}
                   </div>
                   <p className="text-xs text-cr-slate capitalize">{member.relationship?.replace("_", " ")}</p>

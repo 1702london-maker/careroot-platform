@@ -68,7 +68,7 @@ export async function notify(
 
   let sent = 0;
   let failed = 0;
-  for (const phone of phones) {
+  for (const phone of Array.from(phones)) {
     const res = await sendSMS(phone, message);
     if (res.success) sent++;
     else failed++;

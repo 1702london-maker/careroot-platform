@@ -54,7 +54,7 @@ export default async function CarerHandoverPage() {
       </div>
       <div className="px-4 py-4">
         <CarerHandoverClient
-          handovers={handovers ?? []}
+          handovers={(handovers ?? []) as unknown as Parameters<typeof CarerHandoverClient>[0]["handovers"]}
           userId={user.id}
           hasActiveShift={accessibleClientIds.length > 0}
         />

@@ -211,7 +211,7 @@ export default async function DashboardPage() {
       {(sosTriggers && sosTriggers.length > 0) || (overdueSupervisions && overdueSupervisions.length > 0) || missedHighRiskMeds > 5 ? (
         <div className="mb-6 space-y-2">
           {sosTriggers && sosTriggers.length > 0 && sosTriggers.map((sos) => {
-            const u = sos.users as Record<string, string> | null;
+            const u = sos.users as unknown as Record<string, string> | null;
             return (
               <CRAlertBanner
                 key={sos.id}
@@ -421,7 +421,7 @@ export default async function DashboardPage() {
                 {overdueSupervisions && overdueSupervisions.length > 0 && (
                   <div className="mt-1 space-y-0.5">
                     {overdueSupervisions.slice(0, 3).map(s => {
-                      const u = s.users as Record<string, string> | null;
+                      const u = s.users as unknown as Record<string, string> | null;
                       return (
                         <p key={s.id} className="text-xs text-cr-slate">
                           {u?.first_name} {u?.last_name} · Due {new Date(s.next_due_date).toLocaleDateString("en-GB")}
