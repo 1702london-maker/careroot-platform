@@ -39,7 +39,10 @@ export function CarerEmarClient({ clients, medications, initialAdministrations, 
   const [logging, setLogging] = useState<string | null>(null);
   const [logForm, setLogForm] = useState<{ status: string; notes: string } | null>(null);
   const [saving, setSaving] = useState(false);
-  const [lastSync, setLastSync] = useState(new Date());
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+
+  // Set lastSync client-side only to avoid hydration mismatch
+  useEffect(() => { setLastSync(new Date()); }, []);
 
   // Real-time subscription
   useEffect(() => {
@@ -145,7 +148,7 @@ export function CarerEmarClient({ clients, medications, initialAdministrations, 
       {/* Live sync indicator */}
       <div className="flex items-center gap-1.5 text-xs text-cr-slate">
         <RefreshCw size={11} className="text-green-500" />
-        Live · Last updated {lastSync.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+        Live · Last updated {lastSync ? lastSync.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—"}
       </div>
 
       {/* Medication cards */}

@@ -62,6 +62,32 @@ export async function POST(req: NextRequest) {
     });
 
     if (linkError || !linkData) {
+      // User already exists in Supabase auth — send a password reset instead
+      const isExistingUser =
+        linkError?.message?.toLowerCase().includes("already been registered") ||
+        linkError?.message?.toLowerCase().includes("already registered") ||
+        linkError?.status === 422;
+
+      if (isExistingUser) {
+        const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${appUrl}/invite/complete`,
+        });
+        if (resetErr) {
+          return NextResponse.json({ error: "Could not resend invite. Contact support." }, { status: 500 });
+        }
+        // Ensure users row is up to date
+        await service.from("users").upsert({
+          email,
+          first_name: first_name ?? "",
+          last_name: last_name ?? "",
+          organisation_id: orgId,
+          role,
+          is_active: true,
+          must_change_password: true,
+        }, { onConflict: "email" });
+        return NextResponse.json({ success: true, resent: true });
+      }
+
       console.error("Supabase invite link error:", linkError);
       return NextResponse.json({
         error: `Could not generate invite link: ${linkError?.message ?? "unknown error"}`,

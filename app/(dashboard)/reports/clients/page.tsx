@@ -30,7 +30,7 @@ export default function ClientReportsPage() {
       if (!u) return;
 
       const [{ data: clients }, { data: visits }] = await Promise.all([
-        supabase.from("clients").select("id, first_name, last_name, risk_level, care_plan_status, care_plan_last_reviewed").eq("organisation_id", u.organisation_id).eq("is_active", true),
+        supabase.from("clients").select("id, first_name, last_name, risk_level, care_plan_status, care_plan_last_reviewed").eq("organisation_id", u.organisation_id).neq("status", "deceased").neq("status", "inactive"),
         supabase.from("visits").select("client_id, status, scheduled_start").eq("organisation_id", u.organisation_id).gte("scheduled_start", new Date(Date.now() - 30 * 24 * 3600000).toISOString()),
       ]);
 

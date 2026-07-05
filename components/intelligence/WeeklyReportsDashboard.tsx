@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRButton } from "@/components/ui/CRButton";
@@ -33,14 +33,18 @@ export function WeeklyReportsDashboard({ reports: rawReports, clients: rawClient
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Compute default week
-  const today = new Date();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  const defaultWeekStart = monday.toISOString().split("T")[0];
-  const defaultWeekEnd = sunday.toISOString().split("T")[0];
+  // Compute default week client-side only to avoid hydration mismatch
+  const [defaultWeekStart, setDefaultWeekStart] = useState("");
+  const [defaultWeekEnd, setDefaultWeekEnd] = useState("");
+  useEffect(() => {
+    const today = new Date();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    setDefaultWeekStart(monday.toISOString().split("T")[0]);
+    setDefaultWeekEnd(sunday.toISOString().split("T")[0]);
+  }, []);
 
   async function generate() {
     if (!selectedClient) return;

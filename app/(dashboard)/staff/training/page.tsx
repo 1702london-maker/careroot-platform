@@ -19,8 +19,7 @@ export default async function StaffTrainingPage() {
     supabase.from("users")
       .select("id, first_name, last_name, role, job_title, is_active")
       .eq("organisation_id", userRecord!.organisation_id)
-      .in("role", ["carer", "coordinator", "manager", "nurse", "support_worker"])
-      .eq("is_active", true)
+      .not("role", "in", '("family","superadmin")')
       .order("last_name"),
     supabase.from("staff_training")
       .select("staff_id, training_key, training_name, status, completed_date, expiry_date, is_mandatory")
@@ -29,7 +28,7 @@ export default async function StaffTrainingPage() {
         (await supabase.from("users")
           .select("id")
           .eq("organisation_id", userRecord!.organisation_id)
-          .in("role", ["carer", "coordinator", "manager", "nurse", "support_worker"])
+          .not("role", "in", '("family","superadmin")')
         ).data?.map(u => u.id) ?? [""]
       ),
   ]);

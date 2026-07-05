@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { CheckCircle, Clock, XCircle, Calendar } from "lucide-react";
 import { CRCard } from "@/components/ui/CRCard";
 import Link from "next/link";
@@ -54,12 +55,22 @@ export function CarerRotaClient({ shifts, user }: Props) {
   const weeks = groupByWeek(shifts);
   const weekEntries = Array.from(weeks.entries()).sort(([a], [b]) => a.localeCompare(b));
 
-  // Current week stats
-  const now = new Date();
-  const currentWeekKey = getWeekKey(now);
-  const currentWeekShifts = weeks.get(currentWeekKey) ?? [];
-  const hoursThisWeek = currentWeekShifts.reduce((sum, s) => sum + hoursInShift(s), 0);
-  const completedThisWeek = currentWeekShifts.filter(s => s.status === "completed").length;
+  // Current week stats — computed client-side only to avoid hydration mismatch
+  const [hoursThisWeek, setHoursThisWeek] = useState(0);
+  const [completedThisWeek, setCompletedThisWeek] = useState(0);
+  const [currentWeekShifts, setCurrentWeekShifts] = useState<Shift[]>([]);
+  const [currentWeekKey, setCurrentWeekKey] = useState("");
+  const [today, setToday] = useState<Date | null>(null);
+  useEffect(() => {
+    const now = new Date();
+    const wk = getWeekKey(now);
+    const cwShifts = weeks.get(wk) ?? [];
+    setCurrentWeekKey(wk);
+    setCurrentWeekShifts(cwShifts);
+    setHoursThisWeek(cwShifts.reduce((sum, s) => sum + hoursInShift(s), 0));
+    setCompletedThisWeek(cwShifts.filter(s => s.status === "completed").length);
+    setToday(now);
+  }, [weeks]);
 
   return (
     <div className="space-y-4">
@@ -127,7 +138,7 @@ export function CarerRotaClient({ shifts, user }: Props) {
                       sd.getMonth() === day.getMonth() &&
                       sd.getDate() === day.getDate();
                   });
-                  const isToday = day.toDateString() === now.toDateString();
+                  const isToday = today ? day.toDateString() === today.toDateString() : false;
 
                   return (
                     <div key={dayIdx} className={`flex items-center gap-3 py-1.5 ${isToday ? "bg-cr-mint rounded-lg px-2" : ""}`}>

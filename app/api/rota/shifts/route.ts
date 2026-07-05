@@ -9,6 +9,8 @@ export async function GET(req: NextRequest) {
   const { data: userRecord } = await supabase
     .from("users").select("organisation_id").eq("id", user.id).single();
 
+  if (!userRecord?.organisation_id) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+
   const url = new URL(req.url);
   const from = url.searchParams.get("from");
   const to = url.searchParams.get("to");
@@ -48,6 +50,8 @@ export async function POST(req: NextRequest) {
 
   const { data: userRecord } = await supabase
     .from("users").select("organisation_id, role").eq("id", user.id).single();
+
+  if (!userRecord?.organisation_id) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
   if (!["org_admin", "manager"].includes(userRecord?.role ?? "")) {
     return NextResponse.json({ error: "Only managers can create shifts" }, { status: 403 });
