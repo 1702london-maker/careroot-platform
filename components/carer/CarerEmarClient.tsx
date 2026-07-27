@@ -103,12 +103,25 @@ export function CarerEmarClient({ clients, medications, initialAdministrations, 
     setSaving(true);
     setError("");
 
+    let gpsLat = null, gpsLng = null;
+    try {
+      const pos = await new Promise<GeolocationPosition>((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+      );
+      gpsLat = pos.coords.latitude;
+      gpsLng = pos.coords.longitude;
+    } catch {
+      // The API will return the correct access error when GPS is required.
+    }
+
     const result = await submitOrQueue("/api/medication-records", {
       shift_id: activeShiftId,
       client_id: selectedClient,
       medication_schedule_id: medId,
       outcome: logForm.status,
       outcome_notes: logForm.notes,
+      gps_lat: gpsLat,
+      gps_lng: gpsLng,
       imei: localStorage.getItem("careroot_device_id"),
     });
 
