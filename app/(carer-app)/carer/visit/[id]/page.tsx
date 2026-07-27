@@ -18,7 +18,7 @@ export default async function VisitPage({ params }: Props) {
         id, first_name, last_name, date_of_birth, nhs_number,
         dnr_status, risk_level, allergies, care_needs,
         communication_needs, emergency_contact, gp_details,
-        photo_url, address
+        address
       )
     `)
     .eq("id", id)

@@ -91,7 +91,6 @@ export default async function ClientProfilePage({ params }: Props) {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-6">
           <CRAvatar
-            src={client.photo_url}
             name={`${client.first_name} ${client.last_name}`}
             size="xl"
           />

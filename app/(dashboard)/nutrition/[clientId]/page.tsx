@@ -39,7 +39,7 @@ export default async function NutritionClientPage({ params }: Props) {
     { data: records },
   ] = await Promise.all([
     supabase.from("clients")
-      .select("id, first_name, last_name, photo_url, date_of_birth, risk_level, organisation_id")
+      .select("id, first_name, last_name, date_of_birth, risk_level, organisation_id")
       .eq("id", clientId)
       .eq("organisation_id", userRecord?.organisation_id)
       .single(),
@@ -107,7 +107,7 @@ export default async function NutritionClientPage({ params }: Props) {
           {/* Client card */}
           <CRCard>
             <div className="flex items-center gap-3 mb-4">
-              <CRAvatar firstName={client.first_name} lastName={client.last_name} src={client.photo_url} size="lg" />
+              <CRAvatar firstName={client.first_name} lastName={client.last_name} size="lg" />
               <div>
                 <p className="font-body font-semibold text-cr-charcoal">{client.first_name} {client.last_name}</p>
                 <p className="text-xs font-body text-cr-slate">

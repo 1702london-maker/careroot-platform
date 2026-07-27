@@ -23,12 +23,12 @@ export default async function NutritionPage() {
     { data: aiFlags },
   ] = await Promise.all([
     supabase.from("meal_records")
-      .select("*, clients(first_name, last_name, photo_url)")
+      .select("*, clients(first_name, last_name)")
       .eq("clients.organisation_id", orgId)
       .order("recorded_at", { ascending: false })
       .limit(20),
     supabase.from("nutrition_profiles")
-      .select("*, clients(first_name, last_name, photo_url)")
+      .select("*, clients(first_name, last_name)")
       .eq("organisation_id", orgId),
     supabase.from("ai_risk_flags")
       .select("*, clients(first_name, last_name)")

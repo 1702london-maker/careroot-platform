@@ -22,7 +22,7 @@ export default async function VisitsPage() {
 
   const { data: visits } = await supabase
     .from("visits")
-    .select("*, clients(first_name, last_name, photo_url, dnr_status), users(first_name, last_name)")
+    .select("*, clients(first_name, last_name, dnr_status), users(first_name, last_name)")
     .eq("organisation_id", userRecord?.organisation_id)
     .gte("scheduled_start", weekStart.toISOString())
     .lte("scheduled_start", weekEnd.toISOString())
@@ -79,7 +79,6 @@ export default async function VisitsPage() {
                       <div className="flex items-center gap-3">
                         <div className="relative">
                           <CRAvatar
-                            src={String(client?.photo_url || "")}
                             name={`${client?.first_name} ${client?.last_name}`}
                             size="md"
                           />
