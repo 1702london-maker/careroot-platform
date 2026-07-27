@@ -43,6 +43,7 @@ export function CRAvatar({ src, firstName, lastName, name, size = "md", classNam
           width={px}
           height={px}
           className="w-full h-full object-cover"
+          unoptimized
         />
       ) : (
         <span>{initials || "?"}</span>
