@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CheckCircle, Minus } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { createClient } from "@/lib/supabase/client";
 
 const PLANS = [
   {
@@ -67,6 +69,47 @@ function Cell({ value, plan }: { value: boolean | string; plan: string }) {
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
+  const router = useRouter();
+
+  async function handlePlanClick(planId: string) {
+    if (planId === "enterprise") {
+      router.push("/contact");
+      return;
+    }
+    setLoading(planId);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push(`/signup?plan=${planId}&billing=${annual ? "annual" : "monthly"}`);
+        return;
+      }
+
+      const { data: userRecord } = await supabase
+        .from("users")
+        .select("organisation_id")
+        .eq("id", user.id)
+        .single();
+
+      const res = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan: planId,
+          billing_cycle: annual ? "annual" : "monthly",
+          organisation_id: userRecord?.organisation_id,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } finally {
+      setLoading(null);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F9F7F4]">
@@ -146,12 +189,13 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Link
-                href={plan.id === "enterprise" ? "/contact" : "/signup"}
-                className={`block w-full text-center font-semibold text-sm py-3 rounded-[8px] transition-colors ${plan.highlight ? "bg-white text-[#1A3C2E] hover:bg-[#E8F5EE]" : "bg-[#1A3C2E] text-white hover:bg-[#4A7C5E]"}`}
+              <button
+                onClick={() => handlePlanClick(plan.id)}
+                disabled={loading === plan.id}
+                className={`block w-full text-center font-semibold text-sm py-3 rounded-[8px] transition-colors disabled:opacity-60 ${plan.highlight ? "bg-white text-[#1A3C2E] hover:bg-[#E8F5EE]" : "bg-[#1A3C2E] text-white hover:bg-[#4A7C5E]"}`}
               >
-                {plan.id === "enterprise" ? "Contact us" : "Start free trial"}
-              </Link>
+                {loading === plan.id ? "Loading…" : plan.id === "enterprise" ? "Contact us" : "Start free trial"}
+              </button>
             </div>
           ))}
         </div>

@@ -8,7 +8,7 @@ import {
   Shield, FileCheck, FolderOpen, MessageSquare,
   AlertTriangle, BarChart3, Settings, LogOut,
   ChevronRight, Leaf, Crown, FileText, Banknote,
-  Stethoscope, UtensilsCrossed, Smartphone, ArrowRightLeft,
+  Stethoscope, UtensilsCrossed, Smartphone, ArrowRightLeft, CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -207,6 +207,18 @@ export function Sidebar({ userRole, orgPlan, isWhiteLabel }: SidebarProps) {
             White Label
           </Link>
         )}
+        <Link
+          href="/dashboard/billing"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-body font-medium transition-all",
+            pathname.startsWith("/dashboard/billing")
+              ? "bg-white/15 text-white"
+              : "text-white/70 hover:bg-white/10 hover:text-white"
+          )}
+        >
+          <CreditCard size={18} />
+          Billing
+        </Link>
         <Link
           href="/settings"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-body font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all"

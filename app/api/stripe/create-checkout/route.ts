@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, PLAN_PRICES } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
-
-const PRICE_MAP: Record<string, string | undefined> = {
-  seed: process.env.STRIPE_SEED_PRICE_ID,
-  grow: process.env.STRIPE_GROW_PRICE_ID,
-  scale: process.env.STRIPE_SCALE_PRICE_ID,
-};
 
 export async function POST(req: NextRequest) {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -14,39 +8,45 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { plan, organisation_id } = await req.json();
+    const { plan, billing_cycle = "monthly", organisation_id } = await req.json();
     if (!plan || !organisation_id) {
       return NextResponse.json({ error: "plan and organisation_id required" }, { status: 400 });
     }
 
-    const priceId = PRICE_MAP[plan];
+    const planPrices = PLAN_PRICES[plan as keyof typeof PLAN_PRICES];
+    if (!planPrices) {
+      return NextResponse.json({ error: `Unknown plan: ${plan}` }, { status: 400 });
+    }
+
+    const priceId = billing_cycle === "annual" ? planPrices.annual : planPrices.monthly;
     if (!priceId) {
-      return NextResponse.json({ error: `No price configured for plan: ${plan}` }, { status: 400 });
+      return NextResponse.json({ error: `No price configured for ${plan}/${billing_cycle}` }, { status: 400 });
     }
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-    const { data: org } = await supabase.from("organisations").select("stripe_customer_id, email, name").eq("id", organisation_id).single();
+    const { data: org } = await supabase
+      .from("organisations")
+      .select("stripe_customer_id, email, name")
+      .eq("id", organisation_id)
+      .single();
 
     const stripe = getStripe();
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.care";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://careroot.co.uk";
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       customer: org?.stripe_customer_id ?? undefined,
       customer_email: org?.stripe_customer_id ? undefined : (org?.email ?? user.email),
-      metadata: { organisation_id, plan },
-      success_url: `${appUrl}/dashboard?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
+      metadata: { organisation_id, plan, billing_cycle },
+      success_url: `${appUrl}/dashboard/billing?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/pricing`,
-      subscription_data: {
-        metadata: { organisation_id, plan },
-      },
+      subscription_data: { metadata: { organisation_id, plan, billing_cycle } },
+      allow_promotion_codes: true,
+      integration_identifier: "careroot-plan-checkout-abcd1234",
     });
 
     return NextResponse.json({ url: session.url });
