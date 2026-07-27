@@ -84,25 +84,37 @@ export async function POST(req: Request) {
 
   // GPS verification (server-side Haversine)
   let withinApprovedRadius: boolean | null = null;
-  if (gps_lat != null && gps_lng != null) {
-    // Get client GPS coords for this shift
-    const { data: shift } = await supabase
-      .from("shifts")
-      .select("client_ids")
-      .eq("id", shift_id)
+  const { data: shift } = await supabase
+    .from("shifts")
+    .select("client_ids")
+    .eq("id", shift_id)
+    .eq("staff_id", user.id)
+    .single();
+
+  if (!shift) {
+    return NextResponse.json({ allowed: false, reason: "Shift not assigned to this staff member" }, { status: 403 });
+  }
+
+  if (shift.client_ids?.length) {
+    const { data: client } = await supabase
+      .from("clients")
+      .select("gps_lat, gps_lng, approved_radius_metres")
+      .eq("id", shift.client_ids[0])
       .single();
 
-    if (shift?.client_ids?.length) {
-      const { data: client } = await supabase
-        .from("clients")
-        .select("gps_lat, gps_lng, approved_radius_metres")
-        .eq("id", shift.client_ids[0])
-        .single();
-
-      if (client?.gps_lat && client?.gps_lng) {
-        const distMetres = haversineMetres(gps_lat, gps_lng, Number(client.gps_lat), Number(client.gps_lng));
-        withinApprovedRadius = distMetres <= (client.approved_radius_metres ?? 300);
+    if (client?.gps_lat && client?.gps_lng) {
+      if (gps_lat == null || gps_lng == null) {
+        await supabase.from("shift_access_log").insert({
+          shift_id, staff_id: user.id, device_imei: imei || null,
+          action_type: "access_denied_missing_gps",
+          gps_accuracy_metres: gps_accuracy_metres || null,
+          server_timestamp: now,
+        });
+        return NextResponse.json({ allowed: false, reason: "GPS location is required to start this shift" }, { status: 401 });
       }
+
+      const distMetres = haversineMetres(gps_lat, gps_lng, Number(client.gps_lat), Number(client.gps_lng));
+      withinApprovedRadius = distMetres <= (client.approved_radius_metres ?? 300);
     }
   }
 

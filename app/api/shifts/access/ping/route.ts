@@ -19,6 +19,7 @@ export async function POST(req: Request) {
 
   const { shift_id, imei, gps_lat, gps_lng, gps_accuracy_metres } = await req.json();
   if (!shift_id) return NextResponse.json({ error: "shift_id required" }, { status: 400 });
+  if (!imei) return NextResponse.json({ active: false, reason: "Device identifier required" }, { status: 401 });
 
   const now = new Date().toISOString();
 
@@ -32,6 +33,17 @@ export async function POST(req: Request) {
 
   if (!shift || shift.status !== "active") {
     return NextResponse.json({ active: false, reason: "Shift not active" });
+  }
+
+  const { data: device } = await supabase
+    .from("registered_devices")
+    .select("id, is_active")
+    .eq("imei", String(imei).replace(/\s/g, ""))
+    .eq("staff_id", user.id)
+    .single();
+
+  if (!device || !device.is_active) {
+    return NextResponse.json({ active: false, reason: "Device not registered or inactive" }, { status: 401 });
   }
 
   // Check credentials still valid
@@ -69,13 +81,28 @@ export async function POST(req: Request) {
       .single();
 
     if (client?.gps_lat && client?.gps_lng) {
+      if (gps_lat == null || gps_lng == null) {
+        return NextResponse.json({ active: false, reason: "GPS location is required during active shifts" }, { status: 401 });
+      }
       const dist = haversineMetres(gps_lat, gps_lng, Number(client.gps_lat), Number(client.gps_lng));
       withinApprovedRadius = dist <= (client.approved_radius_metres ?? 300);
     }
   }
 
+  if (withinApprovedRadius === false) {
+    await supabase.from("shift_access_log").insert({
+      shift_id, staff_id: user.id, device_imei: String(imei).replace(/\s/g, ""),
+      action_type: "gps_ping_outside_radius",
+      gps_lat: gps_lat || null, gps_lng: gps_lng || null,
+      gps_accuracy_metres: gps_accuracy_metres || null,
+      within_approved_radius: false,
+      server_timestamp: now,
+    });
+    return NextResponse.json({ active: false, reason: "Outside approved client radius" }, { status: 401 });
+  }
+
   await supabase.from("shift_access_log").insert({
-    shift_id, staff_id: user.id, device_imei: imei || null,
+    shift_id, staff_id: user.id, device_imei: String(imei).replace(/\s/g, ""),
     action_type: "gps_ping",
     gps_lat: gps_lat || null, gps_lng: gps_lng || null,
     gps_accuracy_metres: gps_accuracy_metres || null,
