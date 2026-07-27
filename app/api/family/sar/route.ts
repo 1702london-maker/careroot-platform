@@ -3,15 +3,25 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { client_id, organisation_id, requester_name, requester_email, reason } = await req.json();
+    const { client_id, requester_name, requester_email, reason } = await req.json();
     if (!client_id) return NextResponse.json({ error: "Missing client" }, { status: 400 });
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
+    const { data: access } = await supabase
+      .from("family_access")
+      .select("id, organisation_id")
+      .eq("user_id", user.id)
+      .eq("client_id", client_id)
+      .eq("is_active", true)
+      .single();
+    if (!access?.organisation_id) return NextResponse.json({ error: "Access denied" }, { status: 403 });
+
     const { error } = await supabase.from("sar_requests").insert({
-      organisation_id, client_id,
+      organisation_id: access.organisation_id,
+      client_id,
       requester_name, requester_email,
       reason: reason || null,
       requested_by: user.id,
