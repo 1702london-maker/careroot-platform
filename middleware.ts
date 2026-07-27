@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   "/onboarding",
   "/invite/complete",
   "/family/login",
+  "/client/login",
   "/carer-login",
   "/about",
   "/custom-app",
