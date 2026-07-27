@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRButton } from "@/components/ui/CRButton";
@@ -45,6 +45,8 @@ export function ConsentDashboard({ consents, clients }: { consents: unknown[]; c
   const [form, setForm] = useState({ client_id: "", consent_type: "", granted: true, granted_by: "", notes: "", review_due: "" });
   const [error, setError] = useState<string | null>(null);
   const [filterClient, setFilterClient] = useState("");
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => setNow(new Date()), []);
 
   const granted = records.filter(r => r.granted && !r.withdrawn_at);
   const withdrawn = records.filter(r => r.withdrawn_at || !r.granted);
@@ -148,7 +150,7 @@ export function ConsentDashboard({ consents, clients }: { consents: unknown[]; c
               <div className="space-y-2">
                 {clientRecords.map(r => {
                   const active = r.granted && !r.withdrawn_at;
-                  const reviewOverdue = Boolean(r.review_due && new Date(r.review_due) < new Date() && active);
+                  const reviewOverdue = now ? Boolean(r.review_due && new Date(r.review_due) < now && active) : false;
                   return (
                     <div key={r.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0 gap-3 flex-wrap">
                       <span className="text-sm font-body text-cr-charcoal flex-1">{r.consent_type}</span>

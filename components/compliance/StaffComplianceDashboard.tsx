@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRButton } from "@/components/ui/CRButton";
@@ -23,16 +23,18 @@ interface ComplianceRecord {
 
 const COMPLIANCE_ITEMS = ["DBS Check", "Right to Work", "Manual Handling", "Safeguarding Adults", "First Aid", "Medication Administration", "Fire Safety", "Infection Control", "Mental Capacity Act", "Health & Safety Induction"];
 
-function statusVariant(s: string, validUntil: string | null) {
-  if (s === "expired" || (validUntil && new Date(validUntil) < new Date())) return "red";
-  if (s === "expiring_soon" || (validUntil && new Date(validUntil) < new Date(Date.now() + 30 * 86400000))) return "amber";
+function statusVariant(s: string, validUntil: string | null, now: Date | null) {
+  if (!now) return "slate";
+  if (s === "expired" || (validUntil && new Date(validUntil) < now)) return "red";
+  if (s === "expiring_soon" || (validUntil && new Date(validUntil) < new Date(now.getTime() + 30 * 86400000))) return "amber";
   if (s === "compliant") return "green";
   return "slate";
 }
 
-function statusLabel(s: string, validUntil: string | null) {
-  if (validUntil && new Date(validUntil) < new Date()) return "Expired";
-  if (validUntil && new Date(validUntil) < new Date(Date.now() + 30 * 86400000)) return "Expiring Soon";
+function statusLabel(s: string, validUntil: string | null, now: Date | null) {
+  if (!now) return s;
+  if (validUntil && new Date(validUntil) < now) return "Expired";
+  if (validUntil && new Date(validUntil) < new Date(now.getTime() + 30 * 86400000)) return "Expiring Soon";
   if (s === "compliant") return "Compliant";
   if (s === "pending") return "Pending";
   return s;
@@ -46,10 +48,12 @@ export function StaffComplianceDashboard({ compliance, staff }: { compliance: un
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ staff_id: "", compliance_item: "", status: "compliant", valid_until: "", notes: "" });
   const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => setNow(new Date()), []);
 
-  const expired = records.filter(r => r.valid_until && new Date(r.valid_until) < new Date());
-  const expiringSoon = records.filter(r => r.valid_until && new Date(r.valid_until) >= new Date() && new Date(r.valid_until) < new Date(Date.now() + 30 * 86400000));
-  const compliant = records.filter(r => r.status === "compliant" && (!r.valid_until || new Date(r.valid_until) >= new Date()));
+  const expired = now ? records.filter(r => r.valid_until && new Date(r.valid_until) < now) : [];
+  const expiringSoon = now ? records.filter(r => r.valid_until && new Date(r.valid_until) >= now && new Date(r.valid_until) < new Date(now.getTime() + 30 * 86400000)) : [];
+  const compliant = now ? records.filter(r => r.status === "compliant" && (!r.valid_until || new Date(r.valid_until) >= now)) : [];
 
   // Group by staff member
   const byStaff: Record<string, ComplianceRecord[]> = {};
@@ -157,7 +161,7 @@ export function StaffComplianceDashboard({ compliance, staff }: { compliance: un
                   <span className="text-sm font-body text-cr-charcoal">{r.compliance_item}</span>
                   <div className="flex items-center gap-3">
                     {r.valid_until && <span className="text-xs text-cr-slate">Until {formatDateUK(r.valid_until)}</span>}
-                    <CRBadge variant={statusVariant(r.status, r.valid_until)} size="sm">{statusLabel(r.status, r.valid_until)}</CRBadge>
+                    <CRBadge variant={statusVariant(r.status, r.valid_until, now)} size="sm">{statusLabel(r.status, r.valid_until, now)}</CRBadge>
                   </div>
                 </div>
               ))}

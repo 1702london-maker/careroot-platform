@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRButton } from "@/components/ui/CRButton";
@@ -31,16 +31,21 @@ export function SupervisionsDashboard({ supervisions, staff }: { supervisions: u
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [form, setForm] = useState({ staff_id: "", supervision_date: new Date().toISOString().split("T")[0], supervision_type: "Regular 1-2-1", topics_discussed: "", action_points: "", next_supervision_due: "", staff_signature_obtained: false });
+  const [form, setForm] = useState({ staff_id: "", supervision_date: "", supervision_type: "Regular 1-2-1", topics_discussed: "", action_points: "", next_supervision_due: "", staff_signature_obtained: false });
   const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    const n = new Date();
+    setNow(n);
+    setForm(f => ({ ...f, supervision_date: n.toISOString().split("T")[0] }));
+  }, []);
 
-  const overdue = records.filter(r => r.next_supervision_due && new Date(r.next_supervision_due) < new Date());
-  const dueSoon = records.filter(r => r.next_supervision_due && new Date(r.next_supervision_due) >= new Date() && new Date(r.next_supervision_due) < new Date(Date.now() + 14 * 86400000));
-  const thisMonth = records.filter(r => {
+  const overdue = now ? records.filter(r => r.next_supervision_due && new Date(r.next_supervision_due) < now) : [];
+  const dueSoon = now ? records.filter(r => r.next_supervision_due && new Date(r.next_supervision_due) >= now && new Date(r.next_supervision_due) < new Date(now.getTime() + 14 * 86400000)) : [];
+  const thisMonth = now ? records.filter(r => {
     const d = new Date(r.supervision_date);
-    const now = new Date();
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
+  }) : [];
 
   async function save() {
     setSaving(true); setError(null);
@@ -122,7 +127,7 @@ export function SupervisionsDashboard({ supervisions, staff }: { supervisions: u
 
       <div className="space-y-3">
         {records.map(r => {
-          const isOverdue = Boolean(r.next_supervision_due && new Date(r.next_supervision_due) < new Date());
+          const isOverdue = now ? Boolean(r.next_supervision_due && new Date(r.next_supervision_due) < now) : false;
           const expanded = expandedId === r.id;
           return (
             <CRCard key={r.id}>

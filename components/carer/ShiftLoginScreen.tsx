@@ -42,10 +42,12 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => { setNow(new Date()); }, []);
+
   const scheduledStart = new Date(shift.scheduled_start as string);
   const scheduledEnd = new Date(shift.scheduled_end as string);
-  const now = new Date();
-  const credentialNotYetActive = credential && now < new Date(credential.valid_from as string);
+  const credentialNotYetActive = now && credential && now < new Date(credential.valid_from as string);
   const noCredential = !credential;
 
   async function getGPS(): Promise<{ lat: number; lng: number; accuracy: number } | null> {

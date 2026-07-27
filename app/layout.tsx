@@ -21,6 +21,13 @@ export const metadata: Metadata = {
   description: "The complete platform for UK care providers — from care plans to CQC compliance, all in one place.",
   keywords: ["care management", "CQC compliance", "domiciliary care", "care planning", "UK care software"],
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+  },
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Careroot" },
 };
 

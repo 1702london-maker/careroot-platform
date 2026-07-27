@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
 import { AlertTriangle, ChevronDown, ChevronUp, CheckCircle, Calendar } from "lucide-react";
 
@@ -31,8 +31,11 @@ export function IncidentsDashboard({ incidents }: { incidents: unknown[] }) {
   const [debriefDate, setDebriefDate] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
 
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => setNow(new Date()), []);
+
   const piPending = list.filter(i => i.physical_intervention_occurred && !i.pi_debrief_scheduled).length;
-  const wellbeingDue = list.filter(i => i.staff_wellbeing_check_due && !i.staff_wellbeing_checked && new Date(i.staff_wellbeing_check_due) < new Date()).length;
+  const wellbeingDue = now ? list.filter(i => i.staff_wellbeing_check_due && !i.staff_wellbeing_checked && new Date(i.staff_wellbeing_check_due) < now).length : 0;
 
   async function scheduleDebrief(id: string) {
     const date = debriefDate[id];

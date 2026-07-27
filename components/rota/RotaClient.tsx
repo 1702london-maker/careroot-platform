@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Plus, X, Loader2, Clock } from "lucide-react";
 import { CRBadge } from "@/components/ui/CRBadge";
 
@@ -78,8 +78,12 @@ export function RotaClient({ initialShifts, staff, clients, serviceLines, weekSt
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const [today, setToday] = useState<Date | null>(null);
+  useEffect(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    setToday(d);
+  }, []);
 
   const staffColour = (staffId: string) => {
     const idx = staff.findIndex((s) => s.id === staffId) % STAFF_COLOURS.length;
@@ -137,7 +141,7 @@ export function RotaClient({ initialShifts, staff, clients, serviceLines, weekSt
 
   const weekLabel = `${weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/London" })} – ${addDays(weekStart, 6).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/London" })}`;
 
-  const isCurrentWeek = isoDate(mondayOf(today)) === isoDate(weekStart);
+  const isCurrentWeek = today ? isoDate(mondayOf(today)) === isoDate(weekStart) : false;
 
   return (
     <div>
@@ -153,7 +157,7 @@ export function RotaClient({ initialShifts, staff, clients, serviceLines, weekSt
           </button>
           {!isCurrentWeek && (
             <button
-              onClick={() => { setWeekStart(mondayOf(today)); navigate(0 as 1); }}
+              onClick={() => { if (today) { setWeekStart(mondayOf(today)); navigate(0 as 1); } }}
               className="text-xs font-body text-cr-forest hover:underline ml-1"
             >
               Today
@@ -183,7 +187,7 @@ export function RotaClient({ initialShifts, staff, clients, serviceLines, weekSt
                 </th>
                 {DAYS.map((day, i) => {
                   const d = addDays(weekStart, i);
-                  const isToday = isoDate(d) === isoDate(today);
+                  const isToday = today ? isoDate(d) === isoDate(today) : false;
                   return (
                     <th key={day} className={`px-2 py-3 text-center text-xs font-body font-semibold uppercase tracking-wide min-w-[100px] ${isToday ? "bg-cr-forest text-white" : "bg-gray-50 text-cr-slate"}`}>
                       <span className="block">{day}</span>
