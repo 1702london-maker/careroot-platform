@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = linkData.user.id;
-  await service.from("users").upsert({
+  const { error: userUpsertError } = await service.from("users").upsert({
     id: userId,
     email,
     first_name: clientFirstName,
@@ -59,8 +59,11 @@ export async function POST(req: NextRequest) {
     is_active: true,
     must_change_password: false,
   });
+  if (userUpsertError) {
+    return NextResponse.json({ error: userUpsertError.message }, { status: 500 });
+  }
 
-  await service.from("client_access").upsert({
+  const { error: accessUpsertError } = await service.from("client_access").upsert({
     client_id,
     organisation_id: inviter.organisation_id,
     user_id: userId,
@@ -68,6 +71,9 @@ export async function POST(req: NextRequest) {
     invited_by: user.id,
     is_active: true,
   }, { onConflict: "client_id,user_id" });
+  if (accessUpsertError) {
+    return NextResponse.json({ error: accessUpsertError.message }, { status: 500 });
+  }
 
   let inviteLink = `${appUrl}/invite/complete`;
   const rawActionLink = linkData.properties?.action_link;

@@ -66,6 +66,7 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
   const [clientInviteStatus, setClientInviteStatus] = useState("");
   const [clientInviteError, setClientInviteError] = useState("");
   const [clientInviteLoading, setClientInviteLoading] = useState(false);
+  const [permissionError, setPermissionError] = useState("");
 
   const portalLink = typeof window !== "undefined"
     ? `${window.location.origin}/family/${String(client.emergency_token)}`
@@ -79,10 +80,16 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
 
   const togglePermission = async (memberId: string, field: keyof FamilyMember, current: boolean) => {
     setSaving(memberId);
-    await supabase
+    setPermissionError("");
+    const { error } = await supabase
       .from("family_access")
       .update({ [field]: !current })
       .eq("id", memberId);
+    if (error) {
+      setPermissionError(error.message);
+      setSaving(null);
+      return;
+    }
     setMembers(prev =>
       prev.map(m => m.id === memberId ? { ...m, [field]: !current } : m)
     );
@@ -91,10 +98,16 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
 
   const toggleActive = async (memberId: string, current: boolean) => {
     setSaving(memberId);
-    await supabase
+    setPermissionError("");
+    const { error } = await supabase
       .from("family_access")
       .update({ is_active: !current })
       .eq("id", memberId);
+    if (error) {
+      setPermissionError(error.message);
+      setSaving(null);
+      return;
+    }
     setMembers(prev =>
       prev.map(m => m.id === memberId ? { ...m, is_active: !current } : m)
     );
@@ -174,6 +187,7 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
       {/* Active family members */}
       {activeMembers.length === 0 ? (
         <CRCard>
+          {permissionError && <p className="mb-3 text-xs text-cr-red">{permissionError}</p>}
           <div className="text-center py-8">
             <Users className="mx-auto mb-2 text-cr-slate opacity-30" size={32} />
             <p className="text-sm font-medium text-cr-charcoal">No family members added</p>
@@ -185,6 +199,7 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
           const u = member.users;
           return (
             <CRCard key={member.id}>
+              {permissionError && <p className="mb-3 text-xs text-cr-red">{permissionError}</p>}
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div>
