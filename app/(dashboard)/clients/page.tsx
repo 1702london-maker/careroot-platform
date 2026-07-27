@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
 import { CRCard } from "@/components/ui/CRCard";
-import { CRBadge, riskVariant, statusVariant } from "@/components/ui/CRBadge";
+import { CRBadge } from "@/components/ui/CRBadge";
+import { riskVariant, statusVariant } from "@/lib/badge-variants";
 import { CRAvatar } from "@/components/ui/CRAvatar";
 import { CREmptyState } from "@/components/ui/CREmptyState";
 

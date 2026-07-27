@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CRPageHeader } from "@/components/ui/CRPageHeader";
 import { CRCard } from "@/components/ui/CRCard";
-import { CRBadge, riskVariant } from "@/components/ui/CRBadge";
+import { CRBadge } from "@/components/ui/CRBadge";
+import { riskVariant } from "@/lib/badge-variants";
 
 import { CREmptyState } from "@/components/ui/CREmptyState";
 import { Sparkles } from "lucide-react";

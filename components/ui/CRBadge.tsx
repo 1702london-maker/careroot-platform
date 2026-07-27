@@ -1,15 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-
-type BadgeVariant =
-  | "green"
-  | "amber"
-  | "red"
-  | "slate"
-  | "gold"
-  | "blue"
-  | "forest";
+import type { BadgeVariant } from "@/lib/badge-variants";
 
 interface CRBadgeProps {
   variant?: BadgeVariant;
@@ -41,21 +33,4 @@ export function CRBadge({ variant = "slate", children, className, size = "md" }:
       {children}
     </span>
   );
-}
-
-export function riskVariant(level?: string): BadgeVariant {
-  if (level === "critical") return "red";
-  if (level === "high") return "red";
-  if (level === "medium") return "amber";
-  return "green";
-}
-
-export function statusVariant(status?: string): BadgeVariant {
-  if (status === "active" || status === "completed" || status === "compliant") return "green";
-  if (status === "inactive" || status === "cancelled" || status === "archived") return "slate";
-  if (status === "hospital" || status === "review" || status === "partial") return "amber";
-  if (status === "deceased" || status === "missed" || status === "non_compliant") return "red";
-  if (status === "draft") return "amber";
-  if (status === "in_progress") return "blue";
-  return "slate";
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { CRCard } from "@/components/ui/CRCard";
-import { CRBadge, riskVariant } from "@/components/ui/CRBadge";
+import { CRBadge } from "@/components/ui/CRBadge";
+import { riskVariant } from "@/lib/badge-variants";
 import { CRAIBadge } from "@/components/ui/CRAIBadge";
 import { formatDateUK } from "@/lib/utils";
 import { ShieldAlert } from "lucide-react";
