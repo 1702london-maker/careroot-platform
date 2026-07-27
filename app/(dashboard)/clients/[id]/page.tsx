@@ -40,9 +40,9 @@ export default async function ClientProfilePage({ params }: Props) {
     supabase.from("visits").select("*, users(first_name, last_name)").eq("client_id", id).order("scheduled_start", { ascending: false }).limit(20),
     supabase.from("incidents").select("*").eq("client_id", id).order("reported_at", { ascending: false }).limit(10),
     supabase.from("risk_assessments").select("*").eq("client_id", id).order("created_at", { ascending: false }).limit(1),
-    supabase.from("nutrition_profiles").select("*").eq("client_id", id).single(),
-    supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).order("created_at", { ascending: false }).limit(1).single(),
-    supabase.from("family_access").select("*, users(first_name, last_name, email, phone)").eq("client_id", id),
+    supabase.from("nutrition_profiles").select("*").eq("client_id", id).maybeSingle(),
+    supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("family_access").select("*, users!family_access_user_id_fkey(first_name, last_name, email, phone)").eq("client_id", id),
     supabase.from("body_map_injuries").select("*").eq("client_id", id).order("created_at"),
   ]);
 
