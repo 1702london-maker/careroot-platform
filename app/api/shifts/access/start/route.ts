@@ -117,6 +117,33 @@ export async function POST(req: Request) {
   }
 
   if (shift.client_ids?.length) {
+    const { data: currentCarePlans } = await supabase
+      .from("care_plans")
+      .select("id, client_id")
+      .in("client_id", shift.client_ids)
+      .eq("is_current", true);
+
+    const carePlanIds = (currentCarePlans ?? []).map((plan) => plan.id);
+    if (carePlanIds.length) {
+      const { data: confirmedViews } = await supabase
+        .from("care_plan_views")
+        .select("care_plan_id")
+        .eq("carer_id", user.id)
+        .in("care_plan_id", carePlanIds);
+
+      const confirmedIds = new Set((confirmedViews ?? []).map((view) => view.care_plan_id));
+      const missingCarePlan = carePlanIds.some((id) => !confirmedIds.has(id));
+      if (missingCarePlan) {
+        return NextResponse.json({
+          allowed: false,
+          reason: "You must read and confirm the current care plan before starting this shift.",
+          care_plan_required: true,
+        }, { status: 403 });
+      }
+    }
+  }
+
+  if (shift.client_ids?.length) {
     const { data: client } = await supabase
       .from("clients")
       .select("gps_lat, gps_lng, approved_radius_metres")

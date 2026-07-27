@@ -80,8 +80,9 @@ export default async function VisitPage({ params }: Props) {
   if (carePlan) {
     await supabase.from("care_plan_views").insert({
       care_plan_id: carePlan.id,
-      viewed_by: user!.id,
-      view_type: "carer_visit",
+      client_id: String(client.id),
+      carer_id: user!.id,
+      visit_id: id,
     }).then(() => {});
   }
 

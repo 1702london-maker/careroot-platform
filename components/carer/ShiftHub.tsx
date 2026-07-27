@@ -20,6 +20,9 @@ export function ShiftHub({ shift, clients, credential, carePlans, staffId }: Pro
       <ShiftLoginScreen
         shift={shift}
         credential={credential}
+        clients={clients}
+        carePlans={carePlans}
+        staffId={staffId}
         onSuccess={() => setShiftStarted(true)}
       />
     );

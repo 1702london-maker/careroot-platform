@@ -2,14 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { Loader2, Lock, AlertCircle, MapPin, Copy, CheckCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 interface Props {
   shift: Record<string, unknown>;
   credential: Record<string, unknown> | null;
+  clients: Record<string, unknown>[];
+  carePlans: Record<string, unknown>[];
+  staffId: string;
   onSuccess: () => void;
 }
 
-export function ShiftLoginScreen({ shift, credential, onSuccess }: Props) {
+export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffId, onSuccess }: Props) {
+  const supabase = createClient();
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -17,6 +22,7 @@ export function ShiftLoginScreen({ shift, credential, onSuccess }: Props) {
   const [gps, setGps] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
   const [deviceId, setDeviceId] = useState("");
   const [copied, setCopied] = useState(false);
+  const [carePlanConfirmed, setCarePlanConfirmed] = useState(carePlans.length === 0);
 
   // Generate or retrieve a stable browser device ID
   useEffect(() => {
@@ -60,9 +66,28 @@ export function ShiftLoginScreen({ shift, credential, onSuccess }: Props) {
   async function handleStart() {
     if (pin.length !== 6) { setError("Enter your 6-digit PIN"); return; }
     if (!credential) { setError("No credentials found. Ask your manager to send your PIN."); return; }
+    if (carePlans.length > 0 && !carePlanConfirmed) {
+      setError("Read and confirm the care plan before starting this shift.");
+      return;
+    }
 
     setLoading(true);
     setError("");
+
+    if (carePlans.length > 0) {
+      const rows = carePlans.map((plan) => ({
+        care_plan_id: plan.id,
+        client_id: plan.client_id,
+        carer_id: staffId,
+        viewed_at: new Date().toISOString(),
+      }));
+      const { error: viewError } = await supabase.from("care_plan_views").insert(rows);
+      if (viewError) {
+        setLoading(false);
+        setError(viewError.message);
+        return;
+      }
+    }
 
     const gpsData = await getGPS();
 
@@ -141,6 +166,41 @@ export function ShiftLoginScreen({ shift, credential, onSuccess }: Props) {
           />
         </div>
 
+        {carePlans.length > 0 && (
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-4">
+            <p className="text-xs font-semibold text-cr-slate uppercase tracking-wider mb-3">Care plan confirmation</p>
+            <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+              {carePlans.map((plan) => {
+                const client = clients.find((c) => c.id === plan.client_id);
+                const authorised = Array.isArray(plan.authorised_tasks) ? plan.authorised_tasks : [];
+                const excluded = Array.isArray(plan.excluded_tasks) ? plan.excluded_tasks : [];
+                return (
+                  <div key={String(plan.id)} className="rounded-xl border border-gray-100 p-3 bg-gray-50">
+                    <p className="text-sm font-semibold text-cr-charcoal">{String(client?.first_name ?? "")} {String(client?.last_name ?? "")}</p>
+                    <p className="text-xs text-cr-slate mt-2">Authorised tasks</p>
+                    <p className="text-xs text-cr-charcoal mt-0.5">{authorised.length ? authorised.join(", ") : "No authorised task list set."}</p>
+                    {excluded.length > 0 && (
+                      <>
+                        <p className="text-xs text-red-700 mt-2">Do not perform</p>
+                        <p className="text-xs text-cr-charcoal mt-0.5">{excluded.join(", ")}</p>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <label className="mt-3 flex items-start gap-2 text-xs text-cr-charcoal">
+              <input
+                type="checkbox"
+                checked={carePlanConfirmed}
+                onChange={(e) => setCarePlanConfirmed(e.target.checked)}
+                className="mt-0.5 accent-cr-forest"
+              />
+              <span>I have read the current care plan, authorised tasks, and excluded tasks for this shift.</span>
+            </label>
+          </div>
+        )}
+
         {/* GPS status */}
         {gpsStatus === "getting" && (
           <div className="flex items-center gap-2 text-xs text-cr-slate mb-3 justify-center">
@@ -160,7 +220,7 @@ export function ShiftLoginScreen({ shift, credential, onSuccess }: Props) {
 
         <button
           onClick={handleStart}
-          disabled={loading || pin.length !== 6 || noCredential}
+          disabled={loading || pin.length !== 6 || noCredential || (carePlans.length > 0 && !carePlanConfirmed)}
           className="w-full py-4 bg-cr-forest text-white font-bold text-base rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
         >
           {loading ? <><Loader2 size={18} className="animate-spin" /> Verifying...</> : "Start Shift"}
