@@ -23,7 +23,6 @@ export async function POST(req: Request) {
     manager_remote_auth_id,
     manager_remote_auth_name,
     manager_remote_auth_image_url,
-    authorisation_method,
     imei,
     gps_lat,
     gps_lng,
@@ -96,6 +95,11 @@ export async function POST(req: Request) {
   const stockDiscrepancyDetected =
     expectedStockAfter !== null && normalisedStockAfter !== null && normalisedStockAfter !== expectedStockAfter;
 
+  const notesParts = [outcome_notes].filter((part) => String(part || "").trim());
+  if (schedule?.is_controlled && witness_name) notesParts.push(`Witness: ${witness_name}`);
+  if (schedule?.is_controlled && manager_remote_auth_name) notesParts.push(`Manager authorisation: ${manager_remote_auth_name}`);
+  if (stockDiscrepancyDetected) notesParts.push(`Stock discrepancy: expected ${expectedStockAfter}, recorded ${normalisedStockAfter}`);
+
   const record: Record<string, unknown> = {
     shift_id, client_id, medication_schedule_id,
     staff_id: user.id,
@@ -104,15 +108,9 @@ export async function POST(req: Request) {
     prn_reason: prn_reason || null,
     stock_before: normalisedStockBefore,
     stock_after: normalisedStockAfter,
-    outcome_notes: outcome_notes || null,
+    outcome_notes: notesParts.length > 0 ? notesParts.join("\n") : null,
     administered_at: outcome === "administered" ? now : null,
     server_timestamp: now,
-    authorisation_method: authorisation_method || null,
-    witness_name: witness_name || null,
-    manager_remote_auth_name: manager_remote_auth_name || null,
-    stock_discrepancy_detected: stockDiscrepancyDetected,
-    stock_discrepancy_amount: stockDiscrepancyDetected && expectedStockAfter !== null && normalisedStockAfter !== null ? normalisedStockAfter - expectedStockAfter : null,
-    stock_discrepancy_note: stockDiscrepancyDetected ? `Expected ${expectedStockAfter}, recorded ${normalisedStockAfter}` : null,
   };
   // Only attach controlled-drug witness fields when actually used, so normal
   // medication recording never depends on those columns being present.
