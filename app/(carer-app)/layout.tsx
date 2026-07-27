@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CarerSidebar } from "@/components/carer/CarerSidebar";
 import { CarerBottomNav } from "@/components/carer/CarerBottomNav";
+import { CarerTopBar } from "@/components/carer/CarerTopBar";
 
 export default async function CarerAppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -33,13 +34,8 @@ export default async function CarerAppLayout({ children }: { children: React.Rea
 
       {/* Main content */}
       <main className="md:ml-64 flex-1 pt-16 md:pt-0 pb-20 md:pb-0 min-h-screen">
-        {/* Desktop top bar */}
-        <div className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100">
-          <div>
-            <p className="font-display text-xl font-semibold text-cr-charcoal">Staff Dashboard</p>
-            <p className="text-xs font-body text-cr-slate mt-0.5">{today}</p>
-          </div>
-        </div>
+        {/* Desktop top bar — dynamic per page */}
+        <CarerTopBar today={today} />
         <div className="p-4 md:p-8">{children}</div>
       </main>
 

@@ -6,12 +6,12 @@ import { createClient } from "@/lib/supabase/client";
 import {
   CalendarClock, ClipboardList, HeartPulse, LogOut, MessageSquare,
   Pill, ShieldCheck, Users, Loader2, CheckCircle2, AlertTriangle,
-  Leaf, ChevronRight,
+  Leaf, ChevronRight, PenLine,
 } from "lucide-react";
 import { formatDateTimeUK, formatDateUK } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
-type Tab = "today" | "care" | "medication" | "history" | "rights" | "team";
+type Tab = "today" | "care" | "medication" | "history" | "rights" | "team" | "preferences";
 
 type Props = {
   client: Record<string, unknown>;
@@ -36,6 +36,7 @@ const navItems: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "history", label: "History", icon: <HeartPulse size={18} /> },
   { id: "rights", label: "My Rights", icon: <ShieldCheck size={18} /> },
   { id: "team", label: "My Team", icon: <Users size={18} /> },
+  { id: "preferences", label: "My Preferences", icon: <PenLine size={18} /> },
 ];
 
 function statusClass(status?: string) {
@@ -51,9 +52,19 @@ export function ClientPortalClient(props: Props) {
   const [tab, setTab] = useState<Tab>("today");
   const [sarReason, setSarReason] = useState("");
   const [complaint, setComplaint] = useState({ category: "care_quality", description: "", desired_outcome: "" });
-  const [busy, setBusy] = useState<"sar" | "complaint" | null>(null);
+  const [busy, setBusy] = useState<"sar" | "complaint" | "preferences" | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [prefForm, setPrefForm] = useState({
+    medications_summary: "",
+    allergies: "",
+    dietary_requirements: "",
+    food_preferences: "",
+    daily_routine: "",
+    triggers: "",
+    care_preferences: "",
+    other_notes: "",
+  });
 
   const clientName = `${props.client.first_name ?? ""} ${props.client.last_name ?? ""}`.trim();
   const assignedCarers = new Map<string, { first_name?: string; last_name?: string }>();
@@ -80,6 +91,23 @@ export function ClientPortalClient(props: Props) {
     if (!res.ok) { setError(data.error ?? "Could not submit SAR"); return; }
     setSarReason("");
     setMessage("Subject Access Request submitted. Your care provider has 30 days to respond.");
+    router.refresh();
+  }
+
+  async function submitPreferences() {
+    const hasContent = Object.values(prefForm).some((v) => v.trim());
+    if (!hasContent) { setError("Please fill in at least one field."); return; }
+    setBusy("preferences"); setError(""); setMessage("");
+    const res = await fetch("/api/client/update-preferences", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ client_id: props.client.id, ...prefForm }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setBusy(null);
+    if (!res.ok) { setError(data.error ?? "Could not save preferences"); return; }
+    setPrefForm({ medications_summary: "", allergies: "", dietary_requirements: "", food_preferences: "", daily_routine: "", triggers: "", care_preferences: "", other_notes: "" });
+    setMessage("Your information has been sent to your care manager. They will update your records within 48 hours.");
     router.refresh();
   }
 
@@ -341,6 +369,107 @@ export function ClientPortalClient(props: Props) {
                     </div>
                   )}
                 </Panel>
+              </div>
+            </section>
+          )}
+
+          {/* MY PREFERENCES */}
+          {tab === "preferences" && (
+            <section className="space-y-5">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p className="text-sm font-body text-blue-800">
+                  You know yourself best. Share your preferences, medication details, and daily routine below — your care manager will review everything and update your care records within 48 hours.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <Panel title="Medications I Take">
+                  <p className="text-xs font-body text-cr-slate mb-3">List any medications you take, even if you think the care team already knows.</p>
+                  <textarea
+                    value={prefForm.medications_summary}
+                    onChange={(e) => setPrefForm({ ...prefForm, medications_summary: e.target.value })}
+                    rows={4}
+                    placeholder="e.g. Amlodipine 5mg once a day in the morning. Aspirin 75mg with breakfast."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                  <p className="text-xs font-body text-cr-slate mt-3 mb-1 font-semibold">Allergies / things that don&apos;t agree with me</p>
+                  <textarea
+                    value={prefForm.allergies}
+                    onChange={(e) => setPrefForm({ ...prefForm, allergies: e.target.value })}
+                    rows={2}
+                    placeholder="e.g. Penicillin allergy. Lactose intolerant. Strong smells give me headaches."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                </Panel>
+
+                <Panel title="Food & Nutrition">
+                  <p className="text-xs font-body text-cr-slate mb-2 font-semibold">Dietary needs</p>
+                  <textarea
+                    value={prefForm.dietary_requirements}
+                    onChange={(e) => setPrefForm({ ...prefForm, dietary_requirements: e.target.value })}
+                    rows={2}
+                    placeholder="e.g. Soft food only. No red meat. Low salt."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest mb-2"
+                  />
+                  <p className="text-xs font-body text-cr-slate mb-1 font-semibold">What I like and dislike</p>
+                  <textarea
+                    value={prefForm.food_preferences}
+                    onChange={(e) => setPrefForm({ ...prefForm, food_preferences: e.target.value })}
+                    rows={2}
+                    placeholder="e.g. Love porridge and toast in the morning. Enjoy a cup of tea at 3pm. Don&apos;t like fish."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                </Panel>
+
+                <Panel title="My Daily Routine">
+                  <p className="text-xs font-body text-cr-slate mb-3">Describe your preferred daily routine so carers can follow what works for you.</p>
+                  <textarea
+                    value={prefForm.daily_routine}
+                    onChange={(e) => setPrefForm({ ...prefForm, daily_routine: e.target.value })}
+                    rows={5}
+                    placeholder="e.g. I wake up around 7:30am. I like tea before getting up. I shower after breakfast. I have a nap after lunch. I like to be in bed by 9:30pm."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                </Panel>
+
+                <Panel title="Things to Know About Me">
+                  <p className="text-xs font-body text-cr-slate mb-1 font-semibold">Things that upset or stress me</p>
+                  <textarea
+                    value={prefForm.triggers}
+                    onChange={(e) => setPrefForm({ ...prefForm, triggers: e.target.value })}
+                    rows={2}
+                    placeholder="e.g. I get anxious if rushed. Loud noises upset me. I don&apos;t like being talked about as if I&apos;m not in the room."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest mb-2"
+                  />
+                  <p className="text-xs font-body text-cr-slate mb-1 font-semibold">How I like to be cared for</p>
+                  <textarea
+                    value={prefForm.care_preferences}
+                    onChange={(e) => setPrefForm({ ...prefForm, care_preferences: e.target.value })}
+                    rows={3}
+                    placeholder="e.g. I prefer a female carer for personal care. Please call me by my first name. I like to do as much as I can myself — only help when I ask."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                </Panel>
+              </div>
+
+              <Panel title="Anything Else You Want Us to Know">
+                <textarea
+                  value={prefForm.other_notes}
+                  onChange={(e) => setPrefForm({ ...prefForm, other_notes: e.target.value })}
+                  rows={4}
+                  placeholder="Anything else — your background, interests, what brings you joy, communication needs, important people in your life, or anything you want carers to understand."
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                />
+              </Panel>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={submitPreferences}
+                  disabled={busy === "preferences"}
+                  className="inline-flex items-center gap-2 bg-cr-forest text-white px-6 py-2.5 rounded-lg text-sm font-semibold font-body hover:bg-cr-sage transition-colors disabled:opacity-60"
+                >
+                  {busy === "preferences" ? <Loader2 size={14} className="animate-spin" /> : <PenLine size={14} />}
+                  {busy === "preferences" ? "Sending…" : "Send to my care manager"}
+                </button>
               </div>
             </section>
           )}

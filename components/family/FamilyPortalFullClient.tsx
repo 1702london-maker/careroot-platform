@@ -6,12 +6,12 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Heart, CalendarClock, ClipboardList, Pill, Utensils,
   ShieldCheck, MessageSquare, LogOut, Leaf, CheckCircle2,
-  AlertTriangle, Loader2, ChevronRight,
+  AlertTriangle, Loader2, ChevronRight, PenLine,
 } from "lucide-react";
 import { formatDateTimeUK, formatDateUK } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
-type Tab = "overview" | "visits" | "care" | "medication" | "nutrition" | "rights";
+type Tab = "overview" | "visits" | "care" | "medication" | "nutrition" | "rights" | "update";
 
 type Props = {
   client: Record<string, unknown>;
@@ -37,6 +37,7 @@ const navItems: { id: Tab; label: string; icon: React.ReactNode; minAccess?: str
   { id: "medication", label: "Medication", icon: <Pill size={18} />, minAccess: "standard" },
   { id: "nutrition", label: "Nutrition", icon: <Utensils size={18} /> },
   { id: "rights", label: "Documents & Rights", icon: <ShieldCheck size={18} />, minAccess: "full" },
+  { id: "update", label: "Add / Update Info", icon: <PenLine size={18} /> },
 ];
 
 function canShow(accessLevel: string, min?: string) {
@@ -59,9 +60,19 @@ export function FamilyPortalFullClient(props: Props) {
   const [tab, setTab] = useState<Tab>("overview");
   const [sarReason, setSarReason] = useState("");
   const [complaint, setComplaint] = useState({ complaint_type: "care_quality", description: "", priority: "medium" });
-  const [busy, setBusy] = useState<"sar" | "complaint" | null>(null);
+  const [busy, setBusy] = useState<"sar" | "complaint" | "update" | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [updateForm, setUpdateForm] = useState({
+    medications_summary: "",
+    allergies: "",
+    dietary_requirements: "",
+    food_preferences: "",
+    daily_routine: "",
+    triggers: "",
+    care_preferences: "",
+    care_notes: "",
+  });
 
   const clientName = `${props.client.first_name ?? ""} ${props.client.last_name ?? ""}`.trim();
   const latestVisit = props.recentVisits[0];
@@ -91,6 +102,23 @@ export function FamilyPortalFullClient(props: Props) {
     if (!res.ok) { setError(data.error ?? "Could not submit SAR"); return; }
     setSarReason("");
     setMessage("SAR submitted. The care provider has 30 days to respond.");
+    router.refresh();
+  }
+
+  async function submitUpdate() {
+    const hasContent = Object.values(updateForm).some((v) => v.trim());
+    if (!hasContent) { setError("Please fill in at least one field."); return; }
+    setBusy("update"); setError(""); setMessage("");
+    const res = await fetch("/api/family/update-care", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ client_id: props.client.id, ...updateForm }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setBusy(null);
+    if (!res.ok) { setError(data.error ?? "Could not submit update"); return; }
+    setUpdateForm({ medications_summary: "", allergies: "", dietary_requirements: "", food_preferences: "", daily_routine: "", triggers: "", care_preferences: "", care_notes: "" });
+    setMessage("Information submitted. The care manager will review and update the records within 48 hours.");
     router.refresh();
   }
 
@@ -312,6 +340,109 @@ export function FamilyPortalFullClient(props: Props) {
                 ))}
               </RecordList>
             </Panel>
+          )}
+
+          {/* ADD / UPDATE INFO */}
+          {tab === "update" && (
+            <section className="space-y-5">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <p className="text-sm font-body text-amber-800">
+                  <strong>As a family member or next of kin</strong>, you can share important information about {clientName} below. The care manager will review it and update the official care records within 48 hours.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <Panel title="Medication Information">
+                  <p className="text-xs font-body text-cr-slate mb-3">List any medications {clientName} takes, including name, dose, and how often — even if you think the care team already knows.</p>
+                  <textarea
+                    value={updateForm.medications_summary}
+                    onChange={(e) => setUpdateForm({ ...updateForm, medications_summary: e.target.value })}
+                    rows={4}
+                    placeholder="e.g. Amlodipine 5mg — once daily in the morning. Metformin 500mg — twice daily with meals."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                  <p className="text-xs font-body text-cr-slate mt-3 mb-1 font-semibold">Allergies / sensitivities</p>
+                  <textarea
+                    value={updateForm.allergies}
+                    onChange={(e) => setUpdateForm({ ...updateForm, allergies: e.target.value })}
+                    rows={2}
+                    placeholder="e.g. Penicillin allergy — causes rash. Sensitive to strong scents."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                </Panel>
+
+                <Panel title="Nutrition & Dietary Needs">
+                  <p className="text-xs font-body text-cr-slate mb-3">Share dietary requirements and food preferences so carers can prepare the right meals.</p>
+                  <p className="text-xs font-body text-cr-slate mb-1 font-semibold">Dietary requirements</p>
+                  <textarea
+                    value={updateForm.dietary_requirements}
+                    onChange={(e) => setUpdateForm({ ...updateForm, dietary_requirements: e.target.value })}
+                    rows={2}
+                    placeholder="e.g. Soft/pureed food only. No pork. Diabetic diet."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest mb-2"
+                  />
+                  <p className="text-xs font-body text-cr-slate mb-1 font-semibold">Food preferences & likes/dislikes</p>
+                  <textarea
+                    value={updateForm.food_preferences}
+                    onChange={(e) => setUpdateForm({ ...updateForm, food_preferences: e.target.value })}
+                    rows={2}
+                    placeholder="e.g. Loves porridge and toast in the morning. Dislikes cabbage and fish."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                </Panel>
+
+                <Panel title="Daily Routine">
+                  <p className="text-xs font-body text-cr-slate mb-3">Describe {clientName}&apos;s preferred daily schedule so carers can follow the same routine.</p>
+                  <textarea
+                    value={updateForm.daily_routine}
+                    onChange={(e) => setUpdateForm({ ...updateForm, daily_routine: e.target.value })}
+                    rows={5}
+                    placeholder="e.g. Wakes at 7:30am. Likes tea before getting up. Shower after breakfast. Nap after lunch. Bed by 9:30pm."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                </Panel>
+
+                <Panel title="Triggers & How They Like to Be Cared For">
+                  <p className="text-xs font-body text-cr-slate mb-3">Help carers understand what to avoid and how {clientName} prefers to be supported.</p>
+                  <p className="text-xs font-body text-cr-slate mb-1 font-semibold">Triggers / things to avoid</p>
+                  <textarea
+                    value={updateForm.triggers}
+                    onChange={(e) => setUpdateForm({ ...updateForm, triggers: e.target.value })}
+                    rows={2}
+                    placeholder="e.g. Gets anxious when rushed. Dislikes loud music. Sensitive about personal hygiene being discussed in front of others."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest mb-2"
+                  />
+                  <p className="text-xs font-body text-cr-slate mb-1 font-semibold">How they like to be cared for</p>
+                  <textarea
+                    value={updateForm.care_preferences}
+                    onChange={(e) => setUpdateForm({ ...updateForm, care_preferences: e.target.value })}
+                    rows={3}
+                    placeholder="e.g. Prefers female carers. Likes to be called by first name. Wants to do as much independently as possible — only help when asked."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                  />
+                </Panel>
+              </div>
+
+              <Panel title="Anything Else">
+                <textarea
+                  value={updateForm.care_notes}
+                  onChange={(e) => setUpdateForm({ ...updateForm, care_notes: e.target.value })}
+                  rows={4}
+                  placeholder="Any other information the care team should know — background, medical history, family circumstances, things that bring joy, communication needs, etc."
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-body resize-none focus:outline-none focus:border-cr-forest"
+                />
+              </Panel>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={submitUpdate}
+                  disabled={busy === "update"}
+                  className="inline-flex items-center gap-2 bg-cr-forest text-white px-6 py-2.5 rounded-lg text-sm font-semibold font-body hover:bg-cr-sage transition-colors disabled:opacity-60"
+                >
+                  {busy === "update" ? <Loader2 size={14} className="animate-spin" /> : <PenLine size={14} />}
+                  {busy === "update" ? "Submitting…" : "Submit to care manager"}
+                </button>
+              </div>
+            </section>
           )}
 
           {/* DOCUMENTS & RIGHTS */}

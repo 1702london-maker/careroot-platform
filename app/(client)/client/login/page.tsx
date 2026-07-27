@@ -59,36 +59,53 @@ export default function ClientLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cr-mint flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-cr-forest rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <HeartPulse size={24} className="text-white" />
+    <div className="py-16 px-4">
+      <div className="max-w-md mx-auto">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-cr-forest rounded-xl flex items-center justify-center flex-shrink-0">
+              <HeartPulse size={20} className="text-white" />
+            </div>
+            <div>
+              <h1 className="font-display text-xl font-semibold text-cr-charcoal leading-tight">Client Portal</h1>
+              <p className="text-xs font-body text-cr-slate">Your care, visits and rights in one place</p>
+            </div>
           </div>
-          <h1 className="font-display text-3xl font-bold text-cr-charcoal">Client Portal</h1>
-          <p className="text-sm font-body text-cr-slate mt-1">Your care, visits, records, and rights in one place</p>
-        </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-body font-medium text-cr-charcoal mb-1">Email address</label>
-              <input {...register("email")} type="email" autoComplete="email" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest" />
-              {errors.email && <p className="mt-1 text-xs text-cr-red">{errors.email.message}</p>}
+              <label className="block text-sm font-body font-medium text-cr-charcoal mb-1.5">Email address</label>
+              <input {...register("email")} type="email" autoComplete="email" placeholder="you@example.com"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition" />
+              {errors.email && <p className="mt-1 text-xs text-red-600 font-body">{errors.email.message}</p>}
             </div>
             <div>
-              <label className="block text-sm font-body font-medium text-cr-charcoal mb-1">Password</label>
-              <input {...register("password")} type="password" autoComplete="current-password" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest" />
-              {errors.password && <p className="mt-1 text-xs text-cr-red">{errors.password.message}</p>}
+              <label className="block text-sm font-body font-medium text-cr-charcoal mb-1.5">Password</label>
+              <input {...register("password")} type="password" autoComplete="current-password" placeholder="••••••••"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 font-body text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest transition" />
+              {errors.password && <p className="mt-1 text-xs text-red-600 font-body">{errors.password.message}</p>}
             </div>
-            {error && <div className="p-3 rounded-lg bg-red-50 border border-red-200"><p className="text-xs text-cr-red">{error}</p></div>}
-            <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 bg-cr-forest text-white rounded-xl font-body font-semibold">
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                <p className="text-xs font-body text-red-700">{error}</p>
+              </div>
+            )}
+            <button type="submit" disabled={loading}
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-cr-forest text-white rounded-lg font-body font-semibold text-sm hover:bg-cr-sage transition-colors disabled:opacity-60 mt-2">
               {loading && <Loader2 size={16} className="animate-spin" />}
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
-          <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-            <p className="text-xs text-cr-slate">Family member? <a href="/family/login" className="text-cr-forest hover:underline">Use family portal</a></p>
+
+          <div className="mt-6 pt-5 border-t border-gray-100 flex flex-col gap-2 text-center">
+            <p className="text-xs font-body text-cr-slate">
+              Family member?{" "}
+              <a href="/family/login" className="text-cr-forest font-medium hover:underline">Use family portal</a>
+            </p>
+            <p className="text-xs font-body text-cr-slate">
+              Care staff?{" "}
+              <a href="/carer-login" className="text-cr-forest font-medium hover:underline">Staff login</a>
+            </p>
           </div>
         </div>
       </div>
