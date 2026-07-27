@@ -54,7 +54,7 @@ export default async function CarerEmarPage() {
       .select("id, first_name, last_name, date_of_birth, photo_url")
       .in("id", accessibleClientIds),
     supabase.from("medication_schedules")
-      .select("id, client_id, medication_name, dose, route, frequency, time_of_day, special_instructions, is_controlled, is_prn")
+      .select("id, client_id, medication_name, dose, route, scheduled_times, is_controlled, is_prn, current_stock")
       .in("client_id", accessibleClientIds)
       .eq("is_active", true),
     supabase.from("medication_records")

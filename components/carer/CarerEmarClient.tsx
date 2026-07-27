@@ -12,12 +12,11 @@ type Medication = {
   client_id: string;
   medication_name: string;
   dose: string;
-  frequency?: string | null;
-  time_of_day?: string | null;
+  scheduled_times?: string[] | null;
   route?: string | null;
-  special_instructions?: string | null;
   is_controlled?: boolean | null;
   is_prn?: boolean | null;
+  current_stock?: number | null;
 };
 type Administration = {
   id: string;
@@ -209,12 +208,13 @@ export function CarerEmarClient({ clients, medications, initialAdministrations, 
                       )}
                     </div>
                     <p className="text-xs text-cr-slate">
-                      {med.dose}{med.frequency ? ` · ${med.frequency}` : ""}
+                      {med.dose}{med.route ? ` · ${med.route}` : ""}
                     </p>
-                    {med.time_of_day && <p className="text-xs text-cr-slate">Due: {med.time_of_day}</p>}
-                    {med.route && <p className="text-xs text-cr-slate capitalize">Route: {med.route}</p>}
-                    {med.special_instructions && (
-                      <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2 py-1 mt-1">{med.special_instructions}</p>
+                    {med.scheduled_times && med.scheduled_times.length > 0 && (
+                      <p className="text-xs text-cr-slate">Due: {med.scheduled_times.map(t => t.slice(0, 5)).join(", ")}</p>
+                    )}
+                    {med.current_stock != null && (
+                      <p className="text-xs text-cr-slate">Stock: {med.current_stock}</p>
                     )}
                     {admin && recordedAt && (
                       <p className="text-xs text-cr-slate mt-1">
