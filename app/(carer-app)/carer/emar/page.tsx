@@ -19,6 +19,7 @@ export default async function CarerEmarPage() {
     .gte("scheduled_end", thirtyMinsAgo.toISOString());
 
   const accessibleClientIds: string[] = [];
+  const activeShiftId = activeShifts?.find(shift => shift.status === "active")?.id ?? activeShifts?.[0]?.id ?? "";
   activeShifts?.forEach(shift => {
     const ended = shift.actual_end || shift.scheduled_end;
     const endTime = new Date(ended).getTime();
@@ -52,15 +53,15 @@ export default async function CarerEmarPage() {
     supabase.from("clients")
       .select("id, first_name, last_name, date_of_birth, photo_url")
       .in("id", accessibleClientIds),
-    supabase.from("medications")
-      .select("*")
+    supabase.from("medication_schedules")
+      .select("id, client_id, medication_name, dose, route, frequency, time_of_day, special_instructions, is_controlled, is_prn")
       .in("client_id", accessibleClientIds)
       .eq("is_active", true),
-    supabase.from("medication_administration")
-      .select("*")
+    supabase.from("medication_records")
+      .select("id, medication_schedule_id, client_id, status, administered_at, created_at, outcome_notes")
       .in("client_id", accessibleClientIds)
-      .gte("administered_at", new Date().toISOString().slice(0, 10) + "T00:00:00")
-      .order("administered_at", { ascending: false }),
+      .gte("created_at", new Date().toISOString().slice(0, 10) + "T00:00:00")
+      .order("created_at", { ascending: false }),
   ]);
 
   return (
@@ -74,7 +75,7 @@ export default async function CarerEmarPage() {
           clients={clients ?? []}
           medications={medications ?? []}
           initialAdministrations={administrations ?? []}
-          staffId={user.id}
+          activeShiftId={activeShiftId}
         />
       </div>
     </div>
