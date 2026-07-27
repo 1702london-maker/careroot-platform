@@ -11,6 +11,7 @@ import { IncidentForm } from "./forms/IncidentForm";
 import { SafeguardingForm } from "./forms/SafeguardingForm";
 import { HandoverForm } from "./forms/HandoverForm";
 import { TaskCompletionForm } from "./forms/TaskCompletionForm";
+import { OfflineSyncStatus } from "./OfflineSyncStatus";
 
 type Screen =
   | "home"
@@ -125,6 +126,8 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
 
   return (
     <div className="space-y-4 pb-6">
+      <OfflineSyncStatus />
+
       {/* Shift header */}
       <div className="bg-cr-forest text-white rounded-2xl p-4">
         <div className="flex items-start justify-between">

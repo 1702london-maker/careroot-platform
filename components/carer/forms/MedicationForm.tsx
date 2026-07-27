@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ClientPicker } from "./ClientPicker";
+import { submitOrQueue } from "@/lib/offline-queue";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -36,6 +37,10 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
   const [prnReason, setPrnReason] = useState("");
   const [stockBefore, setStockBefore] = useState("");
   const [stockAfter, setStockAfter] = useState("");
+  const [authorisationMethod, setAuthorisationMethod] = useState<"second_staff_witness" | "remote_manager_authorisation">("second_staff_witness");
+  const [witnessName, setWitnessName] = useState("");
+  const [managerAuthName, setManagerAuthName] = useState("");
+  const [managerAuthEvidenceUrl, setManagerAuthEvidenceUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -64,10 +69,7 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
       gpsLng = pos.coords.longitude;
     } catch { /* handled by server if GPS is required */ }
 
-    const res = await fetch("/api/medication-records", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await submitOrQueue("/api/medication-records", {
         shift_id: shift.id,
         client_id: clientId,
         medication_schedule_id: selected.id,
@@ -76,22 +78,48 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
         prn_reason: selected.is_prn ? prnReason : null,
         stock_before: selected.is_controlled ? Number(stockBefore) : null,
         stock_after: selected.is_controlled ? Number(stockAfter) : null,
+        authorisation_method: selected.is_controlled && outcome === "administered" ? authorisationMethod : null,
+        witness_name: selected.is_controlled && authorisationMethod === "second_staff_witness" ? witnessName.trim() : null,
+        manager_remote_auth_name: selected.is_controlled && authorisationMethod === "remote_manager_authorisation" ? managerAuthName.trim() : null,
+        manager_remote_auth_image_url: selected.is_controlled && authorisationMethod === "remote_manager_authorisation" ? managerAuthEvidenceUrl.trim() || null : null,
         outcome_notes: notes,
         gps_lat: gpsLat,
         gps_lng: gpsLng,
         imei: localStorage.getItem("careroot_device_id"),
-      }),
-    });
+      });
 
     setSubmitting(false);
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}));
+    if (!result.ok) {
       setError(result.error || "Could not save medication record");
       return;
     }
     setDone(true);
-    setTimeout(() => { setSelected(null); setDone(false); setOutcome("administered"); setNotes(""); setStockBefore(""); setStockAfter(""); setRefusalReason(""); setPrnReason(""); }, 1500);
+    setTimeout(() => {
+      setSelected(null);
+      setDone(false);
+      setOutcome("administered");
+      setNotes("");
+      setStockBefore("");
+      setStockAfter("");
+      setRefusalReason("");
+      setPrnReason("");
+      setAuthorisationMethod("second_staff_witness");
+      setWitnessName("");
+      setManagerAuthName("");
+      setManagerAuthEvidenceUrl("");
+    }, 1500);
   }
+
+  const stockBeforeNumber = stockBefore === "" ? null : Number(stockBefore);
+  const stockAfterNumber = stockAfter === "" ? null : Number(stockAfter);
+  const expectedStockAfter =
+    selected?.is_controlled && stockBeforeNumber !== null
+      ? outcome === "administered"
+        ? stockBeforeNumber - 1
+        : stockBeforeNumber
+      : null;
+  const hasStockDiscrepancy =
+    expectedStockAfter !== null && stockAfterNumber !== null && stockAfterNumber !== expectedStockAfter;
 
   return (
     <div>
@@ -183,17 +211,65 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
           )}
 
           {selected.is_controlled && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-cr-slate mb-1.5">Stock before</label>
-                <input required type="number" value={stockBefore} onChange={e => setStockBefore(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest" />
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-cr-slate mb-1.5">Stock before</label>
+                  <input required type="number" min="0" value={stockBefore} onChange={e => setStockBefore(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-cr-slate mb-1.5">Stock after</label>
+                  <input required type="number" min="0" value={stockAfter} onChange={e => setStockAfter(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest" />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-cr-slate mb-1.5">Stock after</label>
-                <input required type="number" value={stockAfter} onChange={e => setStockAfter(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest" />
-              </div>
+
+              {hasStockDiscrepancy && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-800">
+                  Expected stock after: {expectedStockAfter}. This will be saved as a stock discrepancy for manager review.
+                </div>
+              )}
+
+              {outcome === "administered" && (
+                <div className="rounded-2xl border border-gray-100 bg-white p-3 space-y-3">
+                  <label className="block text-xs font-semibold text-cr-slate">Controlled drug authorisation</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setAuthorisationMethod("second_staff_witness")}
+                      className={`py-2.5 px-3 rounded-xl text-xs font-semibold border ${authorisationMethod === "second_staff_witness" ? "bg-cr-forest text-white border-cr-forest" : "bg-white text-cr-slate border-gray-200"}`}>
+                      Witness
+                    </button>
+                    <button type="button" onClick={() => setAuthorisationMethod("remote_manager_authorisation")}
+                      className={`py-2.5 px-3 rounded-xl text-xs font-semibold border ${authorisationMethod === "remote_manager_authorisation" ? "bg-cr-forest text-white border-cr-forest" : "bg-white text-cr-slate border-gray-200"}`}>
+                      Manager
+                    </button>
+                  </div>
+
+                  {authorisationMethod === "second_staff_witness" ? (
+                    <div>
+                      <label className="block text-xs font-semibold text-cr-slate mb-1.5">Witness full name</label>
+                      <input required value={witnessName} onChange={e => setWitnessName(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest"
+                        placeholder="Second staff member" />
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-cr-slate mb-1.5">Manager authorising</label>
+                        <input required value={managerAuthName} onChange={e => setManagerAuthName(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest"
+                          placeholder="Manager full name" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-cr-slate mb-1.5">Evidence URL (optional)</label>
+                        <input value={managerAuthEvidenceUrl} onChange={e => setManagerAuthEvidenceUrl(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest"
+                          placeholder="Photo or message link" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

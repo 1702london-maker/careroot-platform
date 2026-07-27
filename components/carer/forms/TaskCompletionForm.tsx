@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, CheckCircle, Loader2, AlertTriangle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
+import { submitOrQueue } from "@/lib/offline-queue";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -37,10 +38,7 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
       gpsLng = pos.coords.longitude;
     } catch { /* handled by server if GPS is required */ }
 
-    const res = await fetch("/api/task-completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await submitOrQueue("/api/task-completions", {
         shift_id: shift.id,
         client_id: clientId,
         task_name: taskName,
@@ -48,10 +46,8 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
         gps_lat: gpsLat,
         gps_lng: gpsLng,
         imei: localStorage.getItem("careroot_device_id"),
-      }),
-    });
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}));
+      });
+    if (!result.ok) {
       setViolationError(result.error || "Could not save task completion");
       setSubmitting(false);
       return;
@@ -65,20 +61,15 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
     if (!violation) return;
     setReportingViolation(true);
     setViolationError("");
-    const res = await fetch("/api/role-boundary-violations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await submitOrQueue("/api/role-boundary-violations", {
         shift_id: shift.id,
         client_id: clientId,
         requested_task: violation.task,
         requested_by: violation.requestedBy,
         worker_response: violation.response,
         imei: localStorage.getItem("careroot_device_id"),
-      }),
-    });
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}));
+      });
+    if (!result.ok) {
       setViolationError(result.error || "Could not submit boundary violation");
       setReportingViolation(false);
       return;

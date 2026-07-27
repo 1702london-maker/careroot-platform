@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
+import { submitOrQueue } from "@/lib/offline-queue";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -58,19 +59,14 @@ export function MoodForm({ shift, clients, carePlans, onBack }: Props) {
     } catch { /* handled by server if GPS is required */ }
 
     const mood = allMoods.find(m => m.term === selectedMood);
-    const res = await fetch("/api/mood-records", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await submitOrQueue("/api/mood-records", {
         shift_id: shift.id, client_id: clientId, mood_term: selectedMood,
         mood_category: mood?.category || "custom", context_notes: contextNotes, triggers_activated: triggersActivated,
         gps_lat: gpsLat, gps_lng: gpsLng,
         imei: localStorage.getItem("careroot_device_id"),
-      }),
-    });
+      });
     setSubmitting(false);
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}));
+    if (!result.ok) {
       setError(result.error || "Could not save mood record");
       return;
     }

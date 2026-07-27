@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
+import { submitOrQueue } from "@/lib/offline-queue";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -49,10 +50,7 @@ export function IncidentForm({ shift, clients, onBack }: Props) {
       gpsLng = pos.coords.longitude;
     } catch { /* optional */ }
 
-    const res = await fetch("/api/incidents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await submitOrQueue("/api/incidents", {
         shift_id: shift.id, client_id: clientId, incident_type: incidentType,
         antecedent, antecedent_trigger: antecedentTrigger,
         behaviour_description: behaviourDescription, consequence_description: consequenceDescription,
@@ -63,12 +61,10 @@ export function IncidentForm({ shift, clients, onBack }: Props) {
         staff_wellbeing_checked: staffWellbeing,
         gps_lat: gpsLat, gps_lng: gpsLng,
         imei: localStorage.getItem("careroot_device_id"),
-      }),
-    });
+      });
 
     setSubmitting(false);
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}));
+    if (!result.ok) {
       setError(result.error || "Could not submit incident report");
       return;
     }

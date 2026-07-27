@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle, Shield, AlertTriangle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
+import { submitOrQueue } from "@/lib/offline-queue";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -34,20 +35,15 @@ export function SafeguardingForm({ shift, clients, onBack }: Props) {
       gpsLng = pos.coords.longitude;
     } catch { /* optional */ }
 
-    const res = await fetch("/api/safeguarding", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await submitOrQueue("/api/safeguarding", {
         shift_id: shift.id, client_id: clientId,
         concern_description: description, bypass_line_manager: bypassLineManager,
         gps_lat: gpsLat, gps_lng: gpsLng,
         imei: localStorage.getItem("careroot_device_id"),
-      }),
-    });
+      });
 
     setSubmitting(false);
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}));
+    if (!result.ok) {
       setError(result.error || "Could not submit safeguarding concern");
       return;
     }

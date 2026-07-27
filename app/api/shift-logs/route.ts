@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
   const body = await req.json();
   // Note: any client-supplied within_approved_radius is ignored — computed server-side below.
-  const { shift_id, client_id, log_type, content, gps_lat, gps_lng, imei } = body;
+  const { shift_id, client_id, log_type, content, gps_lat, gps_lng, imei, transcription, structured_data } = body;
   if (!shift_id || !log_type || !content) return NextResponse.json({ error: "shift_id, log_type, content required" }, { status: 400 });
 
   const now = new Date().toISOString();
@@ -104,6 +104,8 @@ export async function POST(req: Request) {
   const logRow: Record<string, unknown> = {
     shift_id, client_id: client_id || null, staff_id: user.id,
     log_type, content,
+    transcription: transcription || null,
+    structured_data: structured_data ?? null,
     gps_lat: gps_lat ?? null, gps_lng: gps_lng ?? null,
     within_approved_radius: radiusResult,
     device_imei: String(imei).replace(/\s/g, ""),

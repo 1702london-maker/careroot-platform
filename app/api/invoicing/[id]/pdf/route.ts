@@ -1,6 +1,72 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+type LineItem = {
+  date?: string | null;
+  description?: string | null;
+  quantity?: number | string | null;
+  unit?: string | null;
+  unit_price?: number | string | null;
+  total?: number | string | null;
+};
+
+function money(value: unknown) {
+  return `GBP ${Number(value ?? 0).toFixed(2)}`;
+}
+
+function dateGB(value: unknown) {
+  if (!value) return "";
+  return new Date(String(value)).toLocaleDateString("en-GB");
+}
+
+function pdfText(value: unknown) {
+  return String(value ?? "")
+    .replace(/[\\()]/g, "\\$&")
+    .replace(/[^\x20-\x7E]/g, "");
+}
+
+function buildPdf(lines: string[]) {
+  const objects: string[] = [];
+  const content = [
+    "BT",
+    "/F1 18 Tf",
+    "50 790 Td",
+    ...lines.flatMap((line, index) => [
+      index === 0 ? "" : "0 -18 Td",
+      `(${pdfText(line)}) Tj`,
+    ]).filter(Boolean),
+    "ET",
+  ].join("\n");
+
+  objects.push("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj");
+  objects.push("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj");
+  objects.push("3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj");
+  objects.push("4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj");
+  objects.push(`5 0 obj\n<< /Length ${Buffer.byteLength(content, "utf8")} >>\nstream\n${content}\nendstream\nendobj`);
+
+  const header = "%PDF-1.4\n";
+  let body = "";
+  const offsets = [0];
+  for (const object of objects) {
+    offsets.push(Buffer.byteLength(header + body, "utf8"));
+    body += `${object}\n`;
+  }
+  const xrefOffset = Buffer.byteLength(header + body, "utf8");
+  const xref = [
+    "xref",
+    `0 ${objects.length + 1}`,
+    "0000000000 65535 f ",
+    ...offsets.slice(1).map((offset) => `${String(offset).padStart(10, "0")} 00000 n `),
+    "trailer",
+    `<< /Size ${objects.length + 1} /Root 1 0 R >>`,
+    "startxref",
+    String(xrefOffset),
+    "%%EOF",
+  ].join("\n");
+
+  return Buffer.from(`${header}${body}${xref}`, "utf8");
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -17,36 +83,60 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { data: invoice } = await supabase
+  let query = supabase
     .from("invoices")
-    .select("*, clients(first_name, last_name), organisations(name)")
-    .eq("id", id)
-    .eq("organisation_id", userRecord!.organisation_id)
-    .single();
+    .select("*, clients(first_name, last_name, address), organisations(name), invoice_line_items(*)")
+    .eq("id", id);
 
+  if (userRecord?.role !== "superadmin") query = query.eq("organisation_id", userRecord!.organisation_id);
+
+  const { data: invoice } = await query.single();
   if (!invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
 
-  // Build a minimal plain-text invoice until a PDF library is integrated
-  const lines = [
-    `INVOICE`,
-    ``,
-    `Invoice #: ${invoice.invoice_number ?? id}`,
-    `Date: ${new Date(invoice.created_at).toLocaleDateString("en-GB")}`,
-    `Due: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("en-GB") : "On receipt"}`,
-    ``,
-    `From: ${(invoice.organisations as Record<string, string>)?.name ?? ""}`,
-    `To: ${(invoice.clients as Record<string, string>)?.first_name ?? ""} ${(invoice.clients as Record<string, string>)?.last_name ?? ""}`,
-    ``,
-    `Amount: £${Number(invoice.total_amount ?? 0).toFixed(2)}`,
-    `Status: ${invoice.status}`,
-    ``,
-    `Careroot Care Management Platform`,
-  ].join("\n");
+  const client = invoice.clients as { first_name?: string; last_name?: string; address?: string } | null;
+  const org = invoice.organisations as { name?: string } | null;
+  const lineItems = (invoice.invoice_line_items ?? []) as LineItem[];
+  const total = invoice.total ?? invoice.total_amount ?? invoice.amount_outstanding ?? 0;
 
-  return new NextResponse(lines, {
+  const lines = [
+    "CAREROOT INVOICE",
+    "",
+    `Invoice: ${invoice.invoice_number ?? id}`,
+    `Issued: ${dateGB(invoice.issue_date ?? invoice.created_at)}`,
+    `Due: ${dateGB(invoice.due_date) || "On receipt"}`,
+    `Status: ${String(invoice.status ?? "draft").toUpperCase()}`,
+    "",
+    `From: ${org?.name ?? "Care provider"}`,
+    `To: ${client ? `${client.first_name ?? ""} ${client.last_name ?? ""}`.trim() : "Client"}`,
+    client?.address ? `Address: ${client.address}` : "",
+    "",
+    `Period: ${dateGB(invoice.period_start)} - ${dateGB(invoice.period_end)}`,
+    "",
+    "Line items",
+    ...lineItems.slice(0, 24).map((item) => {
+      const desc = item.description ?? "Care service";
+      const quantity = Number(item.quantity ?? 0).toFixed(2);
+      return `${dateGB(item.date)}  ${desc}  ${quantity} ${item.unit ?? ""} @ ${money(item.unit_price)} = ${money(item.total)}`;
+    }),
+    lineItems.length === 0 ? "No line items recorded." : "",
+    "",
+    `Subtotal: ${money(invoice.subtotal ?? total)}`,
+    `VAT: ${money(invoice.vat_amount ?? 0)}`,
+    `Total: ${money(total)}`,
+    `Paid: ${money(invoice.amount_paid ?? 0)}`,
+    `Outstanding: ${money(invoice.amount_outstanding ?? total)}`,
+    "",
+    invoice.notes ? `Notes: ${invoice.notes}` : "",
+    "Generated by Careroot Care Management Platform",
+  ].filter((line) => line !== "");
+
+  const pdf = buildPdf(lines);
+
+  return new NextResponse(pdf, {
     headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Content-Disposition": `attachment; filename="invoice-${invoice.invoice_number ?? id}.txt"`,
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="invoice-${invoice.invoice_number ?? id}.pdf"`,
+      "Content-Length": String(pdf.length),
     },
   });
 }

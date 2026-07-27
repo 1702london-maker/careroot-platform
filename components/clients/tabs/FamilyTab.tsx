@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
-import { Users, Phone, Mail, Shield, Eye, EyeOff, Copy, CheckCircle } from "lucide-react";
+import { Users, Phone, Mail, Shield, Eye, EyeOff, Copy, CheckCircle, Loader2 } from "lucide-react";
 
 type FamilyMember = {
   id: string;
@@ -57,6 +57,15 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
   const [members, setMembers] = useState<FamilyMember[]>(familyAccess);
   const [saving, setSaving] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [clientInvite, setClientInvite] = useState({
+    email: String(client.email ?? ""),
+    first_name: String(client.first_name ?? ""),
+    last_name: String(client.last_name ?? ""),
+    access_level: "full",
+  });
+  const [clientInviteStatus, setClientInviteStatus] = useState("");
+  const [clientInviteError, setClientInviteError] = useState("");
+  const [clientInviteLoading, setClientInviteLoading] = useState(false);
 
   const portalLink = typeof window !== "undefined"
     ? `${window.location.origin}/family/${String(client.emergency_token)}`
@@ -95,8 +104,54 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
   const activeMembers = members.filter(m => m.is_active);
   const inactiveMembers = members.filter(m => !m.is_active);
 
+  const sendClientInvite = async () => {
+    setClientInviteLoading(true);
+    setClientInviteStatus("");
+    setClientInviteError("");
+    const res = await fetch("/api/client/invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ client_id: client.id, ...clientInvite }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setClientInviteLoading(false);
+    if (!res.ok) {
+      setClientInviteError(data.error ?? "Could not send client portal invite");
+      return;
+    }
+    setClientInviteStatus("Client portal access created and invite email sent.");
+  };
+
   return (
     <div className="space-y-5">
+      <CRCard>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h3 className="font-semibold text-cr-charcoal text-sm mb-0.5">Client Portal Access</h3>
+            <p className="text-xs text-cr-slate">Create a secure login so the client can view visits, care plan, medication, rights, SARs, consent and team details.</p>
+          </div>
+          <CRBadge variant="blue" size="sm">Client</CRBadge>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input value={clientInvite.first_name} onChange={(e) => setClientInvite({ ...clientInvite, first_name: e.target.value })} placeholder="First name" className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-body" />
+          <input value={clientInvite.last_name} onChange={(e) => setClientInvite({ ...clientInvite, last_name: e.target.value })} placeholder="Last name" className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-body" />
+          <input value={clientInvite.email} onChange={(e) => setClientInvite({ ...clientInvite, email: e.target.value })} placeholder="Client email" type="email" className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-body" />
+          <select value={clientInvite.access_level} onChange={(e) => setClientInvite({ ...clientInvite, access_level: e.target.value })} className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-body bg-white">
+            <option value="full">Full access</option>
+            <option value="standard">Standard</option>
+            <option value="limited">Limited</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-3 mt-3">
+          <button onClick={sendClientInvite} disabled={clientInviteLoading || !clientInvite.email} className="inline-flex items-center gap-2 bg-cr-forest text-white rounded-lg px-4 py-2 text-sm font-body font-semibold disabled:opacity-60">
+            {clientInviteLoading ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+            Send client portal invite
+          </button>
+          {clientInviteStatus && <p className="text-xs text-green-700">{clientInviteStatus}</p>}
+          {clientInviteError && <p className="text-xs text-cr-red">{clientInviteError}</p>}
+        </div>
+      </CRCard>
+
       {/* Family portal link */}
       {Boolean(client.emergency_token) && (
         <CRCard>

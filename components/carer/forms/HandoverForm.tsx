@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
+import { submitOrQueue } from "@/lib/offline-queue";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -38,10 +39,7 @@ export function HandoverForm({ shift, clients, onBack }: Props) {
       gpsLng = pos.coords.longitude;
     } catch { /* handled by server if GPS is required */ }
 
-    const res = await fetch("/api/handover-notes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await submitOrQueue("/api/handover-notes", {
         shift_id: shift.id,
         client_id: clientId,
         current_status: currentStatus,
@@ -53,11 +51,9 @@ export function HandoverForm({ shift, clients, onBack }: Props) {
         gps_lat: gpsLat,
         gps_lng: gpsLng,
         imei: localStorage.getItem("careroot_device_id"),
-      }),
-    });
+      });
     setSubmitting(false);
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}));
+    if (!result.ok) {
       setError(result.error || "Could not submit handover");
       return;
     }

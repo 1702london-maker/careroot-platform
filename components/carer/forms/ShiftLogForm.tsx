@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Loader2, CheckCircle } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, Loader2, CheckCircle, Mic, Square, FileAudio } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
+import { submitOrQueue } from "@/lib/offline-queue";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -19,8 +20,62 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
   const [logType, setLogType] = useState("general");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcription, setTranscription] = useState("");
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+
+  async function toggleRecording() {
+    setError("");
+    if (recording) {
+      mediaRecorderRef.current?.stop();
+      setRecording(false);
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("Voice recording is not supported on this device.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunksRef.current = [];
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/ogg";
+      const recorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        if (!blob.size) return;
+        setTranscribing(true);
+        try {
+          const formData = new FormData();
+          formData.append("audio", blob, "shift-log-voice-note.webm");
+          const res = await fetch("/api/voice/transcribe", { method: "POST", body: formData });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error ?? "Transcription failed");
+          const text = String(data.text ?? "").trim();
+          setTranscription(text);
+          setContent((prev) => prev ? `${prev}\n\n${text}` : text);
+        } catch (err) {
+          setError((err as Error).message);
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setError("Microphone permission was denied.");
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,24 +101,21 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
       }
     } catch { /* GPS optional */ }
 
-    const res = await fetch("/api/shift-logs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const result = await submitOrQueue("/api/shift-logs", {
         shift_id: shift.id,
         client_id: clientId,
         log_type: logType,
         content,
+        transcription: transcription || null,
+        structured_data: transcription ? { source: "voice_note", reviewed_by_staff: true } : null,
         gps_lat: gpsLat,
         gps_lng: gpsLng,
         within_approved_radius: withinRadius,
         imei: localStorage.getItem("careroot_device_id"),
-      }),
-    });
+      });
 
     setSubmitting(false);
-    if (!res.ok) {
-      const result = await res.json().catch(() => ({}));
+    if (!result.ok) {
       setError(result.error || "Could not save shift log");
       return;
     }
@@ -104,6 +156,19 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
 
           <div>
             <label className="block text-xs font-semibold text-cr-slate mb-1.5">Notes</label>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <button
+                type="button"
+                onClick={toggleRecording}
+                disabled={transcribing}
+                className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold border ${recording ? "bg-red-50 text-cr-red border-red-200" : "bg-white text-cr-forest border-cr-forest/30"}`}
+              >
+                {recording ? <Square size={13} /> : <Mic size={13} />}
+                {recording ? "Stop and transcribe" : "Record voice note"}
+              </button>
+              {transcribing && <span className="inline-flex items-center gap-2 text-xs text-cr-slate"><Loader2 size={13} className="animate-spin" /> Transcribing...</span>}
+              {transcription && <span className="inline-flex items-center gap-1 text-xs text-green-700"><FileAudio size={13} /> Voice note added. Review before saving.</span>}
+            </div>
             <textarea
               required
               value={content}
