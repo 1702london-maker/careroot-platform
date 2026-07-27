@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClientSync } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClientSync();
   const now = new Date();
   // Look ahead 90 days so managers get the 90 / 60 / 30-day early warnings (B17).
   const in90Days = new Date(now.getTime() + 90 * 86400000).toISOString();

@@ -3,9 +3,8 @@ import { createServiceClientSync } from "@/lib/supabase/server";
 
 /**
  * Data protection enforcement (BUILD_SPEC B20 / system rules).
- * 1. Package-end closure: revoke access + set retention date when a client's
- *    package_end_date has passed.
- * 2. Flag records whose data_retention_until has elapsed (manager action).
+ * 1. Package-end closure: revoke access and set retention date.
+ * 2. Flag records whose data_retention_until has elapsed.
  * 3. Purge expired credentials and old access logs.
  */
 export async function GET(req: Request) {
@@ -17,35 +16,61 @@ export async function GET(req: Request) {
   const now = new Date();
   const today = now.toISOString().split("T")[0];
 
-  // 1. Package-end closure protocol — clients whose package ended and access
-  //    has not yet been revoked. Retention: 8 years (2920 days) post package end.
   const { data: ended } = await supabase
     .from("clients")
-    .select("id, package_end_date")
+    .select("id, package_end_date, date_of_birth, service_line:service_lines(code, regulatory_body)")
     .lt("package_end_date", today)
     .is("access_revoked_at", null);
 
   let closed = 0;
-  for (const c of ended ?? []) {
-    if (!c.package_end_date) continue;
-    const retentionUntil = new Date(c.package_end_date);
+  let familyAccessRevoked = 0;
+
+  for (const client of ended ?? []) {
+    if (!client.package_end_date) continue;
+
+    const retentionUntil = new Date(client.package_end_date);
     retentionUntil.setDate(retentionUntil.getDate() + 2920);
-    await supabase.from("clients").update({
-      status: "inactive",
-      access_revoked_at: now.toISOString(),
-      data_retention_until: retentionUntil.toISOString().split("T")[0],
-    }).eq("id", c.id);
+
+    const serviceLine = Array.isArray(client.service_line) ? client.service_line[0] : client.service_line;
+    const serviceCode = (serviceLine?.code || "").toUpperCase();
+    const regulatoryBody = (serviceLine?.regulatory_body || "").toUpperCase();
+    const childService = ["OFSTED", "LOCAL_AUTHORITY"].includes(regulatoryBody)
+      || serviceCode.includes("CHILD")
+      || serviceCode.includes("OUTREACH");
+
+    if (childService && client.date_of_birth) {
+      const twentyFifthBirthday = new Date(client.date_of_birth);
+      twentyFifthBirthday.setFullYear(twentyFifthBirthday.getFullYear() + 25);
+      if (twentyFifthBirthday > retentionUntil) {
+        retentionUntil.setTime(twentyFifthBirthday.getTime());
+      }
+    }
+
+    await supabase
+      .from("clients")
+      .update({
+        status: "inactive",
+        access_revoked_at: now.toISOString(),
+        data_retention_until: retentionUntil.toISOString().split("T")[0],
+      })
+      .eq("id", client.id);
+
+    const { data: revoked } = await supabase
+      .from("family_access")
+      .update({ is_active: false })
+      .eq("client_id", client.id)
+      .eq("is_active", true)
+      .select("id");
+    familyAccessRevoked += revoked?.length ?? 0;
     closed++;
   }
 
-  // 2. Flag clients whose retention window has fully elapsed (ready for disposal).
   const { data: retentionElapsed } = await supabase
     .from("clients")
     .select("id")
     .lt("data_retention_until", today)
     .not("data_retention_until", "is", null);
 
-  // 3. Purge invalidated shift credentials older than 90 days.
   const credCutoff = new Date(now.getTime() - 90 * 86400000).toISOString();
   const { data: deletedCreds } = await supabase
     .from("shift_credentials")
@@ -54,7 +79,6 @@ export async function GET(req: Request) {
     .lt("created_at", credCutoff)
     .select("id");
 
-  // 4. Purge shift access logs older than 1 year (correct column: server_timestamp).
   const logCutoff = new Date(now.getTime() - 365 * 86400000).toISOString();
   const { data: deletedLogs } = await supabase
     .from("shift_access_log")
@@ -64,6 +88,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     packages_closed: closed,
+    family_access_revoked: familyAccessRevoked,
     retention_elapsed_flagged: retentionElapsed?.length ?? 0,
     credentials_purged: deletedCreds?.length ?? 0,
     access_logs_purged: deletedLogs?.length ?? 0,

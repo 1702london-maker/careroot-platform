@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClientSync } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClientSync();
   const now = new Date();
   const in7Days = new Date(now.getTime() + 7 * 86400000).toISOString().split("T")[0];
 
@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   const { data: urgentSARs } = await supabase
     .from("sar_requests")
     .select("id, requester_name, deadline_date, status, client:clients(id, first_name, last_name, organisation_id)")
-    .in("status", ["received", "in_progress"])
+    .in("status", ["received", "in_progress", "pending"])
     .lte("deadline_date", in7Days);
 
   if (!urgentSARs?.length) return NextResponse.json({ alerted: 0 });

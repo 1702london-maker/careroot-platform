@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClientSync } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -8,14 +8,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClientSync();
   const since = new Date(Date.now() - 7 * 86400000).toISOString();
 
   // Find clients with 3+ refusals in the last 7 days
   const { data: refusals } = await supabase
     .from("medication_records")
     .select("client_id, refusal_reason, server_timestamp, client:clients(id, first_name, last_name, organisation_id)")
-    .eq("outcome", "refused")
+    .eq("status", "refused")
     .gte("server_timestamp", since);
 
   if (!refusals?.length) return NextResponse.json({ escalated: 0 });

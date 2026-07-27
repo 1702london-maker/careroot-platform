@@ -28,6 +28,7 @@ export async function POST(req: Request) {
   deadline.setDate(deadline.getDate() + 30);
 
   const { data, error } = await supabase.from("sar_requests").insert({
+    organisation_id: caller!.organisation_id,
     client_id,
     requester_name,
     requester_relationship: requester_relationship || null,

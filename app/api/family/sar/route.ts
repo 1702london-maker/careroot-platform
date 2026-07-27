@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClientSync } from "@/lib/supabase/server";
+import { notify, messages } from "@/lib/notifications";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,17 +20,33 @@ export async function POST(req: NextRequest) {
       .single();
     if (!access?.organisation_id) return NextResponse.json({ error: "Access denied" }, { status: 403 });
 
+    const deadlineDate = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    const { data: client } = await supabase
+      .from("clients")
+      .select("first_name, last_name")
+      .eq("id", client_id)
+      .single();
+
     const { error } = await supabase.from("sar_requests").insert({
       organisation_id: access.organisation_id,
       client_id,
       requester_name, requester_email,
       reason: reason || null,
       requested_by: user.id,
-      status: "pending",
-      due_date: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().slice(0, 10),
+      request_date: new Date().toISOString().slice(0, 10),
+      deadline_date: deadlineDate,
+      status: "received",
     });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await notify(createServiceClientSync(), {
+      organisationId: access.organisation_id,
+      recipientGroups: ["data_protection_lead"],
+      message: messages.sarReceived(
+        client ? `${client.first_name} ${client.last_name}` : "a client",
+        deadlineDate
+      ),
+    });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("family sar error:", err);

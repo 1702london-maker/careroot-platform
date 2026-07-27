@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClientSync } from "@/lib/supabase/server";
 import { getAnthropic, MODEL } from "@/lib/anthropic";
+import { pickWeeklyReportTemplate } from "@/lib/weekly-report-templates";
 import { NextResponse } from "next/server";
 
 // Runs every Monday — generates weekly reports for all active clients
@@ -8,7 +9,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
-  const supabase = await createClient();
+  const supabase = createServiceClientSync();
 
   // Last week window
   const today = new Date();
@@ -22,7 +23,10 @@ export async function GET(req: Request) {
   const weekStart = monday.toISOString();
   const weekEnd = sunday.toISOString();
 
-  const { data: clients } = await supabase.from("clients").select("id, first_name, last_name, organisation_id, service_line_id").eq("is_active", true);
+  const { data: clients } = await supabase
+    .from("clients")
+    .select("id, first_name, last_name, organisation_id, service_line_id, commissioner, placing_authority, service_line:service_lines(name, regulatory_body)")
+    .eq("status", "active");
   if (!clients?.length) return NextResponse.json({ generated: 0 });
 
   let generated = 0;
@@ -32,7 +36,12 @@ export async function GET(req: Request) {
     try {
       // Skip if report already exists for this week
       const { data: existing } = await supabase.from("weekly_reports")
-        .select("id").eq("client_id", client.id).gte("week_start", weekStart).maybeSingle();
+        .select("id")
+        .eq("client_id", client.id)
+        .eq("week_start", weekStart)
+        .eq("week_end", weekEnd)
+        .limit(1)
+        .maybeSingle();
       if (existing) continue;
 
       const [{ data: logs }, { data: incidents }, { data: medRecords }, { data: moodRecords }, { data: nutritionRecords }, { data: shifts }] = await Promise.all([
@@ -47,7 +56,12 @@ export async function GET(req: Request) {
       const totalLogs = (logs?.length || 0) + (incidents?.length || 0);
       if (totalLogs === 0) continue; // No activity — skip
 
+      const serviceLine = Array.isArray(client.service_line) ? client.service_line[0] : client.service_line;
+      const template = pickWeeklyReportTemplate(serviceLine?.regulatory_body);
+
       const context = `CLIENT: ${client.first_name} ${client.last_name}
+SERVICE LINE: ${serviceLine?.name || "Unknown"} (${serviceLine?.regulatory_body || ""})
+COMMISSIONER: ${client.commissioner || "Unknown"}
 WEEK: ${weekStart} to ${weekEnd}
 SHIFTS: ${JSON.stringify(shifts || [])}
 SHIFT LOGS: ${JSON.stringify(logs?.slice(-15) || [])}
@@ -59,8 +73,8 @@ NUTRITION RECORDS: ${JSON.stringify(nutritionRecords || [])}`;
       const anthropic = getAnthropic();
       const message = await anthropic.messages.create({
         model: MODEL,
-        max_tokens: 1024,
-        system: `You are a care record analyst. Generate a weekly care report as a JSON object with: executive_summary, wellbeing_overview, nutrition_summary, medication_summary, mood_summary, incidents_summary, key_concerns (array), positive_highlights (array), actions_required (array). Return ONLY valid JSON.`,
+        max_tokens: 2048,
+        system: template.system,
         messages: [{ role: "user", content: context }],
       });
 
@@ -73,7 +87,7 @@ NUTRITION RECORDS: ${JSON.stringify(nutritionRecords || [])}`;
         week_start: weekStart,
         week_end: weekEnd,
         generated_from_log_count: totalLogs,
-        report_format: "json_structured",
+        report_format: template.format,
         content,
         status: "draft",
         generated_at: new Date().toISOString(),
