@@ -3,6 +3,9 @@
 -- Care staff must not browse family access records.
 
 drop policy if exists "family_access_org_isolation" on public.family_access;
+drop policy if exists "family_access_select" on public.family_access;
+drop policy if exists "family_access_insert" on public.family_access;
+drop policy if exists "family_access_update" on public.family_access;
 drop policy if exists "family_access_select_office_org" on public.family_access;
 drop policy if exists "family_access_select_self" on public.family_access;
 drop policy if exists "family_access_insert_office_org" on public.family_access;
