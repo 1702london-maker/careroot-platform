@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
   // Look 24h ahead so a once-daily cron (Vercel Hobby) still covers the day's
   // shifts. Idempotent — skips shifts that already have a live credential — so
   // running more frequently (Vercel Pro, every 15 min) is also safe.
+  const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
   // Scheduled shifts starting within the look-ahead window.
@@ -29,11 +30,13 @@ export async function GET(req: NextRequest) {
     .from("shifts")
     .select("id, staff_id, scheduled_start, scheduled_end")
     .eq("status", "scheduled")
-    .gte("scheduled_start", now.toISOString())
+    .gte("scheduled_start", windowStart.toISOString())
     .lte("scheduled_start", windowEnd.toISOString());
 
   let generated = 0;
   for (const shift of shifts ?? []) {
+    if (new Date(shift.scheduled_end) < now) continue;
+
     // Skip if a live credential already exists.
     const { data: existing } = await supabase
       .from("shift_credentials")

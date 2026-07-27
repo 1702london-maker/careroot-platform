@@ -65,8 +65,8 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
   }
 
   async function handleStart() {
+    if (!credential) { setError("No PIN has been generated for this shift yet. Ask your manager to send shift credentials."); return; }
     if (pin.length !== 6) { setError("Enter your 6-digit PIN"); return; }
-    if (!credential) { setError("No credentials found. Ask your manager to send your PIN."); return; }
     if (carePlans.length > 0 && !carePlanConfirmed) {
       setError("Read and confirm the care plan before starting this shift.");
       return;
@@ -251,7 +251,7 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
 
         <button
           onClick={handleStart}
-          disabled={loading || pin.length !== 6 || noCredential || !wellbeingStatus || (carePlans.length > 0 && !carePlanConfirmed)}
+          disabled={loading}
           className="w-full py-4 bg-cr-forest text-white font-bold text-base rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
         >
           {loading ? <><Loader2 size={18} className="animate-spin" /> Verifying...</> : "Start Shift"}
