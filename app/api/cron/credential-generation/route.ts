@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { sendSMS } from "@/lib/twilio";
 import { messages } from "@/lib/notifications";
+import { writeCronRun } from "@/lib/platform-audit";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
 
   const supabase = createServiceClientSync();
   const now = new Date();
+  const startedAt = now;
   // Look 24h ahead so a once-daily cron (Vercel Hobby) still covers the day's
   // shifts. Idempotent — skips shifts that already have a live credential — so
   // running more frequently (Vercel Pro, every 15 min) is also safe.
@@ -75,5 +77,7 @@ export async function GET(req: NextRequest) {
     generated++;
   }
 
-  return NextResponse.json({ ok: true, generated });
+  const result = { ok: true, generated };
+  await writeCronRun(supabase, { jobName: "credential-generation", path: "/api/cron/credential-generation", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

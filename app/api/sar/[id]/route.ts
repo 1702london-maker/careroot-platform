@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { writeAuditLog } from "@/lib/platform-audit";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const supabase = await createClient();
@@ -25,5 +26,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   const { error } = await supabase.from("sar_requests").update(update).eq("id", params.id).eq("organisation_id", caller!.organisation_id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await writeAuditLog(supabase, {
+    organisationId: caller!.organisation_id,
+    actorUserId: user.id,
+    actorEmail: user.email,
+    actorRole: caller?.role,
+    action: "sar.updated",
+    entityType: "sar_requests",
+    entityId: params.id,
+    metadata: update,
+    req,
+  });
   return NextResponse.json({ ok: true });
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClientSync } from "@/lib/supabase/server";
+import { writeCronRun } from "@/lib/platform-audit";
 
 /**
  * Auto-logout: end any active shift whose credential window has passed
@@ -13,7 +14,8 @@ export async function GET(req: NextRequest) {
   }
 
   const supabase = createServiceClientSync();
-  const now = new Date().toISOString();
+  const startedAt = new Date();
+  const now = startedAt.toISOString();
 
   // Active shifts whose access window has closed.
   const { data: expired } = await supabase
@@ -36,5 +38,7 @@ export async function GET(req: NextRequest) {
     ended++;
   }
 
-  return NextResponse.json({ ok: true, ended });
+  const result = { ok: true, ended };
+  await writeCronRun(supabase, { jobName: "shift-access-expiry", path: "/api/cron/shift-access-expiry", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

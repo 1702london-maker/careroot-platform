@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClientSync } from "@/lib/supabase/server";
 import { getResend, FROM_EMAIL } from "@/lib/resend";
+import { writeAuditLog } from "@/lib/platform-audit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -118,6 +119,18 @@ export async function POST(req: NextRequest) {
     if (emailError) {
       return NextResponse.json({ error: "Invite created but email failed. Contact support." }, { status: 500 });
     }
+
+    await writeAuditLog(service, {
+      organisationId: orgId,
+      actorUserId: user.id,
+      actorEmail: user.email,
+      actorRole: inviter.role,
+      action: "family_access.invited",
+      entityType: "family_access",
+      entityId: userId,
+      metadata: { family_email: email, client_id, access_level: access_level ?? "full", relationship: relationship ?? "Family" },
+      req,
+    });
 
     return NextResponse.json({ success: true, user_id: userId });
   } catch (err) {

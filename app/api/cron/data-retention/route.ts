@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClientSync } from "@/lib/supabase/server";
+import { writeCronRun } from "@/lib/platform-audit";
 
 /**
  * Data protection enforcement (BUILD_SPEC B20 / system rules).
@@ -14,6 +15,7 @@ export async function GET(req: Request) {
 
   const supabase = createServiceClientSync();
   const now = new Date();
+  const startedAt = now;
   const today = now.toISOString().split("T")[0];
 
   const { data: ended } = await supabase
@@ -86,12 +88,20 @@ export async function GET(req: Request) {
     .lt("server_timestamp", logCutoff)
     .select("id");
 
-  return NextResponse.json({
+  const result = {
     packages_closed: closed,
     family_access_revoked: familyAccessRevoked,
     retention_elapsed_flagged: retentionElapsed?.length ?? 0,
     credentials_purged: deletedCreds?.length ?? 0,
     access_logs_purged: deletedLogs?.length ?? 0,
     run_at: now.toISOString(),
+  };
+  await writeCronRun(supabase, {
+    jobName: "data-retention",
+    path: "/api/cron/data-retention",
+    status: "success",
+    startedAt,
+    result,
   });
+  return NextResponse.json(result);
 }

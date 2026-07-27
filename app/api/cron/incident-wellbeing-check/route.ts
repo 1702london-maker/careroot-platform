@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { notify, messages } from "@/lib/notifications";
+import { writeCronRun } from "@/lib/platform-audit";
 
 /**
  * Post-incident staff wellbeing check (BUILD_SPEC B21 / B12): 24 hours after a
@@ -14,6 +15,7 @@ export async function GET(req: NextRequest) {
   }
 
   const supabase = createServiceClientSync();
+  const startedAt = new Date();
   const now = new Date().toISOString();
 
   // Incidents needing a wellbeing follow-up: PI occurred, due time passed, not done.
@@ -41,5 +43,7 @@ export async function GET(req: NextRequest) {
     alerted++;
   }
 
-  return NextResponse.json({ ok: true, alerted });
+  const result = { ok: true, alerted };
+  await writeCronRun(supabase, { jobName: "incident-wellbeing-check", path: "/api/cron/incident-wellbeing-check", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

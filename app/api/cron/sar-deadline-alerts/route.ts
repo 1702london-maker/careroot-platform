@@ -1,6 +1,7 @@
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { writeCronRun } from "@/lib/platform-audit";
 
 // Runs daily — alerts managers about SARs approaching the 30-day GDPR deadline
 export async function GET(req: Request) {
@@ -10,6 +11,7 @@ export async function GET(req: Request) {
 
   const supabase = createServiceClientSync();
   const now = new Date();
+  const startedAt = now;
   const in7Days = new Date(now.getTime() + 7 * 86400000).toISOString().split("T")[0];
 
   // SARs due within 7 days or overdue, still open
@@ -19,7 +21,11 @@ export async function GET(req: Request) {
     .in("status", ["received", "in_progress", "pending"])
     .lte("deadline_date", in7Days);
 
-  if (!urgentSARs?.length) return NextResponse.json({ alerted: 0 });
+  if (!urgentSARs?.length) {
+    const result = { alerted: 0 };
+    await writeCronRun(supabase, { jobName: "sar-deadline-alerts", path: "/api/cron/sar-deadline-alerts", status: "success", startedAt, result });
+    return NextResponse.json(result);
+  }
 
   // Group by org
   const byOrg: Record<string, typeof urgentSARs> = {};
@@ -78,5 +84,7 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json({ urgent_sars: urgentSARs.length, managers_notified: notified });
+  const result = { urgent_sars: urgentSARs.length, managers_notified: notified };
+  await writeCronRun(supabase, { jobName: "sar-deadline-alerts", path: "/api/cron/sar-deadline-alerts", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

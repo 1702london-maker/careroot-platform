@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { writeAuditLog } from "@/lib/platform-audit";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -41,5 +42,16 @@ export async function POST(req: Request) {
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await writeAuditLog(supabase, {
+    organisationId: caller!.organisation_id,
+    actorUserId: user.id,
+    actorEmail: user.email,
+    actorRole: caller?.role,
+    action: "sar.created",
+    entityType: "sar_requests",
+    entityId: data.id,
+    metadata: { client_id, requester_name, deadline_date: deadline.toISOString().split("T")[0] },
+    req,
+  });
   return NextResponse.json({ sar: data });
 }

@@ -1,17 +1,18 @@
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { getAnthropic, MODEL } from "@/lib/anthropic";
 import { pickWeeklyReportTemplate } from "@/lib/weekly-report-templates";
+import { writeCronRun } from "@/lib/platform-audit";
 import { NextResponse } from "next/server";
 
-// Runs every Monday — generates weekly reports for all active clients
+// Runs every Monday: generates weekly reports for all active clients.
 export async function GET(req: Request) {
   if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 
   const supabase = createServiceClientSync();
+  const startedAt = new Date();
 
-  // Last week window
   const today = new Date();
   const monday = new Date(today);
   monday.setDate(today.getDate() - ((today.getDay() + 6) % 7) - 7);
@@ -27,14 +28,18 @@ export async function GET(req: Request) {
     .from("clients")
     .select("id, first_name, last_name, organisation_id, service_line_id, commissioner, placing_authority, service_line:service_lines(name, regulatory_body)")
     .eq("status", "active");
-  if (!clients?.length) return NextResponse.json({ generated: 0 });
+
+  if (!clients?.length) {
+    const result = { generated: 0 };
+    await writeCronRun(supabase, { jobName: "weekly-reports-trigger", path: "/api/cron/weekly-reports-trigger", status: "success", startedAt, result });
+    return NextResponse.json(result);
+  }
 
   let generated = 0;
   const errors: string[] = [];
 
   for (const client of clients) {
     try {
-      // Skip if report already exists for this week
       const { data: existing } = await supabase.from("weekly_reports")
         .select("id")
         .eq("client_id", client.id)
@@ -54,7 +59,7 @@ export async function GET(req: Request) {
       ]);
 
       const totalLogs = (logs?.length || 0) + (incidents?.length || 0);
-      if (totalLogs === 0) continue; // No activity — skip
+      if (totalLogs === 0) continue;
 
       const serviceLine = Array.isArray(client.service_line) ? client.service_line[0] : client.service_line;
       const template = pickWeeklyReportTemplate(serviceLine?.regulatory_body);
@@ -78,7 +83,7 @@ NUTRITION RECORDS: ${JSON.stringify(nutritionRecords || [])}`;
         messages: [{ role: "user", content: context }],
       });
 
-      const text = message.content.find(c => c.type === "text")?.text || "{}";
+      const text = message.content.find((c) => c.type === "text")?.text || "{}";
       const content = JSON.parse(text.trim());
 
       await supabase.from("weekly_reports").insert({
@@ -94,12 +99,20 @@ NUTRITION RECORDS: ${JSON.stringify(nutritionRecords || [])}`;
       });
 
       generated++;
-      // Small delay to avoid API rate limits
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     } catch (e) {
       errors.push(`${client.id}: ${(e as Error).message}`);
     }
   }
 
-  return NextResponse.json({ generated, errors, week: `${weekStart} → ${weekEnd}` });
+  const result = { generated, errors, week: `${weekStart} to ${weekEnd}` };
+  await writeCronRun(supabase, {
+    jobName: "weekly-reports-trigger",
+    path: "/api/cron/weekly-reports-trigger",
+    status: errors.length ? "failed" : "success",
+    startedAt,
+    result,
+    error: errors.length ? errors.join("; ") : undefined,
+  });
+  return NextResponse.json(result);
 }

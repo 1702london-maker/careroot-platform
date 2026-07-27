@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { Resend } from "resend";
 import { missedVisitEmail } from "@/lib/emails";
+import { writeCronRun } from "@/lib/platform-audit";
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -11,6 +12,7 @@ export async function GET(req: NextRequest) {
 
   const supabase = createServiceClientSync();
   const now = new Date();
+  const startedAt = now;
   const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000).toISOString();
   const todayStart = new Date(now.setHours(0, 0, 0, 0)).toISOString();
 
@@ -23,7 +25,9 @@ export async function GET(req: NextRequest) {
     .gte("scheduled_start", todayStart);
 
   if (!missedVisits?.length) {
-    return NextResponse.json({ checked: true, missed: 0 });
+    const result = { checked: true, missed: 0 };
+    await writeCronRun(supabase, { jobName: "check-missed-visits", path: "/api/cron/check-missed-visits", status: "success", startedAt, result });
+    return NextResponse.json(result);
   }
 
   const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -40,11 +44,11 @@ export async function GET(req: NextRequest) {
     const startTime = new Date(visit.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
     // Alert managers
-    const { data: managers } = await supabase
+      const { data: managers } = await supabase
       .from("users")
       .select("email")
       .eq("organisation_id", visit.organisation_id)
-      .in("role", ["owner", "manager"])
+      .in("role", ["org_admin", "manager"])
       .eq("is_active", true);
 
     if (resend && managers?.length) {
@@ -58,5 +62,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ checked: true, missed: missedCount });
+  const result = { checked: true, missed: missedCount };
+  await writeCronRun(supabase, { jobName: "check-missed-visits", path: "/api/cron/check-missed-visits", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

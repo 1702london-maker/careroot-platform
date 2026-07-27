@@ -1,6 +1,7 @@
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { writeCronRun } from "@/lib/platform-audit";
 
 // Runs daily — escalates repeated medication refusals to managers
 export async function GET(req: Request) {
@@ -9,6 +10,7 @@ export async function GET(req: Request) {
   }
 
   const supabase = createServiceClientSync();
+  const startedAt = new Date();
   const since = new Date(Date.now() - 7 * 86400000).toISOString();
 
   // Find clients with 3+ refusals in the last 7 days
@@ -18,7 +20,11 @@ export async function GET(req: Request) {
     .eq("status", "refused")
     .gte("server_timestamp", since);
 
-  if (!refusals?.length) return NextResponse.json({ escalated: 0 });
+  if (!refusals?.length) {
+    const result = { escalated: 0 };
+    await writeCronRun(supabase, { jobName: "medication-escalation", path: "/api/cron/medication-escalation", status: "success", startedAt, result });
+    return NextResponse.json(result);
+  }
 
   // Count refusals per client
   const counts: Record<string, { count: number; client: Record<string, string>; reasons: string[] }> = {};
@@ -32,7 +38,11 @@ export async function GET(req: Request) {
 
   // Only escalate clients with 3+ refusals
   const toEscalate = Object.values(counts).filter(c => c.count >= 3);
-  if (!toEscalate.length) return NextResponse.json({ escalated: 0 });
+  if (!toEscalate.length) {
+    const result = { escalated: 0 };
+    await writeCronRun(supabase, { jobName: "medication-escalation", path: "/api/cron/medication-escalation", status: "success", startedAt, result });
+    return NextResponse.json(result);
+  }
 
   let escalated = 0;
 
@@ -84,5 +94,7 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json({ clients_flagged: toEscalate.length, managers_notified: escalated });
+  const result = { clients_flagged: toEscalate.length, managers_notified: escalated };
+  await writeCronRun(supabase, { jobName: "medication-escalation", path: "/api/cron/medication-escalation", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

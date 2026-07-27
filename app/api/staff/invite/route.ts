@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClientSync } from "@/lib/supabase/server";
 import { getResend, FROM_EMAIL } from "@/lib/resend";
 import { staffInviteEmail } from "@/lib/emails";
+import { writeAuditLog } from "@/lib/platform-audit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -85,6 +86,17 @@ export async function POST(req: NextRequest) {
           is_active: true,
           must_change_password: true,
         }, { onConflict: "email" });
+        await writeAuditLog(service, {
+          organisationId: orgId,
+          actorUserId: user.id,
+          actorEmail: user.email,
+          actorRole: inviter.role,
+          action: "staff_invite.resent",
+          entityType: "users",
+          entityId: email,
+          metadata: { invited_email: email, role },
+          req,
+        });
         return NextResponse.json({ success: true, resent: true });
       }
 
@@ -139,6 +151,18 @@ export async function POST(req: NextRequest) {
       console.error("Resend error:", emailError);
       return NextResponse.json({ error: "Invite created but email failed to send. Contact support." }, { status: 500 });
     }
+
+    await writeAuditLog(service, {
+      organisationId: orgId,
+      actorUserId: user.id,
+      actorEmail: user.email,
+      actorRole: inviter.role,
+      action: "staff_invite.created",
+      entityType: "users",
+      entityId: linkData.user.id,
+      metadata: { invited_email: email, role },
+      req,
+    });
 
     return NextResponse.json({ success: true, user_id: linkData.user.id });
   } catch (err) {

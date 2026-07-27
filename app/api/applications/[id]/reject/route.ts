@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClientSync } from "@/lib/supabase/server";
 import { getResend, FROM_EMAIL } from "@/lib/resend";
 import { applicationRejectedEmail } from "@/lib/emails";
+import { writeAuditLog } from "@/lib/platform-audit";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,6 +31,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     reviewed_at: new Date().toISOString(),
     rejection_reason: reason || null,
   }).eq("id", id);
+
+  await writeAuditLog(admin, {
+    actorUserId: user.id,
+    actorEmail: user.email,
+    actorRole: caller.role,
+    action: "signup_application.rejected",
+    entityType: "signup_applications",
+    entityId: id,
+    metadata: { applicant_email: app.email, organisation_name: app.org_name, reason: reason || null },
+    req,
+  });
 
   try {
     const tpl = applicationRejectedEmail(app.first_name, app.org_name, reason);

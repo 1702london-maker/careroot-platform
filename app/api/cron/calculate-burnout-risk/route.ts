@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createServiceClientSync } from "@/lib/supabase/server";
+import { writeCronRun } from "@/lib/platform-audit";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +10,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = await createServiceClient();
+  const supabase = createServiceClientSync();
   const now = new Date();
+  const startedAt = now;
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   // Get all active carers
@@ -20,7 +22,11 @@ export async function GET(req: Request) {
     .eq("role", "carer")
     .eq("is_active", true);
 
-  if (!carers?.length) return NextResponse.json({ processed: 0 });
+  if (!carers?.length) {
+    const result = { processed: 0 };
+    await writeCronRun(supabase, { jobName: "calculate-burnout-risk", path: "/api/cron/calculate-burnout-risk", status: "success", startedAt, result });
+    return NextResponse.json(result);
+  }
 
   let processed = 0;
 
@@ -126,5 +132,7 @@ export async function GET(req: Request) {
     processed++;
   }
 
-  return NextResponse.json({ processed, at: now.toISOString() });
+  const result = { processed, at: now.toISOString() };
+  await writeCronRun(supabase, { jobName: "calculate-burnout-risk", path: "/api/cron/calculate-burnout-risk", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

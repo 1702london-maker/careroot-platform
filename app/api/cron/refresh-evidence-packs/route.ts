@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { getAnthropic, MODEL } from "@/lib/anthropic";
+import { writeCronRun } from "@/lib/platform-audit";
 
 /**
  * Keeps the CQC evidence pack LIVE (BUILD_SPEC B18): regenerates every
@@ -16,10 +17,15 @@ export async function GET(req: Request) {
   }
 
   const supabase = createServiceClientSync();
+  const startedAt = new Date();
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
 
   const { data: orgs } = await supabase.from("organisations").select("id");
-  if (!orgs?.length) return NextResponse.json({ refreshed: 0 });
+  if (!orgs?.length) {
+    const result = { refreshed: 0 };
+    await writeCronRun(supabase, { jobName: "refresh-evidence-packs", path: "/api/cron/refresh-evidence-packs", status: "success", startedAt, result });
+    return NextResponse.json(result);
+  }
 
   let refreshed = 0;
   const errors: string[] = [];
@@ -101,5 +107,14 @@ Wellbeing flags unacknowledged: ${wellbeing?.filter((w) => w.flagged_for_manager
     }
   }
 
-  return NextResponse.json({ refreshed, errors });
+  const result = { refreshed, errors };
+  await writeCronRun(supabase, {
+    jobName: "refresh-evidence-packs",
+    path: "/api/cron/refresh-evidence-packs",
+    status: errors.length ? "failed" : "success",
+    startedAt,
+    result,
+    error: errors.length ? errors.join("; ") : undefined,
+  });
+  return NextResponse.json(result);
 }

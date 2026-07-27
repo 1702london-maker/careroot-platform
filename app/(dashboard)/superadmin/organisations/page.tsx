@@ -18,7 +18,7 @@ export default async function SuperadminOrganisations() {
 
   const [{ data: staffCounts }, { data: clientCounts }] = await Promise.all([
     supabase.from("users").select("organisation_id").in("organisation_id", orgIds).eq("is_active", true),
-    supabase.from("clients").select("organisation_id").in("organisation_id", orgIds).eq("is_active", true),
+    supabase.from("clients").select("organisation_id").in("organisation_id", orgIds).eq("status", "active"),
   ]);
 
   const staffByOrg: Record<string, number> = {};

@@ -1,6 +1,7 @@
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { writeCronRun } from "@/lib/platform-audit";
 
 // Runs daily — alerts managers about expiring staff compliance items and overdue supervisions
 export async function GET(req: Request) {
@@ -10,6 +11,7 @@ export async function GET(req: Request) {
 
   const supabase = createServiceClientSync();
   const now = new Date();
+  const startedAt = now;
   // Look ahead 90 days so managers get the 90 / 60 / 30-day early warnings (B17).
   const in90Days = new Date(now.getTime() + 90 * 86400000).toISOString();
   const todayStr = now.toISOString();
@@ -99,9 +101,11 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json({
+  const result = {
     expiring_items: expiringItems?.length || 0,
     overdue_supervisions: overdueSupervisions?.length || 0,
     managers_notified: notified,
-  });
+  };
+  await writeCronRun(supabase, { jobName: "compliance-expiry-alerts", path: "/api/cron/compliance-expiry-alerts", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

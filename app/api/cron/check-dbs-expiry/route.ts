@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClientSync } from "@/lib/supabase/server";
 import { Resend } from "resend";
 import { dbsExpiryEmail } from "@/lib/emails";
+import { writeCronRun } from "@/lib/platform-audit";
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -11,6 +12,7 @@ export async function GET(req: NextRequest) {
 
   const supabase = createServiceClientSync();
   const now = new Date();
+  const startedAt = now;
   const checkDays = [90, 60, 30];
   const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
   const from = process.env.RESEND_FROM_EMAIL ?? "noreply@careroot.care";
@@ -55,5 +57,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ checked: true, alerts_sent: alertsSent });
+  const result = { checked: true, alerts_sent: alertsSent };
+  await writeCronRun(supabase, { jobName: "check-dbs-expiry", path: "/api/cron/check-dbs-expiry", status: "success", startedAt, result });
+  return NextResponse.json(result);
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClientSync } from "@/lib/supabase/server";
 import { getResend, FROM_EMAIL } from "@/lib/resend";
 import { applicationApprovedEmail } from "@/lib/emails";
+import { writeAuditLog } from "@/lib/platform-audit";
 
 // Generate a readable but strong temporary password.
 function generateTempPassword(): string {
@@ -94,6 +95,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     reviewed_at: new Date().toISOString(),
     created_org_id: orgId,
   }).eq("id", id);
+
+  await writeAuditLog(admin, {
+    actorUserId: user.id,
+    actorEmail: user.email,
+    actorRole: caller.role,
+    organisationId: orgId as string,
+    action: "signup_application.approved",
+    entityType: "signup_applications",
+    entityId: id,
+    metadata: { applicant_email: app.email, organisation_name: app.org_name },
+    req,
+  });
 
   // 7. Email the applicant their temporary password.
   try {
