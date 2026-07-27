@@ -30,16 +30,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cr-ivory flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-cr-forest rounded-xl flex items-center justify-center">
-            <Leaf size={22} className="text-white" />
-          </div>
-          <span className="font-display text-2xl font-semibold text-cr-charcoal">Careroot</span>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+    <div className="py-16 px-4">
+      <div className="max-w-md mx-auto">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
           {sent ? (
             <div className="text-center">
               <CheckCircle size={48} className="text-green-500 mx-auto mb-4" />
