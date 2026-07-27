@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     stock_before,
     stock_after,
     outcome_notes,
+    authorisation_method,
     witness_staff_id,
     witness_name,
     manager_remote_auth_id,
@@ -105,10 +106,15 @@ export async function POST(req: Request) {
   if (schedule?.is_controlled && manager_remote_auth_name) notesParts.push(`Manager authorisation: ${manager_remote_auth_name}`);
   if (stockDiscrepancyDetected) notesParts.push(`Stock discrepancy: expected ${expectedStockAfter}, recorded ${normalisedStockAfter}`);
 
+  const stockDiscrepancyAmount =
+    stockDiscrepancyDetected && expectedStockAfter !== null && normalisedStockAfter !== null
+      ? Math.abs(normalisedStockAfter - expectedStockAfter)
+      : null;
+
   const record: Record<string, unknown> = {
     shift_id, client_id, medication_schedule_id,
     administered_by: user.id,
-    status: liveStatus, // API keeps `outcome`; live DB stores the constrained status value.
+    status: liveStatus,
     refusal_reason: refusal_reason || null,
     prn_reason: prn_reason || null,
     stock_before: normalisedStockBefore,
@@ -116,9 +122,17 @@ export async function POST(req: Request) {
     outcome_notes: notesParts.length > 0 ? notesParts.join("\n") : null,
     administered_at: liveStatus === "given" ? now : null,
     server_timestamp: now,
+    // Migration 059 columns
+    authorisation_method: schedule?.is_controlled && outcome === "administered" ? (authorisation_method || null) : null,
+    witness_name: schedule?.is_controlled ? (String(witness_name || "").trim() || null) : null,
+    manager_remote_auth_name: schedule?.is_controlled ? (String(manager_remote_auth_name || "").trim() || null) : null,
+    stock_discrepancy_detected: stockDiscrepancyDetected || false,
+    stock_discrepancy_amount: stockDiscrepancyAmount,
+    stock_discrepancy_note: stockDiscrepancyDetected
+      ? `Expected ${expectedStockAfter}, recorded ${normalisedStockAfter}`
+      : null,
   };
-  // Only attach controlled-drug witness fields when actually used, so normal
-  // medication recording never depends on those columns being present.
+  // Only attach FK witness fields when present (IDs, not plain-text names).
   if (witness_staff_id) {
     record.witness_staff_id = witness_staff_id;
     record.witness_confirmed_at = now;
