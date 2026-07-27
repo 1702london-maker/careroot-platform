@@ -36,6 +36,11 @@ export default async function DashboardPage() {
   // Parallel data fetches
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const { data: orgClientsForMedication } = await supabase
+    .from("clients")
+    .select("id")
+    .eq("organisation_id", orgId);
+  const orgClientIds = orgClientsForMedication?.map((client) => client.id) ?? [];
 
   const [
     { count: activeClients },
@@ -71,20 +76,22 @@ export default async function DashboardPage() {
       .order("triggered_at", { ascending: false }).limit(5),
     supabase.from("shifts").select("*", { count: "exact", head: true })
       .eq("organisation_id", orgId).eq("status", "active"),
-    supabase.from("medication_administration").select("id, status, administered_at, clients(first_name, last_name)")
-      .eq("organisation_id", orgId)
-      .gte("administered_at", thirtyDaysAgo.toISOString())
-      .order("administered_at", { ascending: false })
-      .limit(200),
+    orgClientIds.length
+      ? supabase.from("medication_records").select("id, status, administered_at, scheduled_time, server_timestamp, clients(first_name, last_name)")
+        .in("client_id", orgClientIds)
+        .gte("server_timestamp", thirtyDaysAgo.toISOString())
+        .order("server_timestamp", { ascending: false })
+        .limit(200)
+      : Promise.resolve({ data: [] }),
     supabase.from("staff_supervision").select("id, staff_id, next_due_date, users!staff_supervision_staff_id_fkey(first_name, last_name)")
       .eq("organisation_id", orgId)
       .lt("next_due_date", todayStart)
       .order("next_due_date")
       .limit(5),
-    supabase.from("lone_working_check_ins").select("id, status, triggered_at, users!lone_working_check_ins_staff_id_fkey(first_name, last_name)")
+    supabase.from("lone_working_check_ins").select("id, status, sos_triggered_at, users!lone_working_check_ins_staff_id_fkey(first_name, last_name)")
       .eq("organisation_id", orgId)
       .eq("status", "sos_triggered")
-      .order("triggered_at", { ascending: false })
+      .order("sos_triggered_at", { ascending: false })
       .limit(3),
   ]);
 
@@ -218,7 +225,7 @@ export default async function DashboardPage() {
                 key={sos.id}
                 variant="red"
                 title={`SOS triggered — ${u?.first_name} ${u?.last_name}`}
-                description={`Lone working emergency triggered at ${new Date(sos.triggered_at).toLocaleTimeString("en-GB")}. Check carer status immediately.`}
+                description={`Lone working emergency triggered at ${new Date(sos.sos_triggered_at).toLocaleTimeString("en-GB")}. Check carer status immediately.`}
               />
             );
           })}
