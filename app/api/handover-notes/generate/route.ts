@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { verifyActiveShiftAccess } from "@/lib/active-shift-guard";
 
 /**
  * Auto-synthesise a handover note from a shift's structured data (BUILD_SPEC B14).
@@ -11,17 +12,20 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-  const { shift_id, client_id } = await req.json();
+  const { shift_id, client_id, imei, gps_lat, gps_lng } = await req.json();
   if (!shift_id || !client_id) {
     return NextResponse.json({ error: "shift_id and client_id required" }, { status: 400 });
   }
 
-  // Only the worker who held the shift may generate its handover.
-  const { data: shift } = await supabase
-    .from("shifts").select("staff_id").eq("id", shift_id).single();
-  if (!shift || shift.staff_id !== user.id) {
-    return NextResponse.json({ error: "You are not assigned to this shift" }, { status: 403 });
-  }
+  const access = await verifyActiveShiftAccess(supabase, {
+    userId: user.id,
+    shiftId: shift_id,
+    clientId: client_id,
+    imei,
+    gpsLat: gps_lat ?? null,
+    gpsLng: gps_lng ?? null,
+  });
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const [{ data: logs }, { data: meds }, { data: nutrition }, { data: incidents }] = await Promise.all([
     supabase.from("shift_logs").select("log_type, content, triggers_detected").eq("shift_id", shift_id).order("server_timestamp"),

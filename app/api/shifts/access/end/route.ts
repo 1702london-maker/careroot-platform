@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { verifyActiveShiftAccess } from "@/lib/active-shift-guard";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -13,13 +14,26 @@ export async function POST(req: Request) {
 
   const { data: shift } = await supabase
     .from("shifts")
-    .select("id, staff_id, status")
+    .select("id, staff_id, status, client_ids")
     .eq("id", shift_id)
     .eq("staff_id", user.id)
     .single();
 
   if (!shift) return NextResponse.json({ error: "Shift not found" }, { status: 404 });
   if (shift.status === "completed") return NextResponse.json({ error: "Shift already ended" }, { status: 400 });
+
+  if (!auto_logout) {
+    const primaryClientId = ((shift.client_ids as string[] | null) ?? [])[0] ?? null;
+    const access = await verifyActiveShiftAccess(supabase, {
+      userId: user.id,
+      shiftId: shift_id,
+      clientId: primaryClientId,
+      imei,
+      gpsLat: gps_lat ?? null,
+      gpsLng: gps_lng ?? null,
+    });
+    if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
+  }
 
   // Handover gating (BUILD_SPEC B14): a shift cannot be completed until the
   // outgoing worker has signed off a handover note. Auto-logout bypasses this

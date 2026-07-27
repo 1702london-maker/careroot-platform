@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const { device_id } = await req.json();
   if (!device_id) return NextResponse.json({ error: "device_id required" }, { status: 400 });
 
-  // Verify device belongs to staff in this org
+  // Verify device belongs to staff in this org before deactivation.
   const { data: device } = await supabase
     .from("registered_devices")
     .select("id, staff_id, users!staff_id(organisation_id)")
@@ -22,6 +22,10 @@ export async function POST(req: Request) {
     .single();
 
   if (!device) return NextResponse.json({ error: "Device not found" }, { status: 404 });
+  const staff = Array.isArray(device.users) ? device.users[0] : device.users;
+  if (manager.role !== "superadmin" && staff?.organisation_id !== manager.organisation_id) {
+    return NextResponse.json({ error: "Device not found in your organisation" }, { status: 404 });
+  }
 
   const { data, error } = await supabase
     .from("registered_devices")

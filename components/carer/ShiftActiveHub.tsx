@@ -33,6 +33,7 @@ interface Props {
 export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   const [screen, setScreen] = useState<Screen>("home");
   const [ending, setEnding] = useState(false);
+  const [endError, setEndError] = useState("");
 
   const actions: { id: string; label: string; icon: React.ReactNode; color: string }[] = [
     { id: "log", label: "Shift Log", icon: <FileText size={22} />, color: "bg-blue-50 text-blue-700" },
@@ -48,11 +49,35 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   async function endShift() {
     if (!confirm("End this shift?")) return;
     setEnding(true);
-    await fetch("/api/shifts/access/end", {
+    setEndError("");
+
+    let gpsLat = null, gpsLng = null, gpsAccuracy = null;
+    try {
+      const pos = await new Promise<GeolocationPosition>((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+      );
+      gpsLat = pos.coords.latitude;
+      gpsLng = pos.coords.longitude;
+      gpsAccuracy = pos.coords.accuracy;
+    } catch { /* handled by server if GPS is required */ }
+
+    const res = await fetch("/api/shifts/access/end", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ shift_id: shift.id }),
+      body: JSON.stringify({
+        shift_id: shift.id,
+        imei: localStorage.getItem("careroot_device_id"),
+        gps_lat: gpsLat,
+        gps_lng: gpsLng,
+        gps_accuracy_metres: gpsAccuracy,
+      }),
     });
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setEndError(result.error || "Could not end shift");
+      setEnding(false);
+      return;
+    }
     window.location.href = "/carer";
   }
 
@@ -101,6 +126,7 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
             End Shift
           </button>
         </div>
+        {endError && <p className="mt-3 text-xs font-semibold text-red-100">{endError}</p>}
       </div>
 
       {/* Client info */}

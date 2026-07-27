@@ -22,11 +22,23 @@ export function HandoverForm({ shift, clients, onBack }: Props) {
   const [triggersThisShift, setTriggersThisShift] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    await fetch("/api/handover-notes", {
+    setError("");
+
+    let gpsLat = null, gpsLng = null;
+    try {
+      const pos = await new Promise<GeolocationPosition>((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+      );
+      gpsLat = pos.coords.latitude;
+      gpsLng = pos.coords.longitude;
+    } catch { /* handled by server if GPS is required */ }
+
+    const res = await fetch("/api/handover-notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -38,9 +50,17 @@ export function HandoverForm({ shift, clients, onBack }: Props) {
         medication_summary: medicationSummary,
         actions_for_incoming_worker: actionsForIncoming,
         triggers_activated_this_shift: triggersThisShift,
+        gps_lat: gpsLat,
+        gps_lng: gpsLng,
+        imei: localStorage.getItem("careroot_device_id"),
       }),
     });
     setSubmitting(false);
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setError(result.error || "Could not submit handover");
+      return;
+    }
     setDone(true);
   }
 
@@ -106,6 +126,8 @@ export function HandoverForm({ shift, clients, onBack }: Props) {
               placeholder="Any known triggers that were activated or observed?"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest resize-none" />
           </div>
+
+          {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
 
           <button type="submit" disabled={submitting || !currentStatus.trim()}
             className="w-full py-4 bg-cr-forest text-white font-bold rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2">

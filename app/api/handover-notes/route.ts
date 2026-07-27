@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { verifyActiveShiftAccess } from "@/lib/active-shift-guard";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -7,16 +8,21 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
   const body = await req.json();
-  const { shift_id, client_id, current_status, key_events, nutrition_summary, medication_summary, actions_for_incoming_worker, triggers_activated_this_shift } = body;
+  const { shift_id, client_id, current_status, key_events, nutrition_summary, medication_summary, actions_for_incoming_worker, triggers_activated_this_shift, imei, gps_lat, gps_lng } = body;
 
   if (!shift_id || !client_id || !current_status) {
     return NextResponse.json({ error: "shift_id, client_id, current_status required" }, { status: 400 });
   }
 
-  const { data: shift } = await supabase.from("shifts").select("staff_id").eq("id", shift_id).single();
-  if (!shift || shift.staff_id !== user.id) {
-    return NextResponse.json({ error: "You are not assigned to this shift" }, { status: 403 });
-  }
+  const access = await verifyActiveShiftAccess(supabase, {
+    userId: user.id,
+    shiftId: shift_id,
+    clientId: client_id,
+    imei,
+    gpsLat: gps_lat ?? null,
+    gpsLng: gps_lng ?? null,
+  });
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const { data, error } = await supabase.from("handover_notes").insert({
     shift_id, client_id,
