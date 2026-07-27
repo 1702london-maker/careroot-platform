@@ -71,6 +71,11 @@ export async function POST(req: Request) {
     );
   }
 
+  const liveStatus =
+    outcome === "administered" ? "given" :
+    outcome === "omitted" ? "unavailable" :
+    outcome;
+
   const normalisedStockBefore = stock_before === null || stock_before === undefined || stock_before === "" ? null : Number(stock_before);
   const normalisedStockAfter = stock_after === null || stock_after === undefined || stock_after === "" ? null : Number(stock_after);
   if (
@@ -103,13 +108,13 @@ export async function POST(req: Request) {
   const record: Record<string, unknown> = {
     shift_id, client_id, medication_schedule_id,
     administered_by: user.id,
-    status: outcome, // live column is `status` (API keeps `outcome` as the field name)
+    status: liveStatus, // API keeps `outcome`; live DB stores the constrained status value.
     refusal_reason: refusal_reason || null,
     prn_reason: prn_reason || null,
     stock_before: normalisedStockBefore,
     stock_after: normalisedStockAfter,
     outcome_notes: notesParts.length > 0 ? notesParts.join("\n") : null,
-    administered_at: outcome === "administered" ? now : null,
+    administered_at: liveStatus === "given" ? now : null,
     server_timestamp: now,
   };
   // Only attach controlled-drug witness fields when actually used, so normal
