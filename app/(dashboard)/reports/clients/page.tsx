@@ -15,7 +15,13 @@ function exportCSV(data: Record<string, unknown>[], filename: string) {
   a.click();
 }
 
-type ClientRow = { id: string; first_name: string; last_name: string; risk_level: string; care_plan_status: string; care_plan_last_reviewed: string | null };
+type ClientRow = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  risk_level: string | null;
+  onboarding_complete: boolean | null;
+};
 
 export default function ClientReportsPage() {
   const supabase = createClient();
@@ -30,7 +36,7 @@ export default function ClientReportsPage() {
       if (!u) return;
 
       const [{ data: clients }, { data: visits }] = await Promise.all([
-        supabase.from("clients").select("id, first_name, last_name, risk_level, care_plan_status, care_plan_last_reviewed").eq("organisation_id", u.organisation_id).neq("status", "deceased").neq("status", "inactive"),
+        supabase.from("clients").select("id, first_name, last_name, risk_level, onboarding_complete").eq("organisation_id", u.organisation_id).neq("status", "deceased").neq("status", "inactive"),
         supabase.from("visits").select("client_id, status, scheduled_start").eq("organisation_id", u.organisation_id).gte("scheduled_start", new Date(Date.now() - 30 * 24 * 3600000).toISOString()),
       ]);
 
@@ -39,8 +45,12 @@ export default function ClientReportsPage() {
 
       // Risk overview
       setRiskData(cl.map((c) => {
-        const dueDate = c.care_plan_last_reviewed ? new Date(new Date(c.care_plan_last_reviewed).getTime() + 180 * 24 * 3600000) : null;
-        return { name: `${c.first_name} ${c.last_name}`, risk_level: c.risk_level ?? "low", plan_status: c.care_plan_status ?? "draft", plan_due: dueDate ? dueDate.toLocaleDateString("en-GB") : "Not set" };
+        return {
+          name: `${c.first_name} ${c.last_name}`,
+          risk_level: c.risk_level ?? "low",
+          plan_status: c.onboarding_complete ? "active" : "draft",
+          plan_due: "Not set",
+        };
       }));
 
       // Risk chart

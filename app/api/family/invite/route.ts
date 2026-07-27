@@ -14,11 +14,15 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
     const { data: inviter } = await supabase.from("users")
-      .select("first_name, last_name, organisation_id, organisations(name)")
+      .select("first_name, last_name, role, organisation_id, organisations(name)")
       .eq("id", user.id).single();
 
     if (!inviter?.organisation_id) {
       return NextResponse.json({ error: "Inviter organisation not found" }, { status: 403 });
+    }
+
+    if (!["org_admin", "manager", "coordinator", "superadmin"].includes(inviter.role ?? "")) {
+      return NextResponse.json({ error: "Forbidden: only authorised office users can invite family members" }, { status: 403 });
     }
 
     const orgId = inviter.organisation_id;

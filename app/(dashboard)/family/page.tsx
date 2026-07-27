@@ -23,6 +23,8 @@ const RELATIONSHIPS = ["Son", "Daughter", "Spouse/Partner", "Parent", "Sibling",
 
 interface FamilyRow {
   id: string;
+  user_id: string;
+  client_id: string;
   relationship: string;
   access_level: string;
   is_active: boolean;
@@ -58,7 +60,7 @@ export default function FamilyAdminPage() {
 
     const [{ data: familyData }, { data: clientData }] = await Promise.all([
       supabase.from("family_access")
-        .select("id, relationship, access_level, is_active, created_at, users(first_name, last_name, email, phone), clients(first_name, last_name)")
+        .select("id, user_id, client_id, relationship, access_level, is_active, created_at")
         .eq("organisation_id", ur.organisation_id)
         .order("created_at", { ascending: false }),
       supabase.from("clients")
@@ -68,7 +70,26 @@ export default function FamilyAdminPage() {
         .order("first_name"),
     ]);
 
-    setRows((familyData ?? []) as unknown as FamilyRow[]);
+    const accessRows = familyData ?? [];
+    const userIds = Array.from(new Set(accessRows.map((row) => row.user_id).filter(Boolean)));
+    const clientIds = Array.from(new Set(accessRows.map((row) => row.client_id).filter(Boolean)));
+
+    const [{ data: familyUsers }, { data: familyClients }] = await Promise.all([
+      userIds.length
+        ? supabase.from("users").select("id, first_name, last_name, email, phone").in("id", userIds)
+        : Promise.resolve({ data: [] }),
+      clientIds.length
+        ? supabase.from("clients").select("id, first_name, last_name").in("id", clientIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const userMap = new Map((familyUsers ?? []).map((row) => [row.id, row]));
+    const clientMap = new Map((familyClients ?? []).map((row) => [row.id, row]));
+    setRows(accessRows.map((row) => ({
+      ...row,
+      users: userMap.get(row.user_id) ?? null,
+      clients: clientMap.get(row.client_id) ?? null,
+    })) as FamilyRow[]);
     setClients(clientData ?? []);
     setLoading(false);
   };

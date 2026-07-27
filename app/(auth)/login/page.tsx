@@ -45,7 +45,19 @@ export default function LoginPage() {
       return;
     }
 
-    router.push(redirectTo);
+    const safeRedirectTo = redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/dashboard";
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = user
+      ? await supabase.from("users").select("role").eq("id", user.id).single()
+      : { data: null };
+
+    if (profile?.role === "family") {
+      router.push("/family/portal");
+    } else if (profile?.role === "carer") {
+      router.push("/carer");
+    } else {
+      router.push(safeRedirectTo);
+    }
     router.refresh();
   };
 

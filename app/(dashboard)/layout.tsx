@@ -21,13 +21,17 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  if (userRecord?.role === "family") {
-    redirect("/family/login");
-  }
-
   // First-login security: issued accounts must set their own password + accept terms.
   if (userRecord?.must_change_password) {
     redirect("/change-password");
+  }
+
+  if (userRecord?.role === "family") {
+    redirect("/family/portal");
+  }
+
+  if (userRecord?.role === "carer") {
+    redirect("/carer");
   }
 
   const org = userRecord?.organisations as Record<string, string> | null;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import {
   CreditCard, Zap, Users, Code2, Palette, CheckCircle2,
@@ -64,7 +64,6 @@ const ADDONS = [
 ];
 
 function BillingPageInner() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
 
