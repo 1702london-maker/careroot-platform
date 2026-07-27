@@ -214,7 +214,7 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
         )}
         {gpsStatus === "denied" && (
           <div className="flex items-center gap-2 text-xs text-amber-600 mb-3 justify-center">
-            <AlertCircle size={12} /> Location access denied — shift will still start
+            <AlertCircle size={12} /> Location access denied - enable location for clients with GPS rules
           </div>
         )}
 

@@ -18,10 +18,12 @@ export function SafeguardingForm({ shift, clients, onBack }: Props) {
   const [bypassLineManager, setBypassLineManager] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    setError("");
 
     let gpsLat = null, gpsLng = null;
     try {
@@ -32,17 +34,23 @@ export function SafeguardingForm({ shift, clients, onBack }: Props) {
       gpsLng = pos.coords.longitude;
     } catch { /* optional */ }
 
-    await fetch("/api/safeguarding", {
+    const res = await fetch("/api/safeguarding", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         shift_id: shift.id, client_id: clientId,
         concern_description: description, bypass_line_manager: bypassLineManager,
         gps_lat: gpsLat, gps_lng: gpsLng,
+        imei: localStorage.getItem("careroot_device_id"),
       }),
     });
 
     setSubmitting(false);
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setError(result.error || "Could not submit safeguarding concern");
+      return;
+    }
     setDone(true);
   }
 
@@ -94,6 +102,8 @@ export function SafeguardingForm({ shift, clients, onBack }: Props) {
               <p className="text-xs text-red-700 font-semibold">This report will go directly to the Designated Safeguarding Lead. Your line manager will NOT be notified.</p>
             </div>
           )}
+
+          {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
 
           <button type="submit" disabled={submitting || !description.trim()}
             className="w-full py-4 bg-amber-600 text-white font-bold rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2">

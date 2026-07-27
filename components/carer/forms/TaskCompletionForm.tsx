@@ -18,6 +18,7 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
   const [saved, setSaved] = useState<string[]>([]);
   const [violation, setViolation] = useState<{ task: string; requestedBy: string; response: string } | null>(null);
   const [reportingViolation, setReportingViolation] = useState(false);
+  const [violationError, setViolationError] = useState("");
 
   const plan = carePlans.find(p => p.client_id === clientId);
   const authorisedTasks: string[] = (plan?.authorised_tasks as string[]) || [];
@@ -38,7 +39,8 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
     e.preventDefault();
     if (!violation) return;
     setReportingViolation(true);
-    await fetch("/api/role-boundary-violations", {
+    setViolationError("");
+    const res = await fetch("/api/role-boundary-violations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -47,8 +49,15 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
         requested_task: violation.task,
         requested_by: violation.requestedBy,
         worker_response: violation.response,
+        imei: localStorage.getItem("careroot_device_id"),
       }),
     });
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setViolationError(result.error || "Could not submit boundary violation");
+      setReportingViolation(false);
+      return;
+    }
     setViolation(null);
     setReportingViolation(false);
   }
@@ -126,6 +135,7 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
               onChange={e => setViolation(v => v ? { ...v, response: e.target.value } : v)}
               rows={3}
               className="w-full px-3 py-2 text-sm rounded-xl border border-amber-200 bg-white focus:outline-none resize-none" />
+            {violationError && <p className="text-xs font-semibold text-red-600">{violationError}</p>}
             <button type="submit" disabled={reportingViolation}
               className="w-full py-2.5 bg-amber-700 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2">
               {reportingViolation ? <><Loader2 size={14} className="animate-spin" /> Submitting...</> : "Submit Report"}

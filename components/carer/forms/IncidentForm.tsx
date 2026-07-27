@@ -29,6 +29,7 @@ export function IncidentForm({ shift, clients, onBack }: Props) {
   const [staffWellbeing, setStaffWellbeing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
 
   function toggleDeescalation(item: string) {
     setDeescalation(d => d.includes(item) ? d.filter(x => x !== item) : [...d, item]);
@@ -37,6 +38,7 @@ export function IncidentForm({ shift, clients, onBack }: Props) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    setError("");
 
     let gpsLat = null, gpsLng = null;
     try {
@@ -47,7 +49,7 @@ export function IncidentForm({ shift, clients, onBack }: Props) {
       gpsLng = pos.coords.longitude;
     } catch { /* optional */ }
 
-    await fetch("/api/incidents", {
+    const res = await fetch("/api/incidents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -60,10 +62,16 @@ export function IncidentForm({ shift, clients, onBack }: Props) {
         deescalation_strategies_used: deescalation,
         staff_wellbeing_checked: staffWellbeing,
         gps_lat: gpsLat, gps_lng: gpsLng,
+        imei: localStorage.getItem("careroot_device_id"),
       }),
     });
 
     setSubmitting(false);
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setError(result.error || "Could not submit incident report");
+      return;
+    }
     setDone(true);
   }
 
@@ -173,6 +181,8 @@ export function IncidentForm({ shift, clients, onBack }: Props) {
             <input type="checkbox" checked={staffWellbeing} onChange={e => setStaffWellbeing(e.target.checked)} className="rounded w-5 h-5" />
             <span className="text-sm font-semibold text-cr-charcoal">I have checked in on my own wellbeing following this incident</span>
           </label>
+
+          {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
 
           <button type="submit" disabled={submitting}
             className="w-full py-4 bg-red-600 text-white font-bold rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2">

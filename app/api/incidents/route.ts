@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { notify, messages } from "@/lib/notifications";
+import { verifyActiveShiftAccess } from "@/lib/active-shift-guard";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -10,11 +11,21 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { shift_id, client_id, incident_type, antecedent, antecedent_trigger, behaviour_description,
     consequence_description, physical_intervention_occurred, pi_technique, pi_duration_minutes,
-    deescalation_strategies_used, staff_wellbeing_checked, gps_lat, gps_lng } = body;
+    deescalation_strategies_used, staff_wellbeing_checked, gps_lat, gps_lng, imei } = body;
 
   if (!shift_id || !client_id || !behaviour_description) {
     return NextResponse.json({ error: "shift_id, client_id, behaviour_description required" }, { status: 400 });
   }
+
+  const access = await verifyActiveShiftAccess(supabase, {
+    userId: user.id,
+    shiftId: shift_id,
+    clientId: client_id,
+    imei,
+    gpsLat: gps_lat ?? null,
+    gpsLng: gps_lng ?? null,
+  });
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const now = new Date().toISOString();
   const wellbeingCheckDue = physical_intervention_occurred
@@ -39,18 +50,16 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // Dual notification — manager + safeguarding lead simultaneously (B12).
-  const { data: client } = await supabase
-    .from("clients").select("organisation_id, first_name, last_name").eq("id", client_id).single();
   const { data: me } = await supabase
     .from("users").select("first_name, last_name").eq("id", user.id).single();
-  if (client?.organisation_id) {
+  if (access.organisationId) {
     const staffName = me ? `${me.first_name} ${me.last_name}` : "A worker";
     await notify(supabase, {
-      organisationId: client.organisation_id,
+      organisationId: access.organisationId,
       recipientGroups: ["manager", "safeguarding_lead"],
       message: messages.incidentLogged(
         incident_type || "behaviour",
-        `${client.first_name} ${client.last_name}`,
+        access.clientName,
         now,
         staffName
       ),

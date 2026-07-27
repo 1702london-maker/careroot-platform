@@ -20,10 +20,12 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
+    setError("");
 
     let gpsLat = null, gpsLng = null, withinRadius = null;
     try {
@@ -44,7 +46,7 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
       }
     } catch { /* GPS optional */ }
 
-    await fetch("/api/shift-logs", {
+    const res = await fetch("/api/shift-logs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -55,10 +57,16 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
         gps_lat: gpsLat,
         gps_lng: gpsLng,
         within_approved_radius: withinRadius,
+        imei: localStorage.getItem("careroot_device_id"),
       }),
     });
 
     setSubmitting(false);
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setError(result.error || "Could not save shift log");
+      return;
+    }
     setDone(true);
     setTimeout(() => { setContent(""); setDone(false); }, 1500);
   }
@@ -105,6 +113,8 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
               className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest resize-none"
             />
           </div>
+
+          {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
 
           <button type="submit" disabled={submitting || !content.trim()}
             className="w-full py-4 bg-cr-forest text-white font-bold rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2">
