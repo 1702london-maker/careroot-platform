@@ -96,6 +96,27 @@ export async function POST(req: Request) {
   }
 
   if (shift.client_ids?.length) {
+    const recentHandoverCutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    const { data: unreadHandovers } = await supabase
+      .from("handover_notes")
+      .select("id, client_id")
+      .in("client_id", shift.client_ids)
+      .not("outgoing_approved_at", "is", null)
+      .is("incoming_read_confirmed_at", null)
+      .gte("server_timestamp", recentHandoverCutoff)
+      .or(`incoming_staff_id.is.null,incoming_staff_id.eq.${user.id}`)
+      .limit(1);
+
+    if (unreadHandovers?.length) {
+      return NextResponse.json({
+        allowed: false,
+        reason: "You must read and confirm the handover note before starting care.",
+        handover_required: true,
+      }, { status: 403 });
+    }
+  }
+
+  if (shift.client_ids?.length) {
     const { data: client } = await supabase
       .from("clients")
       .select("gps_lat, gps_lng, approved_radius_metres")
