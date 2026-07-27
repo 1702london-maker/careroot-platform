@@ -4,6 +4,7 @@ import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRAvatar } from "@/components/ui/CRAvatar";
 import { formatDateTimeUK } from "@/lib/utils";
+import { asArray } from "@/lib/array-utils";
 import { Phone, Mail, Users } from "lucide-react";
 
 interface Props {
@@ -13,7 +14,7 @@ interface Props {
 }
 
 export function ClientOverviewTab({ client, recentVisits, familyAccess }: Props) {
-  const emergencyContacts = (client.emergency_contact as Array<Record<string, string>>) || [];
+  const emergencyContacts = asArray<Record<string, string>>(client.emergency_contact);
   const careNeeds = client.care_needs as Record<string, unknown> | null;
   const gpDetails = client.gp_details as Record<string, string> | null;
 

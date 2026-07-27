@@ -6,6 +6,7 @@ import { CRCard } from "@/components/ui/CRCard";
 import { CRStepList } from "@/components/ui/CRStepList";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CREmptyState } from "@/components/ui/CREmptyState";
+import { asArray } from "@/lib/array-utils";
 import { Utensils } from "lucide-react";
 
 interface Props {
@@ -33,7 +34,7 @@ export function ClientNutritionTab({ client, nutritionProfile }: Props) {
     );
   }
 
-  const dietTypes = (nutritionProfile.diet_types as string[]) || [];
+  const dietTypes = asArray<string>(nutritionProfile.diet_types);
 
   const textureLabels: Record<string, string> = {
     regular: "Regular",
@@ -115,7 +116,7 @@ export function ClientNutritionTab({ client, nutritionProfile }: Props) {
           <h3 className="font-display text-xl font-semibold text-cr-charcoal mb-4">Meal Preferences & Preparation</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {mealPreferences.map((pref) => {
-              const rawSteps = (pref.preparation_steps as string[]) || [];
+              const rawSteps = asArray<string>(pref.preparation_steps);
               const steps = rawSteps.map((instruction, i) => ({ step: i + 1, instruction }));
               return (
                 <CRCard key={String(pref.id)}>

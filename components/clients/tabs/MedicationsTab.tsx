@@ -3,6 +3,7 @@
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CREmptyState } from "@/components/ui/CREmptyState";
+import { asArray } from "@/lib/array-utils";
 import { Pill } from "lucide-react";
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
 }
 
 export function ClientMedicationsTab({ client, medications }: Props) {
-  const allergies = (client.allergies as Array<Record<string, string>>) || [];
+  const allergies = asArray<Record<string, string>>(client.allergies);
 
   if (medications.length === 0 && allergies.length === 0) {
     return (
