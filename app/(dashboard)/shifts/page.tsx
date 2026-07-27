@@ -75,7 +75,9 @@ export default function ShiftsPage() {
         ...m,
         [shift_id]: {
           type: "ok",
-          text: result.sms_sent ? `PIN sent to ${result.staff_name}` : `Generated but SMS failed — check Twilio`,
+          text: result.sms_sent
+            ? `PIN sent to ${result.staff_name}`
+            : `PIN generated: ${result.manual_pin} (${result.sms_error || "SMS not sent"})`,
         },
       }));
     }

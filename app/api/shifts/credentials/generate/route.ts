@@ -42,7 +42,6 @@ export async function POST(req: Request) {
     .single();
 
   if (!staffMember) return NextResponse.json({ error: "Staff member not found" }, { status: 404 });
-  if (!staffMember.phone) return NextResponse.json({ error: "Staff member has no phone number on record" }, { status: 422 });
 
   // Invalidate any existing active credentials for this shift
   await supabase
@@ -82,7 +81,9 @@ export async function POST(req: Request) {
 
   const smsBody = `Careroot Shift Access\n\nHi ${staffMember.first_name},\n\nYour PIN for ${shiftDate} at ${shiftTime}:\n\n${pin}\n\nThis PIN expires 30 minutes after your shift ends. Do not share it with anyone.\n\nCareroot`;
 
-  const smsResult = await sendSMS(staffMember.phone, smsBody);
+  const smsResult = staffMember.phone
+    ? await sendSMS(staffMember.phone, smsBody)
+    : { success: false, error: "Staff member has no phone number on record" };
 
   await supabase
     .from("shift_credentials")
@@ -95,6 +96,6 @@ export async function POST(req: Request) {
     sms_sent: smsResult.success,
     valid_from: validFrom.toISOString(),
     valid_until: validUntil.toISOString(),
-    ...(smsResult.success ? {} : { sms_error: String(smsResult.error) }),
+    ...(smsResult.success ? {} : { sms_error: String(smsResult.error), manual_pin: pin }),
   });
 }
