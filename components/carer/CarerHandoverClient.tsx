@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRAlertBanner } from "@/components/ui/CRAlertBanner";
 import { CheckCircle, AlertTriangle, ArrowRightLeft, Clock } from "lucide-react";
@@ -29,7 +28,6 @@ interface Props {
 }
 
 export function CarerHandoverClient({ handovers, hasActiveShift }: Props) {
-  const supabase = createClient();
   const [expanded, setExpanded] = useState<string | null>(handovers[0]?.id ?? null);
   const [confirming, setConfirming] = useState<string | null>(null);
 
@@ -45,9 +43,11 @@ export function CarerHandoverClient({ handovers, hasActiveShift }: Props) {
 
   const confirmRead = async (handoverId: string) => {
     setConfirming(handoverId);
-    await supabase.from("handover_notes").update({
-      incoming_read_confirmed_at: new Date().toISOString(),
-    }).eq("id", handoverId);
+    await fetch(`/api/handover-notes/${handoverId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "confirm_read" }),
+    });
     window.location.reload();
   };
 

@@ -32,7 +32,7 @@ export function HandoverApprovals({ handovers }: { handovers: unknown[] }) {
     await fetch(`/api/handover-notes/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ outgoing_approved_at: new Date().toISOString() }),
+      body: JSON.stringify({ action: "approve" }),
     });
     setApproving(null);
     window.location.reload();

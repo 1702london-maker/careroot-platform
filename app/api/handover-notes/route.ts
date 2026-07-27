@@ -27,6 +27,7 @@ export async function POST(req: Request) {
     medication_summary: medication_summary || null,
     actions_for_incoming_worker: actions_for_incoming_worker || null,
     triggers_activated_this_shift: triggers_activated_this_shift || null,
+    outgoing_approved_at: new Date().toISOString(),
     server_timestamp: new Date().toISOString(),
   }).select().single();
 
