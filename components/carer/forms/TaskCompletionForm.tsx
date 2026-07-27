@@ -26,11 +26,36 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
 
   async function markTask(taskName: string, isAuthorised: boolean) {
     setSubmitting(true);
-    await fetch("/api/task-completions", {
+    setViolationError("");
+
+    let gpsLat = null, gpsLng = null;
+    try {
+      const pos = await new Promise<GeolocationPosition>((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+      );
+      gpsLat = pos.coords.latitude;
+      gpsLng = pos.coords.longitude;
+    } catch { /* handled by server if GPS is required */ }
+
+    const res = await fetch("/api/task-completions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ shift_id: shift.id, client_id: clientId, task_name: taskName, is_authorised: isAuthorised }),
+      body: JSON.stringify({
+        shift_id: shift.id,
+        client_id: clientId,
+        task_name: taskName,
+        is_authorised: isAuthorised,
+        gps_lat: gpsLat,
+        gps_lng: gpsLng,
+        imei: localStorage.getItem("careroot_device_id"),
+      }),
     });
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setViolationError(result.error || "Could not save task completion");
+      setSubmitting(false);
+      return;
+    }
     setSaved(s => [...s, taskName]);
     setSubmitting(false);
   }

@@ -1,16 +1,27 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { notify, messages } from "@/lib/notifications";
+import { verifyActiveShiftAccess } from "@/lib/active-shift-guard";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-  const { shift_id, client_id, task_name, notes, requested_by } = await req.json();
+  const { shift_id, client_id, task_name, notes, requested_by, imei, gps_lat, gps_lng } = await req.json();
   if (!shift_id || !task_name) {
     return NextResponse.json({ error: "shift_id and task_name required" }, { status: 400 });
   }
+
+  const access = await verifyActiveShiftAccess(supabase, {
+    userId: user.id,
+    shiftId: shift_id,
+    clientId: client_id || null,
+    imei,
+    gpsLat: gps_lat ?? null,
+    gpsLng: gps_lng ?? null,
+  });
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const now = new Date().toISOString();
 
@@ -35,13 +46,8 @@ export async function POST(req: Request) {
       .map((t) => String(t).toLowerCase().trim())
       .includes(String(task_name).toLowerCase().trim());
 
-    const { data: client } = await supabase
-      .from("clients")
-      .select("organisation_id, first_name, last_name")
-      .eq("id", client_id)
-      .single();
-    organisationId = client?.organisation_id ?? null;
-    if (client) clientName = `${client.first_name} ${client.last_name}`;
+    organisationId = access.organisationId;
+    clientName = access.clientName;
   }
 
   const { data, error } = await supabase.from("task_completions").insert({

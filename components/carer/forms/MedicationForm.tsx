@@ -39,6 +39,7 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!clientId) return;
@@ -52,8 +53,18 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
     e.preventDefault();
     if (!selected) return;
     setSubmitting(true);
+    setError("");
 
-    await fetch("/api/medication-records", {
+    let gpsLat = null, gpsLng = null;
+    try {
+      const pos = await new Promise<GeolocationPosition>((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+      );
+      gpsLat = pos.coords.latitude;
+      gpsLng = pos.coords.longitude;
+    } catch { /* handled by server if GPS is required */ }
+
+    const res = await fetch("/api/medication-records", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -66,10 +77,18 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
         stock_before: selected.is_controlled ? Number(stockBefore) : null,
         stock_after: selected.is_controlled ? Number(stockAfter) : null,
         outcome_notes: notes,
+        gps_lat: gpsLat,
+        gps_lng: gpsLng,
+        imei: localStorage.getItem("careroot_device_id"),
       }),
     });
 
     setSubmitting(false);
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setError(result.error || "Could not save medication record");
+      return;
+    }
     setDone(true);
     setTimeout(() => { setSelected(null); setDone(false); setOutcome("administered"); setNotes(""); setStockBefore(""); setStockAfter(""); setRefusalReason(""); setPrnReason(""); }, 1500);
   }
@@ -183,6 +202,8 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest resize-none" />
           </div>
+
+          {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
 
           <button type="submit" disabled={submitting}
             className="w-full py-4 bg-cr-forest text-white font-bold rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2">

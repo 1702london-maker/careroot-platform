@@ -31,6 +31,7 @@ export function MoodForm({ shift, clients, carePlans, onBack }: Props) {
   const [triggersActivated, setTriggersActivated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
 
   const plan = carePlans.find(p => p.client_id === clientId);
   const customMoods: string[] = (plan?.mood_vocabulary as string[]) || [];
@@ -45,16 +46,34 @@ export function MoodForm({ shift, clients, carePlans, onBack }: Props) {
     e.preventDefault();
     if (!selectedMood) return;
     setSubmitting(true);
+    setError("");
+
+    let gpsLat = null, gpsLng = null;
+    try {
+      const pos = await new Promise<GeolocationPosition>((res, rej) =>
+        navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+      );
+      gpsLat = pos.coords.latitude;
+      gpsLng = pos.coords.longitude;
+    } catch { /* handled by server if GPS is required */ }
+
     const mood = allMoods.find(m => m.term === selectedMood);
-    await fetch("/api/mood-records", {
+    const res = await fetch("/api/mood-records", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         shift_id: shift.id, client_id: clientId, mood_term: selectedMood,
         mood_category: mood?.category || "custom", context_notes: contextNotes, triggers_activated: triggersActivated,
+        gps_lat: gpsLat, gps_lng: gpsLng,
+        imei: localStorage.getItem("careroot_device_id"),
       }),
     });
     setSubmitting(false);
+    if (!res.ok) {
+      const result = await res.json().catch(() => ({}));
+      setError(result.error || "Could not save mood record");
+      return;
+    }
     setDone(true);
     setTimeout(() => { setSelectedMood(""); setContextNotes(""); setTriggersActivated(false); setDone(false); }, 1500);
   }
@@ -111,6 +130,8 @@ export function MoodForm({ shift, clients, carePlans, onBack }: Props) {
               placeholder="What prompted this mood? Any relevant context..."
               className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest resize-none" />
           </div>
+
+          {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
 
           <button type="submit" disabled={submitting || !selectedMood}
             className="w-full py-4 bg-cr-forest text-white font-bold rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2">

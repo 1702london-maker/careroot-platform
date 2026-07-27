@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { verifyActiveShiftAccess } from "@/lib/active-shift-guard";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -7,10 +8,20 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
   const body = await req.json();
-  const { shift_id, client_id, medication_schedule_id, outcome, refusal_reason, prn_reason, stock_before, stock_after, outcome_notes, witness_staff_id, manager_remote_auth_id, manager_remote_auth_image_url } = body;
+  const { shift_id, client_id, medication_schedule_id, outcome, refusal_reason, prn_reason, stock_before, stock_after, outcome_notes, witness_staff_id, manager_remote_auth_id, manager_remote_auth_image_url, imei, gps_lat, gps_lng } = body;
   if (!shift_id || !client_id || !medication_schedule_id || !outcome) {
     return NextResponse.json({ error: "shift_id, client_id, medication_schedule_id, outcome required" }, { status: 400 });
   }
+
+  const access = await verifyActiveShiftAccess(supabase, {
+    userId: user.id,
+    shiftId: shift_id,
+    clientId: client_id,
+    imei,
+    gpsLat: gps_lat ?? null,
+    gpsLng: gps_lng ?? null,
+  });
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const now = new Date().toISOString();
 

@@ -1,15 +1,26 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { verifyActiveShiftAccess } from "@/lib/active-shift-guard";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-  const { shift_id, client_id, mood_term, mood_category, context_notes, triggers_activated } = await req.json();
+  const { shift_id, client_id, mood_term, mood_category, context_notes, triggers_activated, imei, gps_lat, gps_lng } = await req.json();
   if (!shift_id || !client_id || !mood_term) {
     return NextResponse.json({ error: "shift_id, client_id, mood_term required" }, { status: 400 });
   }
+
+  const access = await verifyActiveShiftAccess(supabase, {
+    userId: user.id,
+    shiftId: shift_id,
+    clientId: client_id,
+    imei,
+    gpsLat: gps_lat ?? null,
+    gpsLng: gps_lng ?? null,
+  });
+  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const { data, error } = await supabase.from("mood_records").insert({
     shift_id, client_id, staff_id: user.id,
