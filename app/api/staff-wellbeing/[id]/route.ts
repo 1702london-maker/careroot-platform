@@ -14,7 +14,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { data: caller } = await supabase
     .from("users").select("role, organisation_id").eq("id", user.id).single();
 
-  if (!["org_admin", "manager", "hr_manager"].includes(caller?.role ?? "")) {
+  if (!["superadmin", "org_admin", "manager", "coordinator", "hr_manager"].includes(caller?.role ?? "")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -28,11 +28,20 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: "No valid fields provided" }, { status: 400 });
   }
 
+  const { data: existing } = await supabase
+    .from("staff_wellbeing_checks")
+    .select("id, staff:users!staff_id(organisation_id)")
+    .eq("id", params.id)
+    .single();
+  const staff = Array.isArray(existing?.staff) ? existing?.staff[0] : existing?.staff;
+  if (!existing || (caller?.role !== "superadmin" && staff?.organisation_id !== caller?.organisation_id)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const { data, error } = await supabase
     .from("staff_wellbeing_checks")
     .update(update)
     .eq("id", params.id)
-    .eq("organisation_id", caller!.organisation_id)
     .select()
     .single();
 

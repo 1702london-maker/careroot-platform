@@ -34,6 +34,7 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   const [screen, setScreen] = useState<Screen>("home");
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState("");
+  const [endWellbeing, setEndWellbeing] = useState("");
 
   const actions: { id: string; label: string; icon: React.ReactNode; color: string }[] = [
     { id: "log", label: "Shift Log", icon: <FileText size={22} />, color: "bg-blue-50 text-blue-700" },
@@ -47,6 +48,10 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   ];
 
   async function endShift() {
+    if (!endWellbeing) {
+      setEndError("Select your wellbeing status before ending this shift.");
+      return;
+    }
     if (!confirm("End this shift?")) return;
     setEnding(true);
     setEndError("");
@@ -60,6 +65,23 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
       gpsLng = pos.coords.longitude;
       gpsAccuracy = pos.coords.accuracy;
     } catch { /* handled by server if GPS is required */ }
+
+    const wellbeingRes = await fetch("/api/staff-wellbeing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        staff_id: staffId,
+        shift_id: shift.id,
+        check_type: "shift_end",
+        wellbeing_status: endWellbeing,
+      }),
+    });
+    if (!wellbeingRes.ok) {
+      const result = await wellbeingRes.json().catch(() => ({}));
+      setEndError(result.error || "Could not save wellbeing check");
+      setEnding(false);
+      return;
+    }
 
     const res = await fetch("/api/shifts/access/end", {
       method: "POST",
@@ -125,6 +147,21 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
             {ending ? <Loader2 size={12} className="animate-spin" /> : <LogOut size={14} />}
             End Shift
           </button>
+        </div>
+        <div className="mt-4">
+          <label className="block text-[10px] font-semibold uppercase tracking-wider text-white/70 mb-1">End-of-shift wellbeing</label>
+          <select
+            value={endWellbeing}
+            onChange={(e) => setEndWellbeing(e.target.value)}
+            className="w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:outline-none"
+          >
+            <option className="text-cr-charcoal" value="">Select status...</option>
+            <option className="text-cr-charcoal" value="good">Good</option>
+            <option className="text-cr-charcoal" value="tired">Tired</option>
+            <option className="text-cr-charcoal" value="stressed">Stressed</option>
+            <option className="text-cr-charcoal" value="distressed">Distressed</option>
+            <option className="text-cr-charcoal" value="unwell">Unwell</option>
+          </select>
         </div>
         {endError && <p className="mt-3 text-xs font-semibold text-red-100">{endError}</p>}
       </div>

@@ -23,6 +23,7 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
   const [deviceId, setDeviceId] = useState("");
   const [copied, setCopied] = useState(false);
   const [carePlanConfirmed, setCarePlanConfirmed] = useState(carePlans.length === 0);
+  const [wellbeingStatus, setWellbeingStatus] = useState("");
 
   // Generate or retrieve a stable browser device ID
   useEffect(() => {
@@ -70,6 +71,10 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
       setError("Read and confirm the care plan before starting this shift.");
       return;
     }
+    if (!wellbeingStatus) {
+      setError("Select your wellbeing status before starting this shift.");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -111,6 +116,16 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
     if (!res.ok) {
       setError(result.reason || result.error || "Access denied");
     } else {
+      await fetch("/api/staff-wellbeing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          staff_id: staffId,
+          shift_id: shift.id,
+          check_type: "shift_start",
+          wellbeing_status: wellbeingStatus,
+        }),
+      });
       onSuccess();
     }
   }
@@ -201,6 +216,22 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
           </div>
         )}
 
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-4">
+          <label className="block text-xs font-semibold text-cr-slate mb-2 uppercase tracking-wider">How are you feeling?</label>
+          <select
+            value={wellbeingStatus}
+            onChange={(e) => setWellbeingStatus(e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-cr-charcoal focus:outline-none focus:border-cr-forest"
+          >
+            <option value="">Select wellbeing status...</option>
+            <option value="good">Good</option>
+            <option value="tired">Tired</option>
+            <option value="stressed">Stressed</option>
+            <option value="distressed">Distressed</option>
+            <option value="unwell">Unwell</option>
+          </select>
+        </div>
+
         {/* GPS status */}
         {gpsStatus === "getting" && (
           <div className="flex items-center gap-2 text-xs text-cr-slate mb-3 justify-center">
@@ -220,7 +251,7 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
 
         <button
           onClick={handleStart}
-          disabled={loading || pin.length !== 6 || noCredential || (carePlans.length > 0 && !carePlanConfirmed)}
+          disabled={loading || pin.length !== 6 || noCredential || !wellbeingStatus || (carePlans.length > 0 && !carePlanConfirmed)}
           className="w-full py-4 bg-cr-forest text-white font-bold text-base rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
         >
           {loading ? <><Loader2 size={18} className="animate-spin" /> Verifying...</> : "Start Shift"}

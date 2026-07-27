@@ -51,6 +51,16 @@ export async function PATCH(req: Request) {
   const { id, status, valid_until, document_url, notes } = await req.json();
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
+  const { data: existing } = await supabase
+    .from("staff_compliance")
+    .select("id, staff:users!staff_id(organisation_id)")
+    .eq("id", id)
+    .single();
+  const staff = Array.isArray(existing?.staff) ? existing?.staff[0] : existing?.staff;
+  if (!existing || (caller?.role !== "superadmin" && staff?.organisation_id !== caller?.organisation_id)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const { error } = await supabase.from("staff_compliance").update({
     status,
     valid_until: valid_until || null,
