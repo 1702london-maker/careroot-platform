@@ -231,7 +231,7 @@ export function CarerEmarClient({ clients, medications, initialAdministrations, 
                     )}
                     {admin && recordedAt && (
                       <p className="text-xs text-cr-slate mt-1">
-                        {STATUS_CONFIG[admin.status]?.label ?? admin.status} at {new Date(recordedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                        {STATUS_CONFIG[admin.status]?.label ?? admin.status} at {new Date(recordedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
                         {admin.outcome_notes && ` · ${admin.outcome_notes}`}
                       </p>
                     )}

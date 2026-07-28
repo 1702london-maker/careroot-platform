@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { Activity, BarChart2, ShieldCheck, Users, Heart, Settings, CheckCircle } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { createClient } from "@/lib/supabase/client";
 
 const SAMPLE_DATA = [
   { week: "Wk 1", completed: 42, scheduled: 45 },
@@ -41,6 +43,13 @@ const FEATURES = [
 ];
 
 export default function ReportsMarketingPage() {
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) window.location.replace("/reports/dashboard");
+    });
+  }, []);
+
   return (
     <>
       <MarketingNav />

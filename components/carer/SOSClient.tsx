@@ -131,7 +131,7 @@ export function SOSClient({ user, activeCheckin, contacts }: Props) {
             {activeCheckin?.expected_finish_at && (
               <div className="flex items-center gap-2 text-sm text-cr-slate">
                 <Clock size={14} />
-                <span>Expected finish: {new Date(activeCheckin.expected_finish_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+                <span>Expected finish: {new Date(activeCheckin.expected_finish_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}</span>
               </div>
             )}
             <div className="flex gap-2 mt-3">

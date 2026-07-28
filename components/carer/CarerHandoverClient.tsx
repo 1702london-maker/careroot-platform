@@ -104,7 +104,7 @@ export function CarerHandoverClient({ handovers, hasActiveShift }: Props) {
                 <p className="text-xs text-cr-slate mt-0.5">
                   From: {h.outgoing_staff?.first_name} {h.outgoing_staff?.last_name} ·{" "}
                   {new Date(h.server_timestamp).toLocaleDateString("en-GB")} at{" "}
-                  {new Date(h.server_timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(h.server_timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
                 </p>
               </div>
               <ArrowRightLeft size={16} className="text-cr-slate flex-shrink-0 mt-0.5" />
@@ -177,7 +177,7 @@ export function CarerHandoverClient({ handovers, hasActiveShift }: Props) {
                 {isRead && h.incoming_read_confirmed_at && (
                   <p className="text-xs text-cr-slate flex items-center gap-1">
                     <Clock size={11} />
-                    Confirmed read at {new Date(h.incoming_read_confirmed_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                    Confirmed read at {new Date(h.incoming_read_confirmed_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
                   </p>
                 )}
               </div>

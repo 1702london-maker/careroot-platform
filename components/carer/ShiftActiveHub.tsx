@@ -137,9 +137,9 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
               <span className="text-xs font-semibold opacity-80">SHIFT ACTIVE</span>
             </div>
             <p className="font-bold text-lg">
-              {start.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-              {" — "}
-              {end.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+              {start.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
+              {" - "}
+              {end.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
             </p>
           </div>
           <button

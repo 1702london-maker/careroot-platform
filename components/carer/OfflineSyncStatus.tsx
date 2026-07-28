@@ -45,7 +45,7 @@ export function OfflineSyncStatus() {
       ) : (
         <div className="flex items-center gap-2 font-semibold text-green-700">
           <CheckCircle size={14} />
-          Offline records synced{lastSynced ? ` at ${new Date(lastSynced).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}` : ""}
+          Offline records synced{lastSynced ? ` at ${new Date(lastSynced).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}` : ""}
         </div>
       )}
     </div>

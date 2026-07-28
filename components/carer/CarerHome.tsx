@@ -39,9 +39,9 @@ export function CarerHome({ shifts: rawShifts }: { shifts: unknown[] }) {
             <div>
               <p className="text-xs opacity-70 mb-0.5">Active Shift</p>
               <p className="font-semibold">
-                {new Date(active.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                {" — "}
-                {new Date(active.scheduled_end).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                {new Date(active.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
+                {" - "}
+                {new Date(active.scheduled_end).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
               </p>
               <p className="text-xs opacity-70 mt-0.5">{active.service_lines?.name || "Shift in progress"}</p>
             </div>
@@ -85,9 +85,9 @@ export function CarerHome({ shifts: rawShifts }: { shifts: unknown[] }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm text-cr-charcoal">
-                      {new Date(shift.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                      {" — "}
-                      {new Date(shift.scheduled_end).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(shift.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
+                      {" - "}
+                      {new Date(shift.scheduled_end).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
                     </p>
                     <p className="text-xs text-cr-slate">{shift.service_lines?.name || "Shift"}</p>
                     {shift.client_ids?.length ? (

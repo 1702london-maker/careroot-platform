@@ -157,9 +157,9 @@ export function CarerRotaClient({ shifts, user }: Props) {
                               className="flex items-center gap-2 text-xs">
                               {statusIcon(shift.status)}
                               <span className="text-cr-charcoal font-medium">
-                                {new Date(shift.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                                {" — "}
-                                {new Date(shift.scheduled_end).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                                {new Date(shift.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
+                                {" - "}
+                                {new Date(shift.scheduled_end).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
                               </span>
                               <span className="text-cr-slate">
                                 ({hoursInShift(shift).toFixed(1)}h

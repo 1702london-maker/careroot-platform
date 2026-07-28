@@ -50,7 +50,7 @@ export default function OfflinePage() {
         </p>
         {lastSync && (
           <p className="text-xs font-body text-white/40 mt-2">
-            Last synced: {new Date(lastSync).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+            Last synced: {new Date(lastSync).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
           </p>
         )}
       </div>
@@ -86,9 +86,9 @@ export default function OfflinePage() {
                       <div className="flex items-center gap-1.5 mb-1">
                         <Clock size={12} className="text-white/50" />
                         <p className="text-xs font-body text-white/60">
-                          {new Date(visit.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                          {" – "}
-                          {new Date(visit.scheduled_end).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(visit.scheduled_start).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
+                          {" - "}
+                          {new Date(visit.scheduled_end).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
                         </p>
                       </div>
                       {visit.address && (

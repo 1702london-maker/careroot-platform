@@ -142,9 +142,9 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
           </div>
           <h1 className="text-xl font-bold text-cr-charcoal">Shift Access</h1>
           <p className="text-sm text-cr-slate mt-1">
-            {scheduledStart.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-            {" — "}
-            {scheduledEnd.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+            {scheduledStart.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
+            {" - "}
+            {scheduledEnd.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" })}
           </p>
         </div>
 
