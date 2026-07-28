@@ -15,6 +15,15 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
+type UserRole = "admin" | "manager" | "carer" | "family" | "client" | string;
+type ProfileResult = { data: { role: UserRole } | null };
+
+async function withTimeout<T>(promise: Promise<T>, fallback: T, ms = 3000) {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -47,9 +56,13 @@ export default function LoginPage() {
 
     const safeRedirect = redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/dashboard";
     const { data: { user } } = await supabase.auth.getUser();
-    const { data: profile } = user
-      ? await supabase.from("users").select("role").eq("id", user.id).single()
+    const profileResult = user
+      ? await withTimeout(
+          Promise.resolve(supabase.from("users").select("role").eq("id", user.id).maybeSingle()) as Promise<ProfileResult>,
+          { data: null }
+        )
       : { data: null };
+    const profile = profileResult.data;
 
     if (profile?.role === "family") router.push("/family/portal");
     else if (profile?.role === "carer") router.push("/carer");
