@@ -15,7 +15,7 @@ type Org = {
   id: string;
   name: string;
   plan: string;
-  subscription_status: string;
+  subscription_status?: string | null;
   billing_cycle: string;
   max_staff: number;
   stripe_customer_id: string | null;
@@ -100,7 +100,7 @@ function BillingPageInner() {
       if (!userRecord) return;
       const { data: orgData } = await supabase
         .from("organisations")
-        .select("id, name, plan, subscription_status, billing_cycle, max_staff, stripe_customer_id, stripe_subscription_id")
+        .select("id, name, plan, billing_cycle, max_staff, stripe_customer_id, stripe_subscription_id")
         .eq("id", userRecord.organisation_id)
         .single();
       if (orgData) {
@@ -172,8 +172,9 @@ function BillingPageInner() {
   }
 
   const currentPlan = org?.plan ?? "seed";
-  const isActive = org?.subscription_status === "active";
-  const isPastDue = org?.subscription_status === "past_due";
+  const subscriptionStatus = org?.subscription_status ?? (org?.stripe_subscription_id ? "active" : "trialing");
+  const isActive = subscriptionStatus === "active" || subscriptionStatus === "trialing";
+  const isPastDue = subscriptionStatus === "past_due";
   const planInfo = PLAN_DISPLAY[currentPlan];
 
   return (
@@ -223,7 +224,7 @@ function BillingPageInner() {
             <span className={`text-xs font-body font-semibold px-2.5 py-1 rounded-full ${
               isPastDue ? "bg-amber-200 text-amber-800" : isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
             }`}>
-              {isPastDue ? "⚠ Payment due" : isActive ? "Active" : org?.subscription_status ?? "—"}
+              {isPastDue ? "⚠ Payment due" : isActive ? "Active" : subscriptionStatus}
             </span>
             <span className="text-xs font-body text-cr-slate">{org?.max_staff ?? PLAN_LIMITS[currentPlan]} staff slots</span>
           </div>
