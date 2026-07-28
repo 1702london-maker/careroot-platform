@@ -97,7 +97,6 @@ export async function POST(req: NextRequest) {
         plan,
         stripe_customer_id: session.customer as string,
         stripe_subscription_id: String(session.subscription ?? ""),
-        subscription_status: "active",
         subscription_tier: plan,
         max_staff: PLAN_LIMITS[plan] ?? 10,
         billing_cycle: billingCycle,
@@ -117,14 +116,9 @@ export async function POST(req: NextRequest) {
       const priceId = sub.items.data[0]?.price.id;
       const plan = PLAN_MAP[priceId] ?? "seed";
       const billingCycle = CYCLE_MAP[priceId] ?? "monthly";
-      const statusMap: Record<string, string> = {
-        active: "active", past_due: "active", unpaid: "suspended", canceled: "canceled",
-      };
-
       await supabase.from("organisations").update({
         plan,
         subscription_tier: plan,
-        subscription_status: statusMap[sub.status] ?? sub.status,
         max_staff: PLAN_LIMITS[plan] ?? 10,
         billing_cycle: billingCycle,
       }).eq("stripe_subscription_id", sub.id);
@@ -139,7 +133,6 @@ export async function POST(req: NextRequest) {
       await supabase.from("organisations").update({
         plan: "seed",
         subscription_tier: "seed",
-        subscription_status: "canceled",
         max_staff: 10,
         stripe_subscription_id: null,
         billing_cycle: "monthly",
@@ -155,10 +148,6 @@ export async function POST(req: NextRequest) {
     case "invoice.payment_failed": {
       const invoice = event.data.object as Stripe.Invoice & { subscription?: string };
       if (invoice.subscription) {
-        await supabase.from("organisations").update({
-          subscription_status: "past_due",
-        }).eq("stripe_subscription_id", String(invoice.subscription));
-
         const { data: org } = await supabase.from("organisations")
           .select("email, name").eq("stripe_subscription_id", String(invoice.subscription)).single();
         if (org?.email) {
