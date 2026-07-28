@@ -16,7 +16,12 @@ export default async function CarerAppLayout({ children }: { children: React.Rea
     .single();
 
   const fullName = `${userRecord?.first_name ?? ""} ${userRecord?.last_name ?? ""}`.trim();
-  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const today = new Date().toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "Europe/London",
+  });
 
   return (
     <div className="min-h-screen bg-cr-ivory flex">
