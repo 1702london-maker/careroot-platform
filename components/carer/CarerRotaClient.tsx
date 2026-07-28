@@ -153,7 +153,7 @@ export function CarerRotaClient({ shifts, user }: Props) {
                       ) : (
                         <div className="flex-1 space-y-1">
                           {dayShifts.map(shift => (
-                            <Link key={shift.id} href={`/carer/shift/${shift.id}`}
+                            <Link key={shift.id} href={`/carer/shift/${shift.id}`} prefetch={false}
                               className="flex items-center gap-2 text-xs">
                               {statusIcon(shift.status)}
                               <span className="text-cr-charcoal font-medium">

@@ -64,6 +64,7 @@ export function CarerSidebar({ fullName, today }: Props) {
             <Link
               key={href}
               href={href}
+              prefetch={false}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-body font-medium transition-all duration-150 mb-0.5",
                 isActive ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -81,6 +82,7 @@ export function CarerSidebar({ fullName, today }: Props) {
           <p className="px-3 mb-2 text-xs font-body font-medium text-white/40 uppercase tracking-widest">Safety</p>
           <Link
             href={SOS_ITEM.href}
+            prefetch={false}
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-body font-medium transition-all duration-150",
               pathname === SOS_ITEM.href

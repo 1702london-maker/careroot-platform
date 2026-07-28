@@ -24,6 +24,7 @@ export function CarerBottomNav() {
           <Link
             key={href}
             href={href}
+            prefetch={false}
             className={cn(
               "flex-1 flex flex-col items-center gap-1 py-3 min-h-[56px] transition-colors",
               sos ? "text-cr-red" : active ? "text-cr-forest" : "text-cr-slate"

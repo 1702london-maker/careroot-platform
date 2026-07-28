@@ -34,7 +34,7 @@ export function CarerHome({ shifts: rawShifts }: { shifts: unknown[] }) {
 
       {/* Active shift banner */}
       {active && (
-        <Link href={`/carer/shift/${active.id}`}>
+        <Link href={`/carer/shift/${active.id}`} prefetch={false}>
           <div className="bg-cr-forest text-white rounded-2xl p-4 flex items-center justify-between shadow-md">
             <div>
               <p className="text-xs opacity-70 mb-0.5">Active Shift</p>
@@ -69,7 +69,7 @@ export function CarerHome({ shifts: rawShifts }: { shifts: unknown[] }) {
             const isActive = shift.status === "active";
             const isMissed = shift.status === "missed";
             return (
-              <Link key={shift.id} href={`/carer/shift/${shift.id}`}>
+              <Link key={shift.id} href={`/carer/shift/${shift.id}`} prefetch={false}>
                 <div className={`bg-white rounded-2xl p-4 border shadow-sm flex items-center gap-3 transition-all
                   ${isActive ? "border-cr-forest ring-2 ring-cr-forest/20" : "border-gray-100"}
                   ${isCompleted ? "opacity-60" : ""}

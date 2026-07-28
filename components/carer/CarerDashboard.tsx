@@ -51,7 +51,7 @@ export function CarerDashboard({ visits }: Props) {
               const isCurrent = visit.status === "in_progress";
 
               return (
-                <Link key={String(visit.id)} href={`/carer/visit/${visit.id}`}>
+                <Link key={String(visit.id)} href={`/carer/visit/${visit.id}`} prefetch={false}>
                   <CRCard className={cn(
                     "!p-4 transition-all",
                     isCurrent ? "border-cr-forest ring-2 ring-cr-forest" : "",

@@ -72,6 +72,7 @@ export default function OfflinePage() {
                 <Link
                   key={visit.id}
                   href={`/carer/visit/${visit.id}`}
+                  prefetch={false}
                   className="block bg-white/10 hover:bg-white/15 transition-colors rounded-card p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
