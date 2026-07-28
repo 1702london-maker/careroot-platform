@@ -1,4 +1,4 @@
-const CACHE_NAME = "careroot-v1";
+const CACHE_NAME = "careroot-v2";
 const OFFLINE_URL = "/carer/offline";
 
 const PRECACHE = [
