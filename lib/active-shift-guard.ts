@@ -110,8 +110,8 @@ export async function verifyActiveShiftAccess(
         ok: false,
         status: 401,
         error: radiusResult === false
-          ? "You are outside the approved radius for this client"
-          : "GPS location is required to submit this record for this client",
+          ? "You are outside the approved client radius. Careroot cannot save location-based care records away from the client. Contact your manager if this is incorrect."
+          : "Location is required for safety. Enable location to confirm you are with the client, or contact your manager.",
       };
     }
   }

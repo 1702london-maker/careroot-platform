@@ -13,6 +13,7 @@ import { HandoverForm } from "./forms/HandoverForm";
 import { TaskCompletionForm } from "./forms/TaskCompletionForm";
 import { OfflineSyncStatus } from "./OfflineSyncStatus";
 import { getOrCreateDeviceId } from "@/lib/device-id";
+import { LocationSafetyNotice } from "./LocationSafetyNotice";
 
 type Screen =
   | "home"
@@ -142,6 +143,8 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   return (
     <div className="space-y-4 pb-6">
       <OfflineSyncStatus />
+
+      <LocationSafetyNotice compact />
 
       {deviceId && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3">

@@ -158,7 +158,7 @@ export async function POST(req: Request) {
           gps_accuracy_metres: gps_accuracy_metres || null,
           server_timestamp: now,
         });
-        return NextResponse.json({ allowed: false, reason: "GPS location is required to start this shift" }, { status: 401 });
+        return NextResponse.json({ allowed: false, reason: "Location is required for safety. Enable location to confirm you are with the client, or contact your manager." }, { status: 401 });
       }
 
       const distMetres = haversineMetres(gps_lat, gps_lng, Number(client.gps_lat), Number(client.gps_lng));
@@ -178,7 +178,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({
       allowed: false,
-      reason: "You are outside the approved radius for this client's address. Move closer and try again, or contact your manager.",
+      reason: "You are outside the approved client radius. Move closer and try again, or contact your manager if this is incorrect.",
     }, { status: 401 });
   }
 

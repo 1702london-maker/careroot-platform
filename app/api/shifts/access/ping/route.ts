@@ -82,7 +82,7 @@ export async function POST(req: Request) {
 
     if (client?.gps_lat && client?.gps_lng) {
       if (gps_lat == null || gps_lng == null) {
-        return NextResponse.json({ active: false, reason: "GPS location is required during active shifts" }, { status: 401 });
+        return NextResponse.json({ active: false, reason: "Location is required during active shifts. Enable location or contact your manager." }, { status: 401 });
       }
       const dist = haversineMetres(gps_lat, gps_lng, Number(client.gps_lat), Number(client.gps_lng));
       withinApprovedRadius = dist <= (client.approved_radius_metres ?? 300);
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
       within_approved_radius: false,
       server_timestamp: now,
     });
-    return NextResponse.json({ active: false, reason: "Outside approved client radius" }, { status: 401 });
+    return NextResponse.json({ active: false, reason: "Outside approved client radius. Care logging is paused until you are back with the client or your manager reviews it." }, { status: 401 });
   }
 
   await supabase.from("shift_access_log").insert({

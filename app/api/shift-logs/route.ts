@@ -83,8 +83,8 @@ export async function POST(req: Request) {
     if (client?.gps_lat && client?.gps_lng && radiusResult !== true) {
       return NextResponse.json({
         error: radiusResult === false
-          ? "You are outside the approved radius for this client"
-          : "GPS location is required to log care for this client",
+          ? "You are outside the approved client radius. Careroot cannot save location-based care records away from the client. Contact your manager if this is incorrect."
+          : "Location is required for safety. Enable location to confirm you are with the client, or contact your manager.",
       }, { status: 401 });
     }
 

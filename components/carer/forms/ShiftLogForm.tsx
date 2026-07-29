@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, CheckCircle, Mic, Square, FileAudio } from "lucide-
 import { ClientPicker } from "./ClientPicker";
 import { submitOrQueue } from "@/lib/offline-queue";
 import { getOrCreateDeviceId } from "@/lib/device-id";
+import { LocationSafetyNotice } from "../LocationSafetyNotice";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -140,6 +141,8 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4">
+          <LocationSafetyNotice compact />
+
           <ClientPicker clients={clients} value={clientId} onChange={setClientId} />
 
           <div>

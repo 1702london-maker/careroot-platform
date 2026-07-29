@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Loader2, Lock, AlertCircle, MapPin, Copy, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getOrCreateDeviceId } from "@/lib/device-id";
+import { LocationSafetyNotice } from "./LocationSafetyNotice";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -144,6 +145,10 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
         </div>
 
         {/* Alerts */}
+        <div className="mb-4">
+          <LocationSafetyNotice compact />
+        </div>
+
         {noCredential && (
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2 text-sm text-amber-700">
             <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
@@ -242,7 +247,7 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
         )}
         {gpsStatus === "denied" && (
           <div className="flex items-center gap-2 text-xs text-amber-600 mb-3 justify-center">
-            <AlertCircle size={12} /> Location access denied - enable location for clients with GPS rules
+            <AlertCircle size={12} /> Location is required for safety. Enable location or contact your manager.
           </div>
         )}
 
