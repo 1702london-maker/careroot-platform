@@ -40,7 +40,16 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   const [deviceId, setDeviceId] = useState("");
 
   useEffect(() => {
-    setDeviceId(getOrCreateDeviceId());
+    const id = getOrCreateDeviceId();
+    setDeviceId(id);
+    fetch("/api/devices/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        imei: id,
+        device_model: navigator.userAgent,
+      }),
+    }).catch(() => {});
   }, []);
 
   const actions: { id: string; label: string; icon: React.ReactNode; color: string }[] = [

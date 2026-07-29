@@ -86,14 +86,33 @@ export default function DevicesPage() {
     else { const r = await res.json(); setError(r.error || "Failed to deactivate"); }
   }
 
+  async function handleApprove(device_id: string, staffName: string) {
+    if (!confirm(`Approve this device for ${staffName}?`)) return;
+    setError("");
+    setSuccess("");
+    const res = await fetch("/api/devices/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ device_id }),
+    });
+    if (res.ok) {
+      setSuccess("Device approved");
+      load();
+    } else {
+      const r = await res.json().catch(() => ({}));
+      setError(r.error || "Failed to approve device");
+    }
+  }
+
   const active = devices.filter(d => d.is_active);
-  const inactive = devices.filter(d => !d.is_active);
+  const pending = devices.filter(d => !d.is_active && !d.deactivated_at);
+  const inactive = devices.filter(d => !d.is_active && d.deactivated_at);
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <CRPageHeader
         title="Device Registration"
-        subtitle="Manage staff IMEI device registrations. Staff can only log in from their registered device."
+        subtitle="Approve staff Careroot Device IDs. Staff can only start care from an approved device."
         action={
           <button
             onClick={() => setShowForm(!showForm)}
@@ -137,16 +156,16 @@ export default function DevicesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-cr-charcoal mb-1">IMEI Number</label>
+              <label className="block text-sm font-medium text-cr-charcoal mb-1">Careroot Device ID</label>
               <input
                 required
                 type="text"
                 value={form.imei}
                 onChange={e => setForm(f => ({ ...f, imei: e.target.value }))}
-                placeholder="e.g. 352099001761481"
+                placeholder="e.g. WEB-AC04651CABAE8466"
                 className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-cr-forest/30 focus:border-cr-forest"
               />
-              <p className="mt-1 text-xs text-cr-slate">Staff can find their IMEI by dialling *#06# on their phone.</p>
+              <p className="mt-1 text-xs text-cr-slate">Staff see this ID inside the Careroot staff app. Approving it is a manager-only action.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-cr-charcoal mb-1">Device Model <span className="text-cr-slate font-normal">(optional)</span></label>
@@ -175,6 +194,40 @@ export default function DevicesPage() {
       ) : (
         <div className="space-y-6">
           <div>
+            <h3 className="text-sm font-semibold text-cr-charcoal mb-3">Pending Approval ({pending.length})</h3>
+            {pending.length === 0 ? (
+              <div className="bg-white border border-gray-100 rounded-xl p-8 text-center text-sm text-cr-slate">No pending device requests.</div>
+            ) : (
+              <div className="space-y-2">
+                {pending.map(device => {
+                  const staffName = device.staff ? `${device.staff.first_name} ${device.staff.last_name}` : "this staff member";
+                  return (
+                    <div key={device.id} className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center flex-shrink-0">
+                          <Smartphone size={18} className="text-amber-700" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-cr-charcoal">{staffName}</p>
+                          <p className="text-xs text-cr-slate break-all">Device ID: {device.imei}</p>
+                          {device.device_model && <p className="text-xs text-cr-slate truncate">Device: {device.device_model}</p>}
+                          <p className="text-xs text-cr-slate">Requested {new Date(device.registered_at).toLocaleString("en-GB")}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleApprove(device.id, staffName)}
+                        className="px-3 py-1.5 text-xs font-semibold text-white bg-cr-forest rounded-lg hover:bg-cr-sage transition-colors flex-shrink-0"
+                      >
+                        Approve
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div>
             <h3 className="text-sm font-semibold text-cr-charcoal mb-3">Active Devices ({active.length})</h3>
             {active.length === 0 ? (
               <div className="bg-white border border-gray-100 rounded-xl p-8 text-center text-sm text-cr-slate">No active devices registered.</div>
@@ -190,7 +243,7 @@ export default function DevicesPage() {
                         <p className="text-sm font-semibold text-cr-charcoal">
                           {device.staff ? `${device.staff.first_name} ${device.staff.last_name}` : "Unknown"}
                         </p>
-                        <p className="text-xs text-cr-slate">IMEI: {device.imei}{device.device_model ? ` · ${device.device_model}` : ""}</p>
+                        <p className="text-xs text-cr-slate">Device ID: {device.imei}{device.device_model ? ` · ${device.device_model}` : ""}</p>
                         <p className="text-xs text-cr-slate">
                           Registered {new Date(device.registered_at).toLocaleDateString("en-GB")}
                           {device.registered_by_user ? ` by ${device.registered_by_user.first_name} ${device.registered_by_user.last_name}` : ""}
@@ -222,7 +275,7 @@ export default function DevicesPage() {
                       <p className="text-sm font-medium text-cr-charcoal">
                         {device.staff ? `${device.staff.first_name} ${device.staff.last_name}` : "Unknown"}
                       </p>
-                      <p className="text-xs text-cr-slate">IMEI: {device.imei}{device.device_model ? ` · ${device.device_model}` : ""}</p>
+                      <p className="text-xs text-cr-slate">Device ID: {device.imei}{device.device_model ? ` · ${device.device_model}` : ""}</p>
                       <p className="text-xs text-cr-slate">
                         Deactivated {device.deactivated_at ? new Date(device.deactivated_at).toLocaleDateString("en-GB") : "—"}
                       </p>
@@ -237,3 +290,4 @@ export default function DevicesPage() {
     </div>
   );
 }
+
