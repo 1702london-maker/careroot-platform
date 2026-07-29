@@ -6,8 +6,8 @@ import { CRAvatar } from "@/components/ui/CRAvatar";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { riskVariant, statusVariant } from "@/lib/badge-variants";
 import { ClientTabs } from "@/components/clients/ClientTabs";
-import { formatDateUK, getDaysSince } from "@/lib/utils";
-import { Phone, MapPin, User2 } from "lucide-react";
+import { formatDateTimeUK, formatDateUK, getDaysSince } from "@/lib/utils";
+import { Clock, FileText, Phone, MapPin, User2 } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -35,6 +35,7 @@ export default async function ClientProfilePage({ params }: Props) {
     { data: emergencyToken },
     { data: familyAccess },
     { data: bodyMapInjuries },
+    { data: recentShiftLogs },
   ] = await Promise.all([
     supabase.from("care_plans").select("*").eq("client_id", id).order("created_at", { ascending: false }),
     supabase.from("medications").select("*").eq("client_id", id).eq("is_active", true).order("name"),
@@ -45,6 +46,7 @@ export default async function ClientProfilePage({ params }: Props) {
     supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("family_access").select("*, users!family_access_user_id_fkey(first_name, last_name, email, phone)").eq("client_id", id),
     supabase.from("body_map_injuries").select("*").eq("client_id", id).order("created_at"),
+    supabase.from("shift_logs").select("id, log_type, content, transcription, server_timestamp, within_approved_radius, users(first_name, last_name)").eq("client_id", id).order("server_timestamp", { ascending: false }).limit(10),
   ]);
 
   const address = client.address as Record<string, string> | null;
@@ -138,6 +140,38 @@ export default async function ClientProfilePage({ params }: Props) {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <FileText size={18} className="text-cr-forest" />
+          <h2 className="font-display text-lg font-semibold text-cr-charcoal">Recent Care Notes</h2>
+        </div>
+        {!recentShiftLogs?.length ? (
+          <p className="text-sm font-body text-cr-slate">No care notes have been saved for this client yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {recentShiftLogs.map((log) => {
+              const staff = log.users as unknown as { first_name: string; last_name: string } | null;
+              return (
+                <div key={log.id} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs font-body text-cr-slate">
+                      <Clock size={12} />
+                      <span>{formatDateTimeUK(log.server_timestamp)}</span>
+                      <span>by {staff ? `${staff.first_name} ${staff.last_name}` : "staff"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CRBadge variant="info">{String(log.log_type).replace(/_/g, " ")}</CRBadge>
+                      {log.within_approved_radius === true && <CRBadge variant="success">Location verified</CRBadge>}
+                    </div>
+                  </div>
+                  <p className="text-sm font-body leading-relaxed text-cr-charcoal">{log.content}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
