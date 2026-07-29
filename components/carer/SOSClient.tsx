@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AlertTriangle, Phone, CheckCircle, Clock, MapPin, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
@@ -31,6 +31,7 @@ export function SOSClient({ user, activeCheckin, contacts }: Props) {
   const [expectedFinish, setExpectedFinish] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkoutDone, setCheckoutDone] = useState(false);
+  const sosTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSOSTrigger = async () => {
     setSosTriggered(true);
@@ -42,6 +43,24 @@ export function SOSClient({ user, activeCheckin, contacts }: Props) {
       sos_triggered_at: new Date().toISOString(),
       alert_sent_at: new Date().toISOString(),
     });
+  };
+
+  const startSosHold = () => {
+    if (sosTriggered || sosTimerRef.current) return;
+    setHolding(true);
+    sosTimerRef.current = setTimeout(() => {
+      sosTimerRef.current = null;
+      setHolding(false);
+      void handleSOSTrigger();
+    }, 3000);
+  };
+
+  const cancelSosHold = () => {
+    if (sosTimerRef.current) {
+      clearTimeout(sosTimerRef.current);
+      sosTimerRef.current = null;
+    }
+    setHolding(false);
   };
 
   const handleCheckIn = async () => {
@@ -94,10 +113,11 @@ export function SOSClient({ user, activeCheckin, contacts }: Props) {
               <h2 className="font-display text-xl font-semibold text-cr-charcoal mb-1">Emergency SOS</h2>
               <p className="text-sm text-cr-slate mb-6">Hold the button for 3 seconds to alert your manager. Your location will be shared.</p>
               <button
-                onMouseDown={() => setHolding(true)}
-                onMouseUp={() => { if (holding) { setHolding(false); handleSOSTrigger(); } }}
-                onTouchStart={() => setHolding(true)}
-                onTouchEnd={() => { if (holding) { setHolding(false); handleSOSTrigger(); } }}
+                onMouseDown={startSosHold}
+                onMouseUp={cancelSosHold}
+                onMouseLeave={cancelSosHold}
+                onTouchStart={startSosHold}
+                onTouchEnd={cancelSosHold}
                 className={`w-32 h-32 rounded-full mx-auto flex items-center justify-center font-bold text-white text-lg
                   transition-all duration-200 shadow-lg select-none
                   ${holding ? "bg-red-700 scale-95" : "bg-cr-red hover:bg-red-700"}`}

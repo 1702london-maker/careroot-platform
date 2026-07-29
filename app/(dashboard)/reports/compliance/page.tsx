@@ -31,7 +31,7 @@ function one<T>(value: T | T[] | null | undefined): T | null {
 
 type DbsRow = { carer: string; compliance_item: string; expiry: string; days: number | null; status: string };
 type CarePlanRow = { client: string; status: string; review_date: string; days_to_review: number | null; approved: string };
-type EvidenceRow = { framework: string; statement_ref: string; status: string; count: number };
+type EvidenceRow = { framework: string; statement: string; status: string; count: number };
 
 export default function ComplianceReportsPage() {
   const supabase = createClient();
@@ -55,12 +55,12 @@ export default function ComplianceReportsPage() {
 
       const [incidentRes, complaintRes, medRes, complianceRes, carePlanRes, evidenceRes, safeguardingRes] = await Promise.all([
         supabase.from("incidents").select("*").eq("organisation_id", u.organisation_id).gte("created_at", start.toISOString()),
-        supabase.from("complaints").select("*").eq("organisation_id", u.organisation_id).gte("received_date", start.toISOString().split("T")[0]),
-        supabase.from("medication_records").select("status").eq("organisation_id", u.organisation_id).gte("created_at", start.toISOString()),
-        supabase.from("staff_compliance").select("compliance_item, status, valid_until, staff:users!staff_compliance_staff_id_fkey(first_name,last_name)").eq("organisation_id", u.organisation_id),
+        supabase.from("complaints").select("*").eq("organisation_id", u.organisation_id).gte("created_at", start.toISOString()),
+        supabase.from("medication_records").select("status, clients!inner(organisation_id)").eq("clients.organisation_id", u.organisation_id).gte("created_at", start.toISOString()),
+        supabase.from("staff_compliance").select("compliance_item, status, valid_until, staff:users!inner(first_name,last_name,organisation_id)").eq("staff.organisation_id", u.organisation_id),
         supabase.from("care_plans").select("status, is_current, review_date, approved_at, clients(first_name,last_name)").eq("organisation_id", u.organisation_id),
-        supabase.from("compliance_evidence").select("framework, statement_ref, status").eq("organisation_id", u.organisation_id),
-        supabase.from("safeguarding_concerns").select("status").eq("organisation_id", u.organisation_id),
+        supabase.from("compliance_evidence").select("framework, category, subcategory, status").eq("organisation_id", u.organisation_id),
+        supabase.from("safeguarding_concerns").select("status, staff:users!inner(organisation_id)").eq("staff.organisation_id", u.organisation_id),
       ]);
 
       const iMap: Record<string, { low: number; medium: number; high: number; critical: number }> = {};
@@ -73,8 +73,8 @@ export default function ComplianceReportsPage() {
       setIncidentData(Object.entries(iMap).map(([month, d]) => ({ month, ...d })));
 
       const cMap: Record<string, { received: number; resolved: number }> = {};
-      (complaintRes.data ?? []).forEach((c: { received_date: string; status: string }) => {
-        const key = monthKey(c.received_date);
+      (complaintRes.data ?? []).forEach((c: { created_at: string; status: string }) => {
+        const key = monthKey(c.created_at);
         if (!cMap[key]) cMap[key] = { received: 0, resolved: 0 };
         cMap[key].received++;
         if (["resolved", "closed"].includes(c.status)) cMap[key].resolved++;
@@ -116,9 +116,10 @@ export default function ComplianceReportsPage() {
       }));
 
       const evMap: Record<string, EvidenceRow> = {};
-      (evidenceRes.data ?? []).forEach((e: { framework?: string; statement_ref?: string; status?: string }) => {
-        const key = `${e.framework ?? "cqc"}:${e.statement_ref ?? "unmapped"}:${e.status ?? "unknown"}`;
-        evMap[key] = evMap[key] ?? { framework: e.framework ?? "cqc", statement_ref: e.statement_ref ?? "unmapped", status: e.status ?? "unknown", count: 0 };
+      (evidenceRes.data ?? []).forEach((e: { framework?: string; category?: string; subcategory?: string; status?: string }) => {
+        const statement = [e.category, e.subcategory].filter(Boolean).join(" / ") || "unmapped";
+        const key = `${e.framework ?? "cqc"}:${statement}:${e.status ?? "unknown"}`;
+        evMap[key] = evMap[key] ?? { framework: e.framework ?? "cqc", statement, status: e.status ?? "unknown", count: 0 };
         evMap[key].count++;
       });
       setEvidenceRows(Object.values(evMap));
@@ -190,7 +191,7 @@ export default function ComplianceReportsPage() {
       <TableReport title="DBS Status Report" subtitle="Live DBS compliance from staff records" rows={dbsRows} filename="careroot-dbs-status" columns={["carer", "compliance_item", "expiry", "days", "status"]} />
       <TableReport title="Training Compliance" subtitle="Live training and staff compliance records" rows={trainingRows} filename="careroot-training-compliance" columns={["carer", "compliance_item", "expiry", "days", "status"]} />
       <TableReport title="Care Plan Compliance" subtitle="Approved and review-due status by client" rows={carePlanRows} filename="careroot-care-plan-compliance" columns={["client", "status", "review_date", "days_to_review", "approved"]} />
-      <TableReport title="CQC Evidence Summary" subtitle="Evidence counts by framework, statement and status" rows={evidenceRows} filename="careroot-cqc-evidence" columns={["framework", "statement_ref", "status", "count"]} />
+      <TableReport title="CQC Evidence Summary" subtitle="Evidence counts by framework, statement and status" rows={evidenceRows} filename="careroot-cqc-evidence" columns={["framework", "statement", "status", "count"]} />
       <TableReport title="Safeguarding Summary" subtitle="Open, acknowledged and resolved safeguarding concerns" rows={safeguardingRows} filename="careroot-safeguarding-summary" columns={["status", "count"]} />
     </div>
   );

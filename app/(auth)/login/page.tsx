@@ -64,9 +64,9 @@ export default function LoginPage() {
       : { data: null };
     const profile = profileResult.data;
 
-    if (profile?.role === "family") router.push("/family/portal");
-    else if (profile?.role === "carer") router.push("/carer");
-    else if (profile?.role === "client") router.push("/client/portal");
+    if (profile?.role === "family") router.push(safeRedirect.startsWith("/family") ? safeRedirect : "/family/portal");
+    else if (profile?.role === "carer") router.push(safeRedirect.startsWith("/carer") ? safeRedirect : "/carer");
+    else if (profile?.role === "client") router.push(safeRedirect.startsWith("/client") ? safeRedirect : "/client/portal");
     else router.push(safeRedirect);
 
     router.refresh();
@@ -85,7 +85,7 @@ export default function LoginPage() {
             Sign in to your Careroot dashboard
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-sm font-body font-medium text-[#1C1C1E] mb-1.5">
                 Email address
