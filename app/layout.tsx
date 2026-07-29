@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
-import { PWAInstallManager } from "@/components/PWAInstallManager";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -45,7 +44,6 @@ export default function RootLayout({
     <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
       <body className="antialiased font-body bg-cr-ivory text-cr-charcoal">
         {children}
-        <PWAInstallManager />
       </body>
     </html>
   );

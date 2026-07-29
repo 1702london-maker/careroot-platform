@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { PWAInstallManager } from "@/components/PWAInstallManager";
 
 export default function HomePage() {
   return (
@@ -22,6 +23,7 @@ export default function HomePage() {
       {/* ── HERO ── */}
       <section className="bg-[#F9F7F4] pt-24 pb-20 px-4 md:px-6">
         <div className="max-w-5xl mx-auto text-center">
+          <PWAInstallManager />
           <div className="inline-flex items-center gap-2 bg-[#E8F5EE] text-[#1A3C2E] text-xs font-semibold rounded-full px-4 py-1.5 mb-8 border border-[#1A3C2E]/10">
             <Shield size={11} />
             Built for CQC 2026 Single Assessment Framework
