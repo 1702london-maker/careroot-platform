@@ -12,6 +12,7 @@ import { SafeguardingForm } from "./forms/SafeguardingForm";
 import { HandoverForm } from "./forms/HandoverForm";
 import { TaskCompletionForm } from "./forms/TaskCompletionForm";
 import { OfflineSyncStatus } from "./OfflineSyncStatus";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 type Screen =
   | "home"
@@ -89,7 +90,7 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         shift_id: shift.id,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
         gps_lat: gpsLat,
         gps_lng: gpsLng,
         gps_accuracy_metres: gpsAccuracy,

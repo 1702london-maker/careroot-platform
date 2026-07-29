@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CRCard } from "@/components/ui/CRCard";
 import { Clock, RefreshCw } from "lucide-react";
 import { submitOrQueue } from "@/lib/offline-queue";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 type Client = { id: string; first_name: string; last_name: string; date_of_birth?: string };
 type Medication = {
@@ -122,7 +123,7 @@ export function CarerEmarClient({ clients, medications, initialAdministrations, 
       outcome_notes: logForm.notes,
       gps_lat: gpsLat,
       gps_lng: gpsLng,
-      imei: localStorage.getItem("careroot_device_id"),
+      imei: getOrCreateDeviceId(),
     });
 
     setSaving(false);

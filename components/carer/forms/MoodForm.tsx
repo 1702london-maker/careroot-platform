@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
 import { submitOrQueue } from "@/lib/offline-queue";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -63,7 +64,7 @@ export function MoodForm({ shift, clients, carePlans, onBack }: Props) {
         shift_id: shift.id, client_id: clientId, mood_term: selectedMood,
         mood_category: mood?.category || "custom", context_notes: contextNotes, triggers_activated: triggersActivated,
         gps_lat: gpsLat, gps_lng: gpsLng,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
       });
     setSubmitting(false);
     if (!result.ok) {

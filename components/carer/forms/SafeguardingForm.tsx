@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle, Shield, AlertTriangle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
 import { submitOrQueue } from "@/lib/offline-queue";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -39,7 +40,7 @@ export function SafeguardingForm({ shift, clients, onBack }: Props) {
         shift_id: shift.id, client_id: clientId,
         concern_description: description, bypass_line_manager: bypassLineManager,
         gps_lat: gpsLat, gps_lng: gpsLng,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
       });
 
     setSubmitting(false);

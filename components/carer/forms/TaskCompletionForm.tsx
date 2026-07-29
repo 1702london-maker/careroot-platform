@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, CheckCircle, Loader2, AlertTriangle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
 import { submitOrQueue } from "@/lib/offline-queue";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -45,7 +46,7 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
         is_authorised: isAuthorised,
         gps_lat: gpsLat,
         gps_lng: gpsLng,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
       });
     if (!result.ok) {
       setViolationError(result.error || "Could not save task completion");
@@ -67,7 +68,7 @@ export function TaskCompletionForm({ shift, clients, carePlans, onBack }: Props)
         requested_task: violation.task,
         requested_by: violation.requestedBy,
         worker_response: violation.response,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
       });
     if (!result.ok) {
       setViolationError(result.error || "Could not submit boundary violation");

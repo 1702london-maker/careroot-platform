@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle, Mic, Square, FileAudio } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
 import { submitOrQueue } from "@/lib/offline-queue";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -111,7 +112,7 @@ export function ShiftLogForm({ shift, clients, onBack }: Props) {
         gps_lat: gpsLat,
         gps_lng: gpsLng,
         within_approved_radius: withinRadius,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
       });
 
     setSubmitting(false);

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
 import { submitOrQueue } from "@/lib/offline-queue";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -50,7 +51,7 @@ export function HandoverForm({ shift, clients, onBack }: Props) {
         triggers_activated_this_shift: triggersThisShift,
         gps_lat: gpsLat,
         gps_lng: gpsLng,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
       });
     setSubmitting(false);
     if (!result.ok) {

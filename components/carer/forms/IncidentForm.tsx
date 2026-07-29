@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { ClientPicker } from "./ClientPicker";
 import { submitOrQueue } from "@/lib/offline-queue";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -60,7 +61,7 @@ export function IncidentForm({ shift, clients, onBack }: Props) {
         deescalation_strategies_used: deescalation,
         staff_wellbeing_checked: staffWellbeing,
         gps_lat: gpsLat, gps_lng: gpsLng,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
       });
 
     setSubmitting(false);

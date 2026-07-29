@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, Lock, AlertCircle, MapPin, Copy, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -27,13 +28,7 @@ export function ShiftLoginScreen({ shift, credential, clients, carePlans, staffI
 
   // Generate or retrieve a stable browser device ID
   useEffect(() => {
-    let id = localStorage.getItem("careroot_device_id");
-    if (!id) {
-      id = "WEB-" + Array.from(crypto.getRandomValues(new Uint8Array(8)))
-        .map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
-      localStorage.setItem("careroot_device_id", id);
-    }
-    setDeviceId(id);
+    setDeviceId(getOrCreateDeviceId());
   }, []);
 
   function copyDeviceId() {

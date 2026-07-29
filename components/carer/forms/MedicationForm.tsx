@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ClientPicker } from "./ClientPicker";
 import { submitOrQueue } from "@/lib/offline-queue";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 interface Props {
   shift: Record<string, unknown>;
@@ -85,7 +86,7 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
         outcome_notes: notes,
         gps_lat: gpsLat,
         gps_lng: gpsLng,
-        imei: localStorage.getItem("careroot_device_id"),
+        imei: getOrCreateDeviceId(),
       });
 
     setSubmitting(false);
