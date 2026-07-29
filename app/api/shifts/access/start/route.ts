@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       shift_id, staff_id: user.id, action_type: "access_denied_no_imei",
       gps_lat: gps_lat || null, gps_lng: gps_lng || null, server_timestamp: now,
     });
-    return NextResponse.json({ allowed: false, reason: "Device identifier required" }, { status: 401 });
+    return NextResponse.json({ allowed: false, reason: "This device has no Careroot Device ID yet. Reopen the app, then contact your manager if it continues." }, { status: 401 });
   }
   {
     const { data: device } = await supabase
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
         gps_lat: gps_lat || null, gps_lng: gps_lng || null,
         server_timestamp: now,
       });
-      return NextResponse.json({ allowed: false, reason: "Device not registered" }, { status: 401 });
+      return NextResponse.json({ allowed: false, reason: "This device is not approved for your staff account. Contact your manager to register this Careroot Device ID." }, { status: 401 });
     }
   }
 

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
   const { shift_id, imei, gps_lat, gps_lng, gps_accuracy_metres } = await req.json();
   if (!shift_id) return NextResponse.json({ error: "shift_id required" }, { status: 400 });
-  if (!imei) return NextResponse.json({ active: false, reason: "Device identifier required" }, { status: 401 });
+  if (!imei) return NextResponse.json({ active: false, reason: "This device has no Careroot Device ID yet. Reopen the app, then contact your manager if it continues." }, { status: 401 });
 
   const now = new Date().toISOString();
 
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     .single();
 
   if (!device || !device.is_active) {
-    return NextResponse.json({ active: false, reason: "Device not registered or inactive" }, { status: 401 });
+    return NextResponse.json({ active: false, reason: "This device is not approved for your staff account. Contact your manager to register this Careroot Device ID." }, { status: 401 });
   }
 
   // Check credentials still valid

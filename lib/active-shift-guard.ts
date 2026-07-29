@@ -45,7 +45,7 @@ export async function verifyActiveShiftAccess(
   const cleanImei = String(params.imei || "").replace(/\s/g, "");
 
   if (!cleanImei) {
-    return { ok: false, status: 401, error: "Device identifier required" };
+    return { ok: false, status: 401, error: "This device has no Careroot Device ID yet. Reopen the app, then contact your manager if it continues." };
   }
 
   const [{ data: credential }, { data: shift }, { data: device }] = await Promise.all([
@@ -74,7 +74,7 @@ export async function verifyActiveShiftAccess(
   }
 
   if (!device || !device.is_active) {
-    return { ok: false, status: 401, error: "Device not registered or inactive" };
+    return { ok: false, status: 401, error: "This device is not approved for your staff account. Contact your manager to register this Careroot Device ID." };
   }
 
   const shiftClientIds = (shift.client_ids as string[] | null) ?? [];

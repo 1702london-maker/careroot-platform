@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
-import { FileText, Pill, UtensilsCrossed, Heart, AlertTriangle, Shield, ArrowRightLeft, LogOut, Loader2 } from "lucide-react";
+import { FileText, Pill, UtensilsCrossed, Heart, AlertTriangle, Shield, ArrowRightLeft, LogOut, Loader2, Smartphone } from "lucide-react";
 import { ShiftLogForm } from "./forms/ShiftLogForm";
 import { MedicationForm } from "./forms/MedicationForm";
 import { NutritionForm } from "./forms/NutritionForm";
@@ -37,6 +37,11 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   const [ending, setEnding] = useState(false);
   const [endError, setEndError] = useState("");
   const [endWellbeing, setEndWellbeing] = useState("");
+  const [deviceId, setDeviceId] = useState("");
+
+  useEffect(() => {
+    setDeviceId(getOrCreateDeviceId());
+  }, []);
 
   const actions: { id: string; label: string; icon: React.ReactNode; color: string }[] = [
     { id: "log", label: "Shift Log", icon: <FileText size={22} />, color: "bg-blue-50 text-blue-700" },
@@ -128,6 +133,23 @@ export function ShiftActiveHub({ shift, clients, carePlans, staffId }: Props) {
   return (
     <div className="space-y-4 pb-6">
       <OfflineSyncStatus />
+
+      {deviceId && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3">
+          <div className="flex items-start gap-2">
+            <Smartphone size={16} className="mt-0.5 flex-shrink-0 text-amber-700" />
+            <div>
+              <p className="text-xs font-bold text-amber-900">Careroot Device ID</p>
+              <code className="mt-1 block break-all rounded-lg bg-white px-2 py-1 text-[11px] font-mono text-cr-charcoal">
+                {deviceId}
+              </code>
+              <p className="mt-1 text-[11px] leading-relaxed text-amber-800">
+                If this device is blocked, send this ID to your manager so they can approve it once.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Shift header */}
       <div className="bg-cr-forest text-white rounded-2xl p-4">

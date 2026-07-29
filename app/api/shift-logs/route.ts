@@ -43,7 +43,7 @@ export async function POST(req: Request) {
   }
 
   if (!imei) {
-    return NextResponse.json({ error: "Device identifier required" }, { status: 401 });
+    return NextResponse.json({ error: "This device has no Careroot Device ID yet. Reopen the app, then contact your manager if it continues." }, { status: 401 });
   }
 
   const { data: device } = await supabase
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     .single();
 
   if (!device || !device.is_active) {
-    return NextResponse.json({ error: "Device not registered or inactive" }, { status: 401 });
+    return NextResponse.json({ error: "This device is not approved for your staff account. Contact your manager to register this Careroot Device ID." }, { status: 401 });
   }
 
   if (client_id && !((shift.client_ids as string[] | null) ?? []).includes(client_id)) {
