@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, Phone, Clock } from "lucide-react";
 import { formatDateUK } from "@/lib/utils";
 
@@ -19,8 +19,8 @@ interface PatientData {
   last_updated: string;
 }
 
-export default function EmergencyAccessPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = use(params);
+export default function EmergencyAccessPage({ params }: { params: { token: string } }) {
+  const { token } = params;
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [attempts, setAttempts] = useState(0);
