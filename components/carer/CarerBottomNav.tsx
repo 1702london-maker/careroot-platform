@@ -17,7 +17,7 @@ export function CarerBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-40">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-[70]">
       {NAV_ITEMS.map(({ href, icon: Icon, label, sos }) => {
         const active = pathname === href || pathname.startsWith(href + "/");
         return (

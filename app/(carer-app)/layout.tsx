@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { CarerSidebar } from "@/components/carer/CarerSidebar";
 import { CarerBottomNav } from "@/components/carer/CarerBottomNav";
 import { CarerTopBar } from "@/components/carer/CarerTopBar";
+import { CarerMobileHeader } from "@/components/carer/CarerMobileHeader";
 
 export default async function CarerAppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -29,13 +30,7 @@ export default async function CarerAppLayout({ children }: { children: React.Rea
       <CarerSidebar fullName={fullName} today={today} />
 
       {/* Mobile header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-cr-forest text-white flex items-center justify-between px-4 py-3 border-b border-white/10">
-        <div>
-          <p className="text-[10px] font-body text-white/50 uppercase tracking-widest">Staff Portal</p>
-          <p className="font-display font-semibold text-base leading-tight">{fullName}</p>
-        </div>
-        <p className="text-xs font-body text-white/60">{today}</p>
-      </header>
+      <CarerMobileHeader fullName={fullName} today={today} />
 
       {/* Main content */}
       <main className="md:ml-64 flex-1 pt-16 md:pt-0 pb-20 md:pb-0 min-h-screen">
