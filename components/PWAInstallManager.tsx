@@ -69,28 +69,28 @@ export function PWAInstallManager() {
   if (installed || dismissed) return null;
 
   return (
-    <div className="fixed left-3 right-3 bottom-20 z-[60] md:left-auto md:right-5 md:bottom-5 md:w-80">
-      <div className="rounded-2xl border border-cr-forest/20 bg-white shadow-xl p-3">
-        <div className="flex items-start gap-3">
+    <div className="fixed right-3 top-[76px] z-[60] md:right-6">
+      <div className="rounded-full border border-cr-forest/15 bg-white/95 p-1.5 shadow-lg backdrop-blur">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={install}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-cr-forest px-4 py-3 text-sm font-bold text-white"
+            className="flex items-center justify-center gap-1.5 rounded-full bg-cr-forest px-3 py-1.5 text-xs font-bold text-white"
           >
-            <Download size={16} />
+            <Download size={13} />
             Install app
           </button>
           <button
             type="button"
             onClick={() => setDismissed(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 text-cr-slate"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-cr-slate"
             aria-label="Dismiss install prompt"
           >
-            <X size={16} />
+            <X size={13} />
           </button>
         </div>
         {manualHelp && (
-          <p className="mt-2 text-xs font-body text-cr-slate">
+          <p className="absolute right-0 mt-2 w-56 rounded-lg border border-gray-200 bg-white p-2 text-xs font-body text-cr-slate shadow-lg">
             If no prompt opens, use Chrome menu then Add to Home screen.
           </p>
         )}

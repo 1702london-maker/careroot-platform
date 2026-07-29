@@ -3,7 +3,7 @@
   "short_name": "Careroot",
   "description": "UK Health & Social Care Management",
   "id": "/careroot-staff-app",
-  "start_url": "/login?redirectTo=/carer",
+  "start_url": "/login?install=1&redirectTo=/carer",
   "scope": "/",
   "display": "standalone",
   "background_color": "#F9F7F4",
