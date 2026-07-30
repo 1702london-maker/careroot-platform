@@ -56,14 +56,62 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && pathname.startsWith("/superadmin/")) {
+  if (user && (
+    pathname.startsWith("/superadmin/") ||
+    pathname.startsWith("/carer") ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/clients") ||
+    pathname.startsWith("/staff") ||
+    pathname.startsWith("/reports") ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/rota") ||
+    pathname.startsWith("/billing") ||
+    pathname.startsWith("/compliance") ||
+    pathname.startsWith("/complaints") ||
+    pathname.startsWith("/nutrition") ||
+    pathname.startsWith("/visits") ||
+    pathname.startsWith("/family/dashboard") ||
+    pathname.startsWith("/family/client")
+  )) {
     const { data: profile } = await supabase
       .from("users")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "superadmin") {
+    const role = profile?.role as string | undefined;
+
+    if (pathname.startsWith("/superadmin/") && role !== "superadmin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    // Carer app — only carers and senior carers
+    if (pathname.startsWith("/carer") && !["carer", "senior_carer"].includes(role ?? "")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    // Dashboard/admin routes — carers must not access
+    const DASHBOARD_ROOTS = [
+      "/dashboard", "/clients", "/staff", "/reports",
+      "/settings", "/rota", "/billing", "/compliance",
+      "/complaints", "/nutrition", "/visits",
+    ];
+    if (DASHBOARD_ROOTS.some((p) => pathname.startsWith(p)) && ["carer", "senior_carer"].includes(role ?? "")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/carer/home";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    // Family portal — family_member role only
+    if ((pathname.startsWith("/family/dashboard") || pathname.startsWith("/family/client")) &&
+        !["family_member", "org_admin", "superadmin"].includes(role ?? "")) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       url.search = "";

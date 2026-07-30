@@ -18,6 +18,10 @@ export default async function CarerAppLayout({ children }: { children: React.Rea
     .eq("id", user.id)
     .single();
 
+  if (!userRecord || !["carer", "senior_carer"].includes(userRecord.role)) {
+    redirect("/dashboard");
+  }
+
   const fullName = `${userRecord?.first_name ?? ""} ${userRecord?.last_name ?? ""}`.trim();
   const today = new Date().toLocaleDateString("en-GB", {
     weekday: "long",

@@ -67,10 +67,13 @@ export async function POST(req: Request) {
   let clientName = "the client";
   let radiusResult: boolean | null = null;
   if (client_id) {
+    // Also scope client fetch to the staff member's own org to prevent cross-org log attachment.
+    const { data: staffMeta } = await supabase.from("users").select("organisation_id").eq("id", user.id).single();
     const { data: client } = await supabase
       .from("clients")
       .select("organisation_id, first_name, last_name, gps_lat, gps_lng, approved_radius_metres")
       .eq("id", client_id)
+      .eq("organisation_id", staffMeta?.organisation_id ?? "")
       .single();
     organisationId = client?.organisation_id ?? null;
     if (client) clientName = `${client.first_name} ${client.last_name}`;

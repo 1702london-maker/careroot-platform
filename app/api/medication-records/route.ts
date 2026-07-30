@@ -50,7 +50,12 @@ export async function POST(req: Request) {
     .from("medication_schedules")
     .select("is_controlled, is_prn, current_stock")
     .eq("id", medication_schedule_id)
+    .eq("client_id", client_id)
     .single();
+
+  if (!schedule) {
+    return NextResponse.json({ error: "Medication schedule not found for this client." }, { status: 404 });
+  }
 
   if (schedule?.is_prn && outcome === "administered" && !String(prn_reason || "").trim()) {
     return NextResponse.json(
