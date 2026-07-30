@@ -53,5 +53,5 @@ export async function updateSession(request: NextRequest) {
     // Network or unexpected error — treat as unauthenticated, don't crash middleware
   }
 
-  return { supabaseResponse, user };
+  return { supabaseResponse, user, supabase };
 }

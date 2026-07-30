@@ -19,9 +19,11 @@ function buildPlanMap(): Record<string, string> {
     ["STRIPE_SEED_PRICE_ID", "seed"],
     ["STRIPE_GROW_PRICE_ID", "grow"],
     ["STRIPE_SCALE_PRICE_ID", "scale"],
+    ["STRIPE_ENTERPRISE_PRICE_ID", "enterprise"],
     ["STRIPE_SEED_ANNUAL_PRICE_ID", "seed"],
     ["STRIPE_GROW_ANNUAL_PRICE_ID", "grow"],
     ["STRIPE_SCALE_ANNUAL_PRICE_ID", "scale"],
+    ["STRIPE_ENTERPRISE_ANNUAL_PRICE_ID", "enterprise"],
   ] as const;
   for (const [envKey, plan] of pairs) {
     const id = process.env[envKey];
@@ -33,8 +35,8 @@ function buildPlanMap(): Record<string, string> {
 // Map price IDs → billing cycle
 function buildCycleMap(): Record<string, string> {
   const map: Record<string, string> = {};
-  const monthly = ["STRIPE_SEED_PRICE_ID", "STRIPE_GROW_PRICE_ID", "STRIPE_SCALE_PRICE_ID"];
-  const annual = ["STRIPE_SEED_ANNUAL_PRICE_ID", "STRIPE_GROW_ANNUAL_PRICE_ID", "STRIPE_SCALE_ANNUAL_PRICE_ID"];
+  const monthly = ["STRIPE_SEED_PRICE_ID", "STRIPE_GROW_PRICE_ID", "STRIPE_SCALE_PRICE_ID", "STRIPE_ENTERPRISE_PRICE_ID"];
+  const annual = ["STRIPE_SEED_ANNUAL_PRICE_ID", "STRIPE_GROW_ANNUAL_PRICE_ID", "STRIPE_SCALE_ANNUAL_PRICE_ID", "STRIPE_ENTERPRISE_ANNUAL_PRICE_ID"];
   for (const k of monthly) { const v = process.env[k]; if (v) map[v] = "monthly"; }
   for (const k of annual) { const v = process.env[k]; if (v) map[v] = "annual"; }
   return map;
@@ -113,7 +115,11 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.updated": {
       const sub = event.data.object as Stripe.Subscription;
       const priceId = sub.items.data[0]?.price.id;
-      const plan = PLAN_MAP[priceId] ?? "seed";
+      const plan = PLAN_MAP[priceId];
+      if (!plan) {
+        console.error("Stripe webhook unknown subscription price:", priceId);
+        return NextResponse.json({ error: "Unknown subscription price" }, { status: 400 });
+      }
       const billingCycle = CYCLE_MAP[priceId] ?? "monthly";
       await supabase.from("organisations").update({
         plan,
@@ -171,13 +177,29 @@ async function handleAddonPurchase(
   const { data: org } = await supabase.from("organisations").select("name, email").eq("id", orgId).single();
 
   // Create addon record
-  await supabase.from("organisation_addons").insert({
+  const stripeSubscriptionId = session.subscription ? String(session.subscription) : null;
+  const stripePaymentIntentId = session.payment_intent ? String(session.payment_intent) : null;
+  let existingQuery = supabase
+    .from("organisation_addons")
+    .select("id")
+    .eq("organisation_id", orgId)
+    .eq("addon_type", addonType);
+
+  existingQuery = stripeSubscriptionId
+    ? existingQuery.eq("stripe_subscription_id", stripeSubscriptionId)
+    : existingQuery.eq("stripe_payment_intent_id", stripePaymentIntentId ?? "");
+
+  const { data: existingAddon } = await existingQuery.maybeSingle();
+
+  if (!existingAddon) {
+    await supabase.from("organisation_addons").insert({
     organisation_id: orgId,
     addon_type: addonType,
     status: "active",
-    stripe_subscription_id: session.subscription ? String(session.subscription) : null,
-    stripe_payment_intent_id: session.payment_intent ? String(session.payment_intent) : null,
-  });
+    stripe_subscription_id: stripeSubscriptionId,
+    stripe_payment_intent_id: stripePaymentIntentId,
+    });
+  }
 
   // White label addons — enable white label on org
   if (["white_label_basic", "white_label_full", "white_label_enterprise"].includes(addonType)) {

@@ -1,8 +1,15 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
+import { escapeHtml } from "@/lib/html";
+import { getRequestKey, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const limit = rateLimit(getRequestKey(req, "gp-connect"), 5, 60 * 1000);
+  if (!limit.allowed) {
+    return Response.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const body = await req.json();
   const { name, email, organisation, clients, notes, source } = body;
 
@@ -23,18 +30,23 @@ export async function POST(req: NextRequest) {
     await resend.emails.send({
       from: "Careroot <onboarding@careroot.co.uk>",
       to: ["onboarding@careroot.co.uk"],
-      subject: `GP Connect Interest: ${name ?? email} — ${organisation ?? "No org"}`,
-      html: `<p><strong>Name:</strong> ${name ?? "—"}</p><p><strong>Email:</strong> ${email}</p><p><strong>Organisation:</strong> ${organisation ?? "—"}</p><p><strong>Clients:</strong> ${clients ?? "—"}</p><p><strong>Notes:</strong> ${notes ?? "—"}</p><p><strong>Source:</strong> ${source ?? "marketing"}</p>`,
+      subject: `GP Connect Interest: ${String(name ?? email).slice(0, 80)} - ${String(organisation ?? "No org").slice(0, 80)}`,
+      html: [
+        `<p><strong>Name:</strong> ${escapeHtml(name || "-")}</p>`,
+        `<p><strong>Email:</strong> ${escapeHtml(email)}</p>`,
+        `<p><strong>Organisation:</strong> ${escapeHtml(organisation || "-")}</p>`,
+        `<p><strong>Clients:</strong> ${escapeHtml(clients || "-")}</p>`,
+        `<p><strong>Notes:</strong> ${escapeHtml(notes || "-")}</p>`,
+        `<p><strong>Source:</strong> ${escapeHtml(source || "marketing")}</p>`,
+      ].join(""),
     });
 
-    if (email) {
-      await resend.emails.send({
-        from: "Careroot <onboarding@careroot.co.uk>",
-        to: [email],
-        subject: "You're on the GP Connect waitlist — Careroot",
-        html: `<p>Hi ${name ?? "there"},</p><p>Thank you for registering your interest in GP Connect. We'll notify you as soon as it's available for your organisation.</p><p>Estimated launch: <strong>Q4 2026</strong>.</p><p>The Careroot team</p>`,
-      });
-    }
+    await resend.emails.send({
+      from: "Careroot <onboarding@careroot.co.uk>",
+      to: [email],
+      subject: "You're on the GP Connect waitlist - Careroot",
+      html: `<p>Hi ${escapeHtml(name || "there")},</p><p>Thank you for registering your interest in GP Connect. We'll notify you as soon as it's available for your organisation.</p><p>Estimated launch: <strong>Q4 2026</strong>.</p><p>The Careroot team</p>`,
+    });
 
     return Response.json({ success: true });
   } catch (err) {

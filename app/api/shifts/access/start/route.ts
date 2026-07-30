@@ -183,8 +183,27 @@ export async function POST(req: Request) {
   }
 
   // Mark credential used and update shift actual_start
-  await Promise.all([
-    supabase.from("shift_credentials").update({ used_at: now }).eq("id", credential.id).is("used_at", null),
+  const { data: usedCredential, error: credentialUseError } = await supabase
+    .from("shift_credentials")
+    .update({ used_at: now })
+    .eq("id", credential.id)
+    .is("used_at", null)
+    .select("id")
+    .single();
+
+  if (credentialUseError || !usedCredential) {
+    await supabase.from("shift_access_log").insert({
+      shift_id, staff_id: user.id, device_imei: imei || null,
+      action_type: "access_denied_credential_already_used",
+      gps_lat: gps_lat || null, gps_lng: gps_lng || null,
+      gps_accuracy_metres: gps_accuracy_metres || null,
+      within_approved_radius: withinApprovedRadius,
+      server_timestamp: now,
+    });
+    return NextResponse.json({ allowed: false, reason: "Shift access has already been used or could not be verified. Ask your manager to reauthorise you." }, { status: 409 });
+  }
+
+  const [{ error: shiftUpdateError }, { error: logError }] = await Promise.all([
     supabase.from("shifts").update({ actual_start: now, status: "active" }).eq("id", shift_id),
     supabase.from("shift_access_log").insert({
       shift_id, staff_id: user.id, device_imei: imei || null,
@@ -195,6 +214,11 @@ export async function POST(req: Request) {
       server_timestamp: now,
     }),
   ]);
+
+  if (shiftUpdateError || logError) {
+    console.error("shift start write error:", { shiftUpdateError, logError });
+    return NextResponse.json({ allowed: false, reason: "Unable to start shift. Please try again or contact your manager." }, { status: 500 });
+  }
 
   return NextResponse.json({
     allowed: true,

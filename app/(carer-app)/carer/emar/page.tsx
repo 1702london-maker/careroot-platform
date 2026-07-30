@@ -13,18 +13,21 @@ export default async function CarerEmarPage() {
   // Only show eMAR for clients on an active/recent shift
   const { data: activeShifts } = await supabase
     .from("shifts")
-    .select("id, client_ids, scheduled_end, actual_end, status")
+    .select("id, client_ids, scheduled_start, scheduled_end, actual_end, status")
     .eq("staff_id", user.id)
     .in("status", ["active", "completed"])
     .gte("scheduled_end", thirtyMinsAgo.toISOString());
 
   const accessibleClientIds: string[] = [];
   const activeShiftId = activeShifts?.find(shift => shift.status === "active")?.id ?? activeShifts?.[0]?.id ?? "";
+  let recordsSince = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
   activeShifts?.forEach(shift => {
     const ended = shift.actual_end || shift.scheduled_end;
     const endTime = new Date(ended).getTime();
     const cutoff = now.getTime() - 30 * 60 * 1000;
     if (shift.status === "active" || endTime >= cutoff) {
+      const shiftStart = shift.scheduled_start ? new Date(shift.scheduled_start).toISOString() : recordsSince;
+      if (shiftStart < recordsSince) recordsSince = shiftStart;
       (shift.client_ids ?? []).forEach((id: string) => {
         if (!accessibleClientIds.includes(id)) accessibleClientIds.push(id);
       });
@@ -60,7 +63,7 @@ export default async function CarerEmarPage() {
     supabase.from("medication_records")
       .select("id, medication_schedule_id, client_id, status, administered_at, created_at, outcome_notes")
       .in("client_id", accessibleClientIds)
-      .gte("created_at", new Date().toISOString().slice(0, 10) + "T00:00:00")
+      .gte("created_at", recordsSince)
       .order("created_at", { ascending: false }),
   ]);
 

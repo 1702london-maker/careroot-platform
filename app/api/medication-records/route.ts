@@ -59,17 +59,41 @@ export async function POST(req: Request) {
     );
   }
 
-  const hasControlledAuthorisation =
-    Boolean(witness_staff_id) ||
-    Boolean(manager_remote_auth_id) ||
-    Boolean(String(witness_name || "").trim()) ||
-    Boolean(String(manager_remote_auth_name || "").trim());
+  const hasControlledAuthorisation = Boolean(witness_staff_id) || Boolean(manager_remote_auth_id);
 
   if (schedule?.is_controlled && outcome === "administered" && !hasControlledAuthorisation) {
     return NextResponse.json(
-      { error: "Controlled drug: a second-worker witness or manager remote authorisation is required before this can be recorded as administered." },
+      { error: "Controlled drug: select a registered second-worker witness or manager remote authorisation before this can be recorded as administered." },
       { status: 422 }
     );
+  }
+
+  let witnessNameFromRecord: string | null = null;
+  let managerNameFromRecord: string | null = null;
+  if (schedule?.is_controlled && witness_staff_id) {
+    if (witness_staff_id === user.id) {
+      return NextResponse.json({ error: "Controlled drug witness must be another registered staff member." }, { status: 422 });
+    }
+    const { data: witness } = await supabase
+      .from("users")
+      .select("id, first_name, last_name, organisation_id, is_active")
+      .eq("id", witness_staff_id)
+      .single();
+    if (!witness || witness.organisation_id !== access.organisationId || witness.is_active === false) {
+      return NextResponse.json({ error: "Selected witness is not an active staff member in this organisation." }, { status: 422 });
+    }
+    witnessNameFromRecord = `${witness.first_name} ${witness.last_name}`;
+  }
+  if (schedule?.is_controlled && manager_remote_auth_id) {
+    const { data: manager } = await supabase
+      .from("users")
+      .select("id, first_name, last_name, organisation_id, role, is_active")
+      .eq("id", manager_remote_auth_id)
+      .single();
+    if (!manager || manager.organisation_id !== access.organisationId || manager.is_active === false || !["manager", "org_admin", "superadmin"].includes(manager.role)) {
+      return NextResponse.json({ error: "Selected authorising manager is not valid for this organisation." }, { status: 422 });
+    }
+    managerNameFromRecord = `${manager.first_name} ${manager.last_name}`;
   }
 
   const liveStatus =
@@ -102,8 +126,8 @@ export async function POST(req: Request) {
     expectedStockAfter !== null && normalisedStockAfter !== null && normalisedStockAfter !== expectedStockAfter;
 
   const notesParts = [outcome_notes].filter((part) => String(part || "").trim());
-  if (schedule?.is_controlled && witness_name) notesParts.push(`Witness: ${witness_name}`);
-  if (schedule?.is_controlled && manager_remote_auth_name) notesParts.push(`Manager authorisation: ${manager_remote_auth_name}`);
+  if (schedule?.is_controlled && witnessNameFromRecord) notesParts.push(`Witness: ${witnessNameFromRecord}`);
+  if (schedule?.is_controlled && managerNameFromRecord) notesParts.push(`Manager authorisation: ${managerNameFromRecord}`);
   if (stockDiscrepancyDetected) notesParts.push(`Stock discrepancy: expected ${expectedStockAfter}, recorded ${normalisedStockAfter}`);
 
   const stockDiscrepancyAmount =
@@ -124,8 +148,8 @@ export async function POST(req: Request) {
     server_timestamp: now,
     // Migration 059 columns
     authorisation_method: schedule?.is_controlled && outcome === "administered" ? (authorisation_method || null) : null,
-    witness_name: schedule?.is_controlled ? (String(witness_name || "").trim() || null) : null,
-    manager_remote_auth_name: schedule?.is_controlled ? (String(manager_remote_auth_name || "").trim() || null) : null,
+    witness_name: schedule?.is_controlled ? witnessNameFromRecord : null,
+    manager_remote_auth_name: schedule?.is_controlled ? managerNameFromRecord : null,
     stock_discrepancy_detected: stockDiscrepancyDetected || false,
     stock_discrepancy_amount: stockDiscrepancyAmount,
     stock_discrepancy_note: stockDiscrepancyDetected

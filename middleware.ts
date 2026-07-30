@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const { supabaseResponse, user } = await updateSession(request);
+  const { supabaseResponse, user, supabase } = await updateSession(request);
 
   const isPublicPath =
     PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/")) ||
@@ -54,6 +54,21 @@ export async function middleware(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(url);
+  }
+
+  if (user && pathname.startsWith("/superadmin/")) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role !== "superadmin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

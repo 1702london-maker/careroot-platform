@@ -1,4 +1,4 @@
-const CACHE_NAME = "careroot-v5";
+const CACHE_NAME = "careroot-v6";
 const OFFLINE_URL = "/carer/offline";
 
 const PRECACHE = [
@@ -59,13 +59,3 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// Background sync for queued notes
-self.addEventListener("sync", (event) => {
-  if (event.tag === "sync-notes") {
-    event.waitUntil(syncQueuedNotes());
-  }
-});
-
-async function syncQueuedNotes() {
-  // IndexedDB sync happens here in production
-}

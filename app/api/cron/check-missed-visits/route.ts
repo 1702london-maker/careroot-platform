@@ -12,9 +12,9 @@ export async function GET(req: NextRequest) {
 
   const supabase = createServiceClientSync();
   const now = new Date();
-  const startedAt = now;
+  const startedAt = new Date(now);
   const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000).toISOString();
-  const todayStart = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
 
   // Find visits that should have started but are still scheduled
   const { data: missedVisits } = await supabase

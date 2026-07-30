@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { NextRequest } from "next/server";
+import { getRequestKey, rateLimit } from "@/lib/rate-limit";
 
 const SYSTEM_PROMPT = `You are the Careroot assistant — a helpful, warm, and knowledgeable care management specialist for Careroot, a UK care management platform.
 
@@ -41,7 +42,18 @@ RESPONSE GUIDELINES:
 
 export async function POST(req: NextRequest) {
   try {
+    const limit = rateLimit(getRequestKey(req, "chat"), 12, 60 * 1000);
+    if (!limit.allowed) {
+      return Response.json(
+        { message: "The assistant is receiving a lot of messages right now. Please wait a moment and try again." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const { messages } = await req.json();
+    if (!Array.isArray(messages) || messages.length > 12) {
+      return Response.json({ message: "Please send a shorter message and try again." }, { status: 400 });
+    }
 
     if (!process.env.OPENAI_API_KEY) {
       return Response.json({

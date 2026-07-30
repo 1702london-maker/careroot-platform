@@ -49,7 +49,7 @@ export async function verifyActiveShiftAccess(
   }
 
   const [{ data: credential }, { data: shift }, { data: device }] = await Promise.all([
-    ((supabase.from("shift_credentials").select("valid_until, invalidated_at") as QueryBuilder)
+    ((supabase.from("shift_credentials").select("valid_from, valid_until, invalidated_at") as QueryBuilder)
       .eq("shift_id", params.shiftId)
       .eq("staff_id", params.userId)
       .order("created_at", { ascending: false })
@@ -65,7 +65,7 @@ export async function verifyActiveShiftAccess(
       .single()),
   ]);
 
-  if (!credential || credential.invalidated_at || now > String(credential.valid_until)) {
+  if (!credential || credential.invalidated_at || now < String(credential.valid_from) || now > String(credential.valid_until)) {
     return { ok: false, status: 401, error: "Your shift access has expired. Ask a manager to re-authorise." };
   }
 

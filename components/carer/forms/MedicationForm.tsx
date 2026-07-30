@@ -24,6 +24,7 @@ type MedSchedule = {
   is_prn: boolean;
   current_stock: number | null;
 };
+type StaffOption = { id: string; first_name: string; last_name: string; role: string };
 
 const OUTCOMES = ["administered", "refused", "omitted", "not_required"];
 
@@ -39,8 +40,9 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
   const [stockBefore, setStockBefore] = useState("");
   const [stockAfter, setStockAfter] = useState("");
   const [authorisationMethod, setAuthorisationMethod] = useState<"second_staff_witness" | "remote_manager_authorisation">("second_staff_witness");
-  const [witnessName, setWitnessName] = useState("");
-  const [managerAuthName, setManagerAuthName] = useState("");
+  const [staffOptions, setStaffOptions] = useState<StaffOption[]>([]);
+  const [witnessStaffId, setWitnessStaffId] = useState("");
+  const [managerAuthId, setManagerAuthId] = useState("");
   const [managerAuthEvidenceUrl, setManagerAuthEvidenceUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -54,6 +56,15 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
       .eq("client_id", clientId).eq("is_active", true)
       .then(({ data }) => { setSchedules(data || []); setLoading(false); });
   }, [clientId, supabase]);
+
+  useEffect(() => {
+    supabase
+      .from("users")
+      .select("id, first_name, last_name, role")
+      .in("role", ["carer", "manager", "org_admin"])
+      .eq("is_active", true)
+      .then(({ data }) => setStaffOptions((data ?? []) as StaffOption[]));
+  }, [supabase]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,8 +91,8 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
         stock_before: selected.is_controlled ? Number(stockBefore) : null,
         stock_after: selected.is_controlled ? Number(stockAfter) : null,
         authorisation_method: selected.is_controlled && outcome === "administered" ? authorisationMethod : null,
-        witness_name: selected.is_controlled && authorisationMethod === "second_staff_witness" ? witnessName.trim() : null,
-        manager_remote_auth_name: selected.is_controlled && authorisationMethod === "remote_manager_authorisation" ? managerAuthName.trim() : null,
+        witness_staff_id: selected.is_controlled && authorisationMethod === "second_staff_witness" ? witnessStaffId : null,
+        manager_remote_auth_id: selected.is_controlled && authorisationMethod === "remote_manager_authorisation" ? managerAuthId : null,
         manager_remote_auth_image_url: selected.is_controlled && authorisationMethod === "remote_manager_authorisation" ? managerAuthEvidenceUrl.trim() || null : null,
         outcome_notes: notes,
         gps_lat: gpsLat,
@@ -105,8 +116,8 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
       setRefusalReason("");
       setPrnReason("");
       setAuthorisationMethod("second_staff_witness");
-      setWitnessName("");
-      setManagerAuthName("");
+      setWitnessStaffId("");
+      setManagerAuthId("");
       setManagerAuthEvidenceUrl("");
     }, 1500);
   }
@@ -248,18 +259,28 @@ export function MedicationForm({ shift, clients, onBack }: Props) {
 
                   {authorisationMethod === "second_staff_witness" ? (
                     <div>
-                      <label className="block text-xs font-semibold text-cr-slate mb-1.5">Witness full name</label>
-                      <input required value={witnessName} onChange={e => setWitnessName(e.target.value)}
+                      <label className="block text-xs font-semibold text-cr-slate mb-1.5">Witness staff member</label>
+                      <select required value={witnessStaffId} onChange={e => setWitnessStaffId(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest"
-                        placeholder="Second staff member" />
+                      >
+                        <option value="">Select registered staff</option>
+                        {staffOptions.map((member) => (
+                          <option key={member.id} value={member.id}>{member.first_name} {member.last_name} - {member.role.replace(/_/g, " ")}</option>
+                        ))}
+                      </select>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       <div>
                         <label className="block text-xs font-semibold text-cr-slate mb-1.5">Manager authorising</label>
-                        <input required value={managerAuthName} onChange={e => setManagerAuthName(e.target.value)}
+                        <select required value={managerAuthId} onChange={e => setManagerAuthId(e.target.value)}
                           className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-cr-forest"
-                          placeholder="Manager full name" />
+                        >
+                          <option value="">Select registered manager</option>
+                          {staffOptions.filter((member) => ["manager", "org_admin"].includes(member.role)).map((member) => (
+                            <option key={member.id} value={member.id}>{member.first_name} {member.last_name} - {member.role.replace(/_/g, " ")}</option>
+                          ))}
+                        </select>
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-cr-slate mb-1.5">Evidence URL (optional)</label>
