@@ -16,9 +16,10 @@ export function getStripe(): Stripe {
 
 // Standardised price ID env vars — used across all routes
 export const PLAN_PRICES = {
-  seed:  { monthly: process.env.STRIPE_SEED_PRICE_ID,  annual: process.env.STRIPE_SEED_ANNUAL_PRICE_ID  },
-  grow:  { monthly: process.env.STRIPE_GROW_PRICE_ID,  annual: process.env.STRIPE_GROW_ANNUAL_PRICE_ID  },
-  scale: { monthly: process.env.STRIPE_SCALE_PRICE_ID, annual: process.env.STRIPE_SCALE_ANNUAL_PRICE_ID },
+  seed:       { monthly: process.env.STRIPE_SEED_PRICE_ID,             annual: process.env.STRIPE_SEED_ANNUAL_PRICE_ID       },
+  grow:       { monthly: process.env.STRIPE_GROW_PRICE_ID,             annual: process.env.STRIPE_GROW_ANNUAL_PRICE_ID       },
+  scale:      { monthly: process.env.STRIPE_SCALE_PRICE_ID,            annual: process.env.STRIPE_SCALE_ANNUAL_PRICE_ID      },
+  enterprise: { monthly: process.env.STRIPE_ENTERPRISE_PRICE_ID,       annual: process.env.STRIPE_ENTERPRISE_ANNUAL_PRICE_ID },
 };
 
 export const PLAN_LIMITS: Record<string, number> = {
@@ -29,7 +30,8 @@ export const PLAN_LIMITS: Record<string, number> = {
 };
 
 export const PLAN_DISPLAY: Record<string, { name: string; monthlyPrice: number; annualPrice: number }> = {
-  seed:  { name: "Seed",  monthlyPrice: 99,  annualPrice: 79  },
-  grow:  { name: "Grow",  monthlyPrice: 349, annualPrice: 279 },
-  scale: { name: "Scale", monthlyPrice: 899, annualPrice: 719 },
+  seed:       { name: "Seed",       monthlyPrice: 99,   annualPrice: 79   },
+  grow:       { name: "Grow",       monthlyPrice: 349,  annualPrice: 279  },
+  scale:      { name: "Scale",      monthlyPrice: 899,  annualPrice: 719  },
+  enterprise: { name: "Enterprise", monthlyPrice: 0,    annualPrice: 0    },
 };

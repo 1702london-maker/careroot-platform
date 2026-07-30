@@ -64,6 +64,8 @@ export async function submitOrQueue(endpoint: string, body: Record<string, unkno
   }
 }
 
+const MAX_ATTEMPTS = 5;
+
 export async function flushOfflineQueue() {
   const queue = readQueue();
   if (queue.length === 0 || (typeof navigator !== "undefined" && !navigator.onLine)) return { synced: 0, remaining: queue.length };
@@ -80,14 +82,32 @@ export async function flushOfflineQueue() {
       });
       if (res.ok) {
         synced += 1;
+      } else if (res.status >= 400 && res.status < 500) {
+        // 4xx = permanent client error — drop after MAX_ATTEMPTS to avoid infinite retry
+        const nextAttempts = item.attempts + 1;
+        if (nextAttempts < MAX_ATTEMPTS) {
+          remaining.push({ ...item, attempts: nextAttempts });
+        }
       } else {
-        remaining.push({ ...item, attempts: item.attempts + 1 });
+        // 5xx or network failure — retry up to MAX_ATTEMPTS
+        const nextAttempts = item.attempts + 1;
+        if (nextAttempts < MAX_ATTEMPTS) {
+          remaining.push({ ...item, attempts: nextAttempts });
+        }
       }
     } catch {
-      remaining.push({ ...item, attempts: item.attempts + 1 });
+      const nextAttempts = item.attempts + 1;
+      if (nextAttempts < MAX_ATTEMPTS) {
+        remaining.push({ ...item, attempts: nextAttempts });
+      }
     }
   }
 
   writeQueue(remaining);
   return { synced, remaining: remaining.length };
+}
+
+export function registerOnlineFlushListener() {
+  if (typeof window === "undefined") return;
+  window.addEventListener("online", () => { flushOfflineQueue(); });
 }

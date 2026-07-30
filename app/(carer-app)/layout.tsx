@@ -4,6 +4,7 @@ import { CarerSidebar } from "@/components/carer/CarerSidebar";
 import { CarerBottomNav } from "@/components/carer/CarerBottomNav";
 import { CarerTopBar } from "@/components/carer/CarerTopBar";
 import { CarerMobileHeader } from "@/components/carer/CarerMobileHeader";
+import { OfflineFlushProvider } from "@/components/carer/OfflineFlushProvider";
 
 export default async function CarerAppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -41,6 +42,9 @@ export default async function CarerAppLayout({ children }: { children: React.Rea
 
       {/* Mobile bottom nav */}
       <CarerBottomNav />
+
+      {/* Auto-flush offline queue when connectivity restores */}
+      <OfflineFlushProvider />
     </div>
   );
 }

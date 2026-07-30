@@ -117,8 +117,9 @@ export async function POST(req: NextRequest) {
       const priceId = sub.items.data[0]?.price.id;
       const plan = PLAN_MAP[priceId];
       if (!plan) {
-        console.error("Stripe webhook unknown subscription price:", priceId);
-        return NextResponse.json({ error: "Unknown subscription price" }, { status: 400 });
+        // Return 200 so Stripe does not retry — log for manual review
+        console.warn("Stripe webhook: unrecognised subscription price ID", priceId, "on subscription", sub.id);
+        return NextResponse.json({ received: true, warning: "unrecognised_price_id" });
       }
       const billingCycle = CYCLE_MAP[priceId] ?? "monthly";
       await supabase.from("organisations").update({
@@ -241,11 +242,15 @@ async function handleAddonPurchase(
 
   // API access — enable flag and generate key
   if (addonType === "api_access") {
-    const apiKey = `cr_live_${crypto.randomUUID().replace(/-/g, "")}`;
+    const rawKey = `cr_live_${crypto.randomUUID().replace(/-/g, "")}`;
+    // Store a SHA-256 hash — the raw key is delivered once via email and never stored plaintext
+    const keyHash = Buffer.from(
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawKey))
+    ).toString("hex");
     const { data: current } = await supabase.from("organisations").select("settings").eq("id", orgId).single();
     const settings = (current?.settings as Record<string, unknown>) ?? {};
     await supabase.from("organisations").update({
-      settings: { ...settings, api_access_enabled: true, api_key: apiKey },
+      settings: { ...settings, api_access_enabled: true, api_key_hash: keyHash, api_key_prefix: rawKey.slice(0, 12) },
     }).eq("id", orgId);
 
     if (resend && org?.email) {
@@ -253,7 +258,7 @@ async function handleAddonPurchase(
         from,
         to: org.email,
         subject: "Your API key is ready — Careroot",
-        html: `<p>Your API key: <strong>${apiKey}</strong></p><p>Keep this safe. Find it any time at Settings → Integrations.</p>`,
+        html: `<p>Your API key: <strong>${rawKey}</strong></p><p>Copy this now — it will not be shown again. Find your key prefix any time at Settings → Integrations.</p>`,
       });
     }
   }

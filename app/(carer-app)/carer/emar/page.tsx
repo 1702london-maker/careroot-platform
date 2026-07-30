@@ -20,7 +20,14 @@ export default async function CarerEmarPage() {
 
   const accessibleClientIds: string[] = [];
   const activeShiftId = activeShifts?.find(shift => shift.status === "active")?.id ?? activeShifts?.[0]?.id ?? "";
-  let recordsSince = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
+
+  // UK midnight — correct for both GMT (UTC+0) and BST (UTC+1)
+  const ukDateStr = now.toLocaleDateString("en-CA", { timeZone: "Europe/London" }); // "YYYY-MM-DD"
+  const isBST = now.toLocaleString("en-GB", { timeZone: "Europe/London", timeZoneName: "shortOffset" }).includes("GMT+1");
+  const ukMidnight = new Date(`${ukDateStr}T00:00:00.000Z`);
+  ukMidnight.setUTCHours(ukMidnight.getUTCHours() - (isBST ? 1 : 0));
+  let recordsSince = ukMidnight.toISOString();
+
   activeShifts?.forEach(shift => {
     const ended = shift.actual_end || shift.scheduled_end;
     const endTime = new Date(ended).getTime();

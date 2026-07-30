@@ -17,10 +17,20 @@ export default async function ClientProfilePage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) notFound();
+
+  const { data: sessionUser } = await supabase
+    .from("users")
+    .select("organisation_id")
+    .eq("id", user.id)
+    .single();
+
   const { data: client, error } = await supabase
     .from("clients")
     .select("*")
     .eq("id", id)
+    .eq("organisation_id", sessionUser?.organisation_id ?? "")
     .single();
 
   if (error || !client) notFound();

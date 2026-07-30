@@ -30,9 +30,9 @@ export default async function DashboardPage() {
   const orgId = userRecord?.organisation_id;
   if (!orgId) redirect("/onboarding");
 
-  const today = new Date();
-  const todayStart = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-  const todayEnd = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+  const _now = new Date();
+  const todayStart = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate(), 0, 0, 0, 0).toISOString();
+  const todayEnd = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate(), 23, 59, 59, 999).toISOString();
 
   // Parallel data fetches
   const thirtyDaysAgo = new Date();
