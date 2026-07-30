@@ -47,6 +47,7 @@ export function StaffComplianceDashboard({ compliance, staff }: { compliance: un
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ staff_id: "", compliance_item: "", status: "compliant", valid_until: "", notes: "" });
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => setNow(new Date()), []);
@@ -72,6 +73,22 @@ export function StaffComplianceDashboard({ compliance, staff }: { compliance: un
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+
+      if (evidenceFile) {
+        const documentKey = form.compliance_item.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+        const payload = new FormData();
+        payload.append("staff_id", form.staff_id);
+        payload.append("document_key", documentKey);
+        payload.append("document_label", form.compliance_item);
+        payload.append("document_category", "compliance");
+        payload.append("expiry_date", form.valid_until);
+        payload.append("file", evidenceFile);
+
+        const uploadRes = await fetch("/api/staff/documents", { method: "POST", body: payload });
+        const uploadData = await uploadRes.json().catch(() => null);
+        if (!uploadRes.ok) throw new Error(uploadData?.error || "Compliance saved, but evidence upload failed");
+      }
+
       window.location.reload();
     } catch (e) { setError((e as Error).message); }
     finally { setSaving(false); }
@@ -130,6 +147,16 @@ export function StaffComplianceDashboard({ compliance, staff }: { compliance: un
             <div className="sm:col-span-2">
               <label className="text-xs font-body font-medium text-cr-slate mb-1 block">Notes</label>
               <input type="text" className="w-full h-10 rounded-lg border border-gray-200 px-3 text-sm font-body" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional notes…" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="text-xs font-body font-medium text-cr-slate mb-1 block">Evidence file</label>
+              <input
+                type="file"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-body"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                onChange={(e) => setEvidenceFile(e.target.files?.[0] ?? null)}
+              />
+              <p className="mt-1 text-xs text-cr-slate">Optional proof document, up to 50MB.</p>
             </div>
           </div>
           {error && <p className="text-sm text-red-600 mt-2">{error}</p>}

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useRef, useState } from "react";
 import { CRCard } from "@/components/ui/CRCard";
 import { Upload, FileText, Download, Trash2, AlertCircle, CheckCircle } from "lucide-react";
 
@@ -30,67 +29,72 @@ interface Props {
 }
 
 export function ClientDocumentsTab({ client, initialDocs = [] }: Props) {
-  const supabase = createClient();
   const [docs, setDocs] = useState<Doc[]>(initialDocs);
   const [activeCategory, setActiveCategory] = useState("assessment");
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const filteredDocs = docs.filter(d => d.category === activeCategory);
+  const filteredDocs = docs.filter((d) => d.category === activeCategory);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     setUploading(true);
     setError(null);
     setSuccess(null);
 
-    const path = `client-documents/${String(client.id)}/${activeCategory}/${Date.now()}_${file.name}`;
-    const { error: uploadErr } = await supabase.storage.from("documents").upload(path, file);
+    try {
+      const payload = new FormData();
+      payload.append("client_id", String(client.id));
+      payload.append("category", activeCategory);
+      payload.append("file", file);
 
-    if (uploadErr) {
-      setError("Upload failed — check the documents storage bucket exists in Supabase.");
-      setUploading(false);
-      return;
-    }
+      const res = await fetch("/api/client/documents", {
+        method: "POST",
+        body: payload,
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || "Upload failed");
 
-    const { data: { publicUrl } } = supabase.storage.from("documents").getPublicUrl(path);
-
-    const { data: inserted, error: dbErr } = await supabase
-      .from("client_documents")
-      .insert({
-        client_id: String(client.id),
-        organisation_id: String(client.organisation_id),
-        file_name: file.name,
-        file_url: publicUrl,
-        category: activeCategory,
-      })
-      .select()
-      .single();
-
-    if (dbErr) {
-      setError("File uploaded but failed to save record. Contact support.");
-    } else {
-      setDocs(prev => [...prev, inserted]);
+      setDocs((prev) => [data.document, ...prev]);
       setSuccess(`${file.name} uploaded successfully.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
-    setUploading(false);
-    if (fileRef.current) fileRef.current.value = "";
   };
 
   const handleDelete = async (doc: Doc) => {
     if (!confirm(`Delete "${doc.file_name}"? This cannot be undone.`)) return;
-    await supabase.from("client_documents").delete().eq("id", doc.id);
-    setDocs(prev => prev.filter(d => d.id !== doc.id));
+
+    setDeletingId(doc.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch(`/api/client/documents/${doc.id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || "Delete failed");
+
+      setDocs((prev) => prev.filter((d) => d.id !== doc.id));
+      setSuccess(`${doc.file_name} deleted.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Delete failed. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
     <div className="space-y-4">
-      {/* Category tabs */}
       <div className="flex flex-wrap gap-2">
-        {DOC_CATEGORIES.map(cat => (
+        {DOC_CATEGORIES.map((cat) => (
           <button
             key={cat.key}
             onClick={() => setActiveCategory(cat.key)}
@@ -102,17 +106,16 @@ export function ClientDocumentsTab({ client, initialDocs = [] }: Props) {
           >
             {cat.label}
             <span className="ml-1.5 text-xs opacity-70">
-              ({docs.filter(d => d.category === cat.key).length})
+              ({docs.filter((d) => d.category === cat.key).length})
             </span>
           </button>
         ))}
       </div>
 
-      {/* Upload area */}
       <CRCard>
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-cr-charcoal text-sm">
-            {DOC_CATEGORIES.find(c => c.key === activeCategory)?.label}
+            {DOC_CATEGORIES.find((c) => c.key === activeCategory)?.label}
           </h3>
           <label className="cr-btn-primary flex items-center gap-1.5 text-sm cursor-pointer">
             <Upload size={14} />
@@ -123,7 +126,7 @@ export function ClientDocumentsTab({ client, initialDocs = [] }: Props) {
               className="hidden"
               onChange={handleUpload}
               disabled={uploading}
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
             />
           </label>
         </div>
@@ -149,7 +152,7 @@ export function ClientDocumentsTab({ client, initialDocs = [] }: Props) {
           </div>
         ) : (
           <div className="divide-y divide-gray-50">
-            {filteredDocs.map(doc => (
+            {filteredDocs.map((doc) => (
               <div key={doc.id} className="flex items-center gap-3 py-3">
                 <FileText size={16} className="text-cr-forest flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -157,7 +160,7 @@ export function ClientDocumentsTab({ client, initialDocs = [] }: Props) {
                   {doc.uploaded_at && (
                     <p className="text-xs text-cr-slate">
                       {new Date(doc.uploaded_at).toLocaleDateString("en-GB")}
-                      {doc.uploaded_by_name && ` · ${doc.uploaded_by_name}`}
+                      {doc.uploaded_by_name && ` - ${doc.uploaded_by_name}`}
                     </p>
                   )}
                 </div>
@@ -173,7 +176,8 @@ export function ClientDocumentsTab({ client, initialDocs = [] }: Props) {
                   </a>
                   <button
                     onClick={() => handleDelete(doc)}
-                    className="text-cr-slate hover:text-cr-red transition-colors"
+                    disabled={deletingId === doc.id}
+                    className="text-cr-slate hover:text-cr-red transition-colors disabled:opacity-50"
                     title="Delete"
                   >
                     <Trash2 size={14} />
@@ -186,7 +190,7 @@ export function ClientDocumentsTab({ client, initialDocs = [] }: Props) {
       </CRCard>
 
       <p className="text-xs text-cr-slate">
-        Accepted formats: PDF, Word, JPEG, PNG · Max 10MB per file
+        Accepted formats: PDF, Word, JPEG, PNG, WebP. Max 50MB per file.
       </p>
     </div>
   );

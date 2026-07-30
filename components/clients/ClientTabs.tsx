@@ -41,11 +41,12 @@ interface Props {
   emergencyToken: string | null;
   emergencyPin: string | null;
   familyAccess: Record<string, unknown>[];
+  clientDocuments: Record<string, unknown>[];
 }
 
 export function ClientTabs({
   client, carePlans, medications, recentVisits, incidents,
-  riskAssessment, nutritionProfile, emergencyToken, emergencyPin, familyAccess,
+  riskAssessment, nutritionProfile, emergencyToken, emergencyPin, familyAccess, clientDocuments,
 }: Props) {
   const [active, setActive] = useState("overview");
 
@@ -77,7 +78,7 @@ export function ClientTabs({
       {active === "risk" && <ClientRiskTab client={client} riskAssessment={riskAssessment} />}
       {active === "nutrition" && <ClientNutritionTab client={client} nutritionProfile={nutritionProfile} />}
       {active === "bodymap" && <ClientBodyMapTab client={client} bodyMapInjuries={(client.bodyMapInjuries ?? []) as Record<string, unknown>[]} />}
-      {active === "documents" && <ClientDocumentsTab client={client} />}
+      {active === "documents" && <ClientDocumentsTab client={client} initialDocs={clientDocuments as never} />}
       {active === "family" && <ClientFamilyTab client={client} familyAccess={familyAccess as never} />}
       {active === "emergency" && <ClientEmergencyTab client={client} emergencyToken={emergencyToken} emergencyPin={emergencyPin} />}
       {active === "ai" && <ClientAITab client={client} />}

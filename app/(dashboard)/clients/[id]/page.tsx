@@ -36,6 +36,7 @@ export default async function ClientProfilePage({ params }: Props) {
     { data: familyAccess },
     { data: bodyMapInjuries },
     { data: recentShiftLogs },
+    { data: clientDocuments },
   ] = await Promise.all([
     supabase.from("care_plans").select("*").eq("client_id", id).order("created_at", { ascending: false }),
     supabase.from("medications").select("*").eq("client_id", id).eq("is_active", true).order("name"),
@@ -47,6 +48,7 @@ export default async function ClientProfilePage({ params }: Props) {
     supabase.from("family_access").select("*, users!family_access_user_id_fkey(first_name, last_name, email, phone)").eq("client_id", id),
     supabase.from("body_map_injuries").select("*").eq("client_id", id).order("created_at"),
     supabase.from("shift_logs").select("id, log_type, content, transcription, server_timestamp, within_approved_radius, users(first_name, last_name)").eq("client_id", id).order("server_timestamp", { ascending: false }).limit(10),
+    supabase.from("client_documents").select("*").eq("client_id", id).order("uploaded_at", { ascending: false }),
   ]);
 
   const address = client.address as Record<string, string> | null;
@@ -186,6 +188,7 @@ export default async function ClientProfilePage({ params }: Props) {
         emergencyToken={emergencyToken?.token || null}
         emergencyPin={emergencyToken?.pin || null}
         familyAccess={familyAccess || []}
+        clientDocuments={clientDocuments || []}
       />
     </div>
   );

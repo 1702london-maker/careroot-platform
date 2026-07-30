@@ -193,35 +193,21 @@ export function StaffProfileClient({ staffMember, documents, training, supervisi
   const handleUpload = async (docKey: string, category: string, label: string, file: File) => {
     setUploading(docKey);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `staff-docs/${staffMember.id}/${docKey}-${Date.now()}.${ext}`;
-      const { data: uploadData, error: uploadErr } = await supabase.storage
-        .from("documents").upload(path, file, { upsert: true });
-      if (uploadErr) throw uploadErr;
+      const payload = new FormData();
+      payload.append("staff_id", String(staffMember.id));
+      payload.append("document_key", docKey);
+      payload.append("document_label", label);
+      payload.append("document_category", category);
+      payload.append("file", file);
 
-      const { data: { publicUrl } } = supabase.storage.from("documents").getPublicUrl(uploadData.path);
+      const res = await fetch("/api/staff/documents", { method: "POST", body: payload });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || "Upload failed");
 
-      const existing = docMap[docKey];
-      if (existing) {
-        await supabase.from("staff_documents").update({
-          file_url: publicUrl, file_name: file.name, status: "uploaded", updated_at: new Date().toISOString(),
-        }).eq("id", existing.id);
-      } else {
-        await supabase.from("staff_documents").insert({
-          organisation_id: staffMember.organisation_id,
-          staff_id: staffMember.id,
-          document_key: docKey,
-          document_label: label,
-          document_category: category,
-          file_url: publicUrl,
-          file_name: file.name,
-          status: "uploaded",
-          is_mandatory: true,
-        });
-      }
       window.location.reload();
     } catch (err) {
       console.error("Upload error:", err);
+      alert(err instanceof Error ? err.message : "Upload failed. Please try again.");
     } finally {
       setUploading(null);
     }
