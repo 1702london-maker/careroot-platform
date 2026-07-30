@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { requireSessionUser } from "@/lib/session-user";
 
 const SYSTEM_PROMPT = `You are a clinical documentation assistant for a UK care agency. Structure the following care visit note into a JSON object with exactly these fields: observations (string — what was seen or heard during the visit), mood (string — client's emotional state and demeanour), physical_condition (string — any physical observations including appearance, mobility, comfort), concerns (string — anything that requires follow-up or monitoring, empty string if none), actions_taken (string — what the carer did during the visit), and sentiment (one of exactly: positive, neutral, concerning, urgent). Be precise and clinical. Never add information not present in the note. Return only valid JSON with no markdown formatting or backticks.`;
 
@@ -10,11 +11,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
-    const { note_text, client_id, visit_id, author_id, organisation_id } = body;
+    const { user: sessionUser, error: authError } = await requireSessionUser();
+    if (authError || !sessionUser) return authError as Response;
 
-    if (!note_text || !client_id || !visit_id || !author_id || !organisation_id) {
-      return NextResponse.json({ error: "Missing required fields: note_text, client_id, visit_id, author_id, organisation_id" }, { status: 400 });
+    const body = await req.json();
+    const { note_text, client_id, visit_id } = body;
+    const organisation_id = sessionUser.organisation_id;
+
+    if (!note_text || !client_id || !visit_id) {
+      return NextResponse.json({ error: "Missing required fields: note_text, client_id, visit_id" }, { status: 400 });
     }
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -49,7 +54,8 @@ export async function POST(req: NextRequest) {
         sentiment: structured.sentiment,
       })
       .eq("visit_id", visit_id)
-      .eq("client_id", client_id);
+      .eq("client_id", client_id)
+      .eq("organisation_id", organisation_id);
 
     // Create risk flag if sentiment warrants it
     if (structured.sentiment === "concerning" || structured.sentiment === "urgent") {

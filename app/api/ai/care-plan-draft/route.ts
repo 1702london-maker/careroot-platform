@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { requireSessionUser } from "@/lib/session-user";
 
 const SYSTEM_PROMPT = `You are a senior UK care plan author with over 20 years' experience writing person-centred care plans that fully comply with the CQC 2026 Single Assessment Framework, the Health and Social Care Act 2008, and Ofsted standards for supported accommodation. Your plans are used directly by frontline carers to deliver safe, dignified, and effective care. Every section must be detailed enough that a carer reading it for the first time could deliver excellent care without needing to ask anyone.
 
@@ -27,9 +28,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { client_id, organisation_id, onboarding_data } = await req.json();
-    if (!client_id || !organisation_id) {
-      return NextResponse.json({ error: "client_id and organisation_id required" }, { status: 400 });
+    const { user: sessionUser, error: authError } = await requireSessionUser(["org_admin", "manager", "coordinator"]);
+    if (authError || !sessionUser) return authError as Response;
+
+    const { client_id, onboarding_data } = await req.json();
+    const organisation_id = sessionUser.organisation_id;
+    if (!client_id) {
+      return NextResponse.json({ error: "client_id required" }, { status: 400 });
     }
 
     const supabase = await createClient();

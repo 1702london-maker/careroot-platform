@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { requireSessionUser } from "@/lib/session-user";
 
 const SYSTEM_PROMPT = `You are a nutrition monitoring specialist for a UK domiciliary care agency. You will receive meal consumption records for a care client over the past 14 days. Each record shows: date, meal name, consumption level (all/most/half/little/refused), and fluid intake in ml where recorded. Identify patterns of reduced appetite, consistent meal refusal, inadequate fluid intake, or sudden changes in eating behaviour that may indicate health deterioration, depression, pain, infection, or other clinical concerns. Return JSON with exactly these fields: concern_level (one of exactly: none, low, medium, high), pattern_description (string describing the specific pattern identified with dates and evidence from the records provided), recommended_actions (array of strings for the care manager), should_flag (boolean — true if concern_level is medium or high), and flag_message (string — message for the risk flag if should_flag is true, empty string otherwise). Return only valid JSON with no markdown formatting or backticks.`;
 
@@ -10,9 +11,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { client_id, organisation_id } = await req.json();
-    if (!client_id || !organisation_id) {
-      return NextResponse.json({ error: "client_id and organisation_id required" }, { status: 400 });
+    const { user: sessionUser, error: authError } = await requireSessionUser(["org_admin", "manager", "coordinator"]);
+    if (authError || !sessionUser) return authError as Response;
+
+    const { client_id } = await req.json();
+    const organisation_id = sessionUser.organisation_id;
+    if (!client_id) {
+      return NextResponse.json({ error: "client_id required" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -22,6 +27,7 @@ export async function POST(req: NextRequest) {
       .from("meal_records")
       .select("meal_name, meal_type, consumption_level, fluid_intake_ml, fluid_ml, recorded_at")
       .eq("client_id", client_id)
+      .eq("organisation_id", organisation_id)
       .gte("recorded_at", fourteenDaysAgo)
       .order("recorded_at", { ascending: true });
 

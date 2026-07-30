@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
+import { requireSessionUser } from "@/lib/session-user";
 
 const SYSTEM_PROMPT = `You are a CQC compliance specialist assessing a UK care agency against the 2026 Single Assessment Framework. You will receive compliance evidence records and operational metrics. Score readiness across the 5 CQC key questions. Safe covers: medication management, incidents, risk assessments, DBS checks, emergency procedures. Effective covers: care plan quality and reviews, staff training, outcomes measurement. Caring covers: person-centred care evidence, dignity, family involvement, nutrition and food planning. Responsive covers: complaint handling within 28 days, care plan personalisation, family communication. Well-led covers: governance, compliance monitoring, staff wellbeing, audit trails. Score each key question 0 to 100. Return JSON with exactly these fields: overall_score (number 0-100), scores_by_category (object with keys: safe, effective, caring, responsive, well_led each a number 0-100), rag_status (object with same keys each one of exactly: green, amber, red — green is 80 or above, amber is 60 to 79, red is below 60), gaps (array of objects each with: category string, issue string, priority one of high/medium/low), quick_wins (array of strings describing easy improvements), and summary (one paragraph under 100 words for the registered manager). Return only valid JSON with no markdown formatting or backticks.`;
 
@@ -10,10 +11,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { organisation_id } = await req.json();
-    if (!organisation_id) {
-      return NextResponse.json({ error: "organisation_id required" }, { status: 400 });
-    }
+    const { user: sessionUser, error: authError } = await requireSessionUser(["org_admin", "manager", "coordinator"]);
+    if (authError || !sessionUser) return authError as Response;
+
+    const organisation_id = sessionUser.organisation_id;
+    await req.json().catch(() => ({}));
 
     const supabase = await createClient();
     const now = new Date();
@@ -36,9 +38,9 @@ export async function POST(req: NextRequest) {
       supabase.from("staff_records").select("id").eq("organisation_id", organisation_id).lt("dbs_expiry", now.toISOString().split("T")[0]).not("dbs_expiry", "is", null),
       supabase.from("incidents").select("id").eq("organisation_id", organisation_id).in("status", ["open", "investigating"]).in("severity", ["high", "critical"]),
       supabase.from("complaints").select("id").eq("organisation_id", organisation_id).lt("created_at", twentyEightDaysAgo).in("status", ["open", "investigating"]),
-      supabase.from("care_plan_views").select("id").gte("viewed_at", thirtyDaysAgo),
+      supabase.from("care_plan_views").select("id").eq("organisation_id", organisation_id).gte("viewed_at", thirtyDaysAgo),
       supabase.from("visits").select("status").eq("organisation_id", organisation_id).gte("scheduled_start", thirtyDaysAgo),
-      supabase.from("medication_records").select("status").gte("created_at", thirtyDaysAgo),
+      supabase.from("medication_records").select("status").eq("organisation_id", organisation_id).gte("created_at", thirtyDaysAgo),
     ]);
 
     const completedVisits = recentVisits?.filter(v => v.status === "completed").length ?? 0;

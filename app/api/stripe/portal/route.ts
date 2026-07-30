@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
+import { requireSessionUser } from "@/lib/session-user";
 
 export async function POST(req: NextRequest) {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -8,13 +9,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { organisation_id } = await req.json();
-    if (!organisation_id) {
-      return NextResponse.json({ error: "organisation_id required" }, { status: 400 });
-    }
+    const { user: sessionUser, error: authError } = await requireSessionUser(["org_admin", "manager"]);
+    if (authError || !sessionUser) return authError as Response;
 
     const supabase = await createClient();
-    const { data: org } = await supabase.from("organisations").select("stripe_customer_id").eq("id", organisation_id).single();
+    const { data: org } = await supabase
+      .from("organisations")
+      .select("stripe_customer_id")
+      .eq("id", sessionUser.organisation_id)
+      .single();
 
     if (!org?.stripe_customer_id) {
       return NextResponse.json({ error: "No Stripe customer found — please upgrade first" }, { status: 400 });

@@ -97,7 +97,6 @@ export async function POST(req: NextRequest) {
         plan,
         stripe_customer_id: session.customer as string,
         stripe_subscription_id: String(session.subscription ?? ""),
-        subscription_tier: plan,
         max_staff: PLAN_LIMITS[plan] ?? 10,
         billing_cycle: billingCycle,
         trial_ends_at: null,
@@ -118,7 +117,6 @@ export async function POST(req: NextRequest) {
       const billingCycle = CYCLE_MAP[priceId] ?? "monthly";
       await supabase.from("organisations").update({
         plan,
-        subscription_tier: plan,
         max_staff: PLAN_LIMITS[plan] ?? 10,
         billing_cycle: billingCycle,
       }).eq("stripe_subscription_id", sub.id);
@@ -132,7 +130,6 @@ export async function POST(req: NextRequest) {
 
       await supabase.from("organisations").update({
         plan: "seed",
-        subscription_tier: "seed",
         max_staff: 10,
         stripe_subscription_id: null,
         billing_cycle: "monthly",

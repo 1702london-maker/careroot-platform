@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { sendSMS } from "@/lib/twilio";
 import { Resend } from "resend";
+import { requireSessionUser } from "@/lib/session-user";
 
 const SYSTEM_PROMPT = `You are a clinical risk assessment specialist for a UK domiciliary care agency under CQC regulation. You will receive visit notes, medication records, meal consumption records, and incident reports for a care client spanning the last 30 days. Identify patterns that may indicate health deterioration, safeguarding concerns, nutritional decline, medication non-compliance, or care quality issues. Return a JSON object with exactly these fields: risk_level (one of exactly: low, medium, high, critical), flags (array of objects each with fields: type string, severity string one of low/medium/high/critical, description string, evidence string citing specific data from what was provided), recommended_actions (array of strings), and summary (plain English paragraph for the care manager under 150 words). Base every flag strictly on evidence from the data provided. Do not flag concerns without evidence from the provided data. Return only valid JSON with no markdown formatting or backticks.`;
 
@@ -12,9 +13,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { client_id, organisation_id } = await req.json();
-    if (!client_id || !organisation_id) {
-      return NextResponse.json({ error: "client_id and organisation_id required" }, { status: 400 });
+    const { user: sessionUser, error: authError } = await requireSessionUser(["org_admin", "manager", "coordinator"]);
+    if (authError || !sessionUser) return authError as Response;
+
+    const { client_id } = await req.json();
+    const organisation_id = sessionUser.organisation_id;
+    if (!client_id) {
+      return NextResponse.json({ error: "client_id required" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -28,14 +33,14 @@ export async function POST(req: NextRequest) {
       { data: client },
     ] = await Promise.all([
       supabase.from("visit_notes").select("content, ai_structured, sentiment, created_at")
-        .eq("client_id", client_id).gte("created_at", thirtyDaysAgo),
+        .eq("client_id", client_id).eq("organisation_id", organisation_id).gte("created_at", thirtyDaysAgo),
       supabase.from("medication_records").select("status, medication_id, created_at")
-        .eq("client_id", client_id).gte("created_at", thirtyDaysAgo),
+        .eq("client_id", client_id).eq("organisation_id", organisation_id).gte("created_at", thirtyDaysAgo),
       supabase.from("meal_records").select("consumption_level, meal_name, meal_time, fluid_intake_ml, recorded_at")
-        .eq("client_id", client_id).gte("recorded_at", thirtyDaysAgo),
+        .eq("client_id", client_id).eq("organisation_id", organisation_id).gte("recorded_at", thirtyDaysAgo),
       supabase.from("incidents").select("severity, category, description, reported_at")
-        .eq("client_id", client_id).gte("created_at", thirtyDaysAgo),
-      supabase.from("clients").select("first_name, last_name").eq("id", client_id).single(),
+        .eq("client_id", client_id).eq("organisation_id", organisation_id).gte("created_at", thirtyDaysAgo),
+      supabase.from("clients").select("first_name, last_name").eq("id", client_id).eq("organisation_id", organisation_id).single(),
     ]);
 
     const context = `VISIT NOTES (${notes?.length ?? 0} records): ${JSON.stringify(notes ?? [])}

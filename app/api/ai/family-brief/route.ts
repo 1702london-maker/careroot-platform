@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
+import { requireSessionUser } from "@/lib/session-user";
 
 const SYSTEM_PROMPT = `You are writing a weekly care update for the family of a care client. Your audience is a concerned family member who is not a healthcare professional. Write in warm clear plain English that is easy to read. Cover: how their loved one has been overall this week, how many visits took place and whether all happened as planned, any positive moments activities or things worth sharing, what meals they enjoyed and any appetite notes, anything the family genuinely needs to know about their care. Keep it under 250 words. Never use clinical jargon or medical abbreviations. If there are serious concerns the family must know about include them clearly but compassionately — do not omit important information. Do not start with 'Dear Family'. Return plain text only with no headers bullet points or markdown.`;
 
@@ -11,9 +12,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { client_id, organisation_id, period_start, period_end } = await req.json();
-    if (!client_id || !organisation_id || !period_start || !period_end) {
-      return NextResponse.json({ error: "client_id, organisation_id, period_start, period_end required" }, { status: 400 });
+    const { user: sessionUser, error: authError } = await requireSessionUser(["org_admin", "manager", "coordinator"]);
+    if (authError || !sessionUser) return authError as Response;
+
+    const { client_id, period_start, period_end } = await req.json();
+    const organisation_id = sessionUser.organisation_id;
+    if (!client_id || !period_start || !period_end) {
+      return NextResponse.json({ error: "client_id, period_start, period_end required" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -29,6 +34,7 @@ export async function POST(req: NextRequest) {
       supabase.from("visit_notes")
         .select("content, sentiment, created_at")
         .eq("client_id", client_id)
+        .eq("organisation_id", organisation_id)
         .eq("is_family_visible", true)
         .eq("is_internal", false)
         .gte("created_at", period_start)
@@ -36,25 +42,29 @@ export async function POST(req: NextRequest) {
       supabase.from("meal_records")
         .select("meal_name, meal_type, consumption_level, recorded_at")
         .eq("client_id", client_id)
+        .eq("organisation_id", organisation_id)
         .gte("recorded_at", period_start)
         .lte("recorded_at", period_end),
       supabase.from("incidents")
         .select("severity, incident_type, description")
         .eq("client_id", client_id)
+        .eq("organisation_id", organisation_id)
         .eq("is_family_visible", true)
         .in("severity", ["high", "critical"])
         .gte("created_at", period_start),
       supabase.from("medication_records")
         .select("status, created_at")
         .eq("client_id", client_id)
+        .eq("organisation_id", organisation_id)
         .eq("status", "refused")
         .gte("created_at", period_start),
       supabase.from("visits")
         .select("status")
         .eq("client_id", client_id)
+        .eq("organisation_id", organisation_id)
         .gte("scheduled_start", period_start)
         .lte("scheduled_start", period_end),
-      supabase.from("clients").select("first_name, last_name").eq("id", client_id).single(),
+      supabase.from("clients").select("first_name, last_name").eq("id", client_id).eq("organisation_id", organisation_id).single(),
     ]);
 
     const completed = visits?.filter(v => v.status === "completed").length ?? 0;
