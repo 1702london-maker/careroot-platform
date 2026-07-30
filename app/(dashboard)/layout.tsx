@@ -30,8 +30,8 @@ export default async function DashboardLayout({
     redirect("/family/portal");
   }
 
-  if (userRecord?.role === "carer") {
-    redirect("/carer");
+  if (["carer", "senior_carer"].includes(userRecord?.role)) {
+    redirect("/carer/home");
   }
 
   const org = userRecord?.organisations as Record<string, string> | null;
