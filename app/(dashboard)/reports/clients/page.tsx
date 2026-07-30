@@ -60,11 +60,25 @@ export default function ClientReportsPage() {
       if (!u) return;
 
       const since = new Date(Date.now() - 30 * 24 * 3600000).toISOString();
-      const [{ data: clients }, { data: visits }, { data: meds }, { data: nutrition }, { data: carePlans }, { data: incidents }, { data: emergencies }] = await Promise.all([
-        supabase.from("clients").select("id, first_name, last_name, risk_level, onboarding_complete").eq("organisation_id", u.organisation_id).neq("status", "deceased").neq("status", "inactive"),
+
+      // Fetch clients first so their IDs can scope tables without org_id columns
+      const { data: clients } = await supabase
+        .from("clients")
+        .select("id, first_name, last_name, risk_level, onboarding_complete")
+        .eq("organisation_id", u.organisation_id)
+        .neq("status", "deceased")
+        .neq("status", "inactive");
+
+      const orgClientIds = (clients ?? []).map((c) => c.id);
+
+      const [{ data: visits }, { data: meds }, { data: nutrition }, { data: carePlans }, { data: incidents }, { data: emergencies }] = await Promise.all([
         supabase.from("visits").select("client_id, status, scheduled_start").eq("organisation_id", u.organisation_id).gte("scheduled_start", since),
-        supabase.from("medication_records").select("client_id, status, created_at").gte("created_at", since),
-        supabase.from("nutrition_records").select("client_id, consumed, concerns, server_timestamp").gte("server_timestamp", since),
+        orgClientIds.length > 0
+          ? supabase.from("medication_records").select("client_id, status, created_at").in("client_id", orgClientIds).gte("created_at", since)
+          : Promise.resolve({ data: [] }),
+        orgClientIds.length > 0
+          ? supabase.from("nutrition_records").select("client_id, consumed, concerns, server_timestamp").in("client_id", orgClientIds).gte("server_timestamp", since)
+          : Promise.resolve({ data: [] }),
         supabase.from("care_plans").select("client_id, status, review_date, updated_at").eq("organisation_id", u.organisation_id),
         supabase.from("incidents").select("client_id, severity, status, reported_at").eq("organisation_id", u.organisation_id).gte("reported_at", since),
         supabase.from("emergency_events").select("client_id, status, created_at").eq("organisation_id", u.organisation_id).gte("created_at", since),

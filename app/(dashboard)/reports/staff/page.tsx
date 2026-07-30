@@ -70,14 +70,25 @@ export default function StaffReportsPage() {
       const now = new Date();
       const start = new Date(now.getFullYear(), now.getMonth() - (dateRange === "quarter" ? 3 : 1), 1).toISOString();
 
-      const [{ data: carers }, { data: visits }, { data: compliance }, { data: shiftLogs }] = await Promise.all([
-        supabase.from("users").select("id, first_name, last_name, created_at, dbs_expiry, right_to_work_verified").eq("organisation_id", u.organisation_id).eq("role", "carer").eq("is_active", true),
+      // Fetch carers first so their IDs can scope shift_logs (no org_id column on shift_logs)
+      const { data: carers } = await supabase
+        .from("users")
+        .select("id, first_name, last_name, created_at, dbs_expiry, right_to_work_verified")
+        .eq("organisation_id", u.organisation_id)
+        .eq("role", "carer")
+        .eq("is_active", true);
+
+      const carerIds = (carers ?? []).map((c: CarerRow) => c.id);
+
+      const [{ data: visits }, { data: compliance }, { data: shiftLogs }] = await Promise.all([
         supabase.from("visits").select("carer_id, status, actual_start, actual_end, scheduled_start").eq("organisation_id", u.organisation_id).gte("scheduled_start", start),
-        supabase.from("staff_compliance").select("staff_id, compliance_item, status, valid_until"),
-        supabase.from("shift_logs").select("staff_id, id").gte("server_timestamp", start),
+        supabase.from("staff_compliance").select("staff_id, compliance_item, status, valid_until").eq("organisation_id", u.organisation_id),
+        carerIds.length > 0
+          ? supabase.from("shift_logs").select("staff_id, id").gte("server_timestamp", start).in("staff_id", carerIds)
+          : Promise.resolve({ data: [] }),
       ]);
 
-      const carerRows = (carers ?? []) as CarerRow[];
+      const carerRows = (carers ?? []) as CarerRow[]; // already fetched and scoped to org
       const scheduled: Record<string, number> = {};
       const completed: Record<string, number> = {};
       const hours: Record<string, number> = {};
