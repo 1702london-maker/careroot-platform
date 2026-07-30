@@ -37,6 +37,12 @@ export default async function ClientProfilePage({ params }: Props) {
 
   if (error || !client) notFound();
 
+  const { data: orgStaff } = await supabase
+    .from("users")
+    .select("id")
+    .eq("organisation_id", sessionUser.organisation_id);
+  const orgStaffIds = (orgStaff ?? []).map((staff) => staff.id);
+
   const [
     { data: carePlans },
     { data: medications },
@@ -59,7 +65,9 @@ export default async function ClientProfilePage({ params }: Props) {
     supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("family_access").select("*, users!family_access_user_id_fkey(first_name, last_name, email, phone)").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id),
     supabase.from("body_map_injuries").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at"),
-    supabase.from("shift_logs").select("id, log_type, content, transcription, server_timestamp, within_approved_radius, users(first_name, last_name)").eq("client_id", id).order("server_timestamp", { ascending: false }).limit(10),
+    orgStaffIds.length > 0
+      ? supabase.from("shift_logs").select("id, log_type, content, transcription, server_timestamp, within_approved_radius, users(first_name, last_name)").eq("client_id", id).in("staff_id", orgStaffIds).order("server_timestamp", { ascending: false }).limit(10)
+      : Promise.resolve({ data: [] }),
     supabase.from("client_documents").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("uploaded_at", { ascending: false }),
   ]);
 

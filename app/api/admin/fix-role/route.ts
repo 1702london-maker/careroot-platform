@@ -1,31 +1,23 @@
 import { NextResponse } from "next/server";
-import { createClient, createServiceClientSync } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
-// One-time route to promote the authenticated user to org_admin
-// Safe: only works if user is already authenticated and has no role or wrong role
 export async function POST() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const service = createServiceClientSync();
-
-  const { data: existing } = await service
+  const { data: currentUser } = await supabase
     .from("users")
-    .select("role, organisation_id")
+    .select("role")
     .eq("id", user.id)
     .single();
 
-  if (existing?.role === "org_admin" || existing?.role === "superadmin") {
-    return NextResponse.json({ message: "Role already correct", role: existing.role });
+  if (currentUser?.role !== "superadmin") {
+    return NextResponse.json({ error: "This support route is disabled for non-superadmin users." }, { status: 403 });
   }
 
-  const { error } = await service
-    .from("users")
-    .update({ role: "org_admin" })
-    .eq("id", user.id);
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json({ success: true, message: "Role updated to org_admin" });
+  return NextResponse.json(
+    { error: "Role repair must be performed through the audited users admin screen." },
+    { status: 410 }
+  );
 }

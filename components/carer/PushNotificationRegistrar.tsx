@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { getOrCreateDeviceId } from "@/lib/device-id";
 
 export function PushNotificationRegistrar() {
   useEffect(() => {
@@ -27,7 +28,7 @@ export function PushNotificationRegistrar() {
           await fetch("/api/devices/push-token", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ push_token: token.value }),
+            body: JSON.stringify({ push_token: token.value, device_id: getOrCreateDeviceId() }),
           });
         });
 
