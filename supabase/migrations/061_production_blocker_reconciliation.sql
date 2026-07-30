@@ -10,26 +10,54 @@ ALTER TABLE public.organisations
 ADD CONSTRAINT organisations_plan_check
 CHECK (plan IN ('seed', 'grow', 'scale', 'enterprise'));
 
-ALTER TABLE public.organisations
-DROP CONSTRAINT IF EXISTS organisations_subscription_tier_check;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'organisations'
+      AND column_name = 'subscription_tier'
+  ) THEN
+    ALTER TABLE public.organisations
+    DROP CONSTRAINT IF EXISTS organisations_subscription_tier_check;
 
-ALTER TABLE public.organisations
-ADD CONSTRAINT organisations_subscription_tier_check
-CHECK (
-  subscription_tier IS NULL
-  OR subscription_tier IN ('starter', 'growth', 'enterprise', 'seed', 'grow', 'scale')
-);
+    ALTER TABLE public.organisations
+    ADD CONSTRAINT organisations_subscription_tier_check
+    CHECK (
+      subscription_tier IS NULL
+      OR subscription_tier IN ('starter', 'growth', 'enterprise', 'seed', 'grow', 'scale')
+    );
+  END IF;
+END $$;
 
 UPDATE public.organisations
 SET plan = CASE
   WHEN plan IN ('seed', 'grow', 'scale', 'enterprise') THEN plan
-  WHEN subscription_tier = 'starter' THEN 'seed'
-  WHEN subscription_tier = 'growth' THEN 'grow'
-  WHEN subscription_tier = 'enterprise' THEN 'enterprise'
-  WHEN subscription_tier IN ('seed', 'grow', 'scale') THEN subscription_tier
   ELSE 'seed'
 END
 WHERE plan IS NULL OR plan NOT IN ('seed', 'grow', 'scale', 'enterprise');
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'organisations'
+      AND column_name = 'subscription_tier'
+  ) THEN
+    UPDATE public.organisations
+    SET plan = CASE
+      WHEN subscription_tier = 'starter' THEN 'seed'
+      WHEN subscription_tier = 'growth' THEN 'grow'
+      WHEN subscription_tier = 'enterprise' THEN 'enterprise'
+      WHEN subscription_tier IN ('seed', 'grow', 'scale') THEN subscription_tier
+      ELSE plan
+    END
+    WHERE subscription_tier IS NOT NULL;
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.client_documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
