@@ -142,12 +142,11 @@ export default async function ReportsDashboardPage() {
       title: "Custom Reports",
       description: "Build your own report by combining fields, filters, and date ranges.",
       icon: FileText,
-      href: "/reports/visits",
-      reports: 0,
-      primaryMetric: "Template builder",
-      secondaryMetric: "Coming soon",
+      href: "/reports/custom",
+      reports: 6,
+      primaryMetric: "Live export packs",
+      secondaryMetric: "Clients, visits, staff, quality, finance",
       colour: "bg-gray-50 text-cr-charcoal border-gray-200",
-      badge: "Coming soon",
     },
   ];
 
