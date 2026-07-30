@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { NextRequest } from "next/server";
+import { createHash } from "crypto";
 
 export interface APIContext {
   organisationId: string;
@@ -31,17 +32,20 @@ export async function validateAPIKey(req: NextRequest): Promise<APIContext | nul
 
   const supabase = await createServiceClient();
 
-  // Find org with matching API key in settings jsonb
+  const apiKeyHash = createHash("sha256").update(apiKey).digest("hex");
+
+  // Find org with matching API key hash in settings jsonb
   const { data: orgs } = await supabase
     .from("organisations")
     .select("id, settings")
-    .not("settings->api_key", "is", null);
+    .eq("settings->>api_access_enabled", "true")
+    .not("settings->api_key_hash", "is", null);
 
   if (!orgs) return null;
 
   for (const org of orgs) {
     const settings = org.settings as Record<string, unknown> | null;
-    if (settings?.api_key === apiKey && settings?.api_access_enabled) {
+    if (settings?.api_key_hash === apiKeyHash && settings?.api_access_enabled) {
       return { organisationId: org.id };
     }
   }

@@ -26,11 +26,13 @@ export default async function ClientProfilePage({ params }: Props) {
     .eq("id", user.id)
     .single();
 
+  if (!sessionUser?.organisation_id) notFound();
+
   const { data: client, error } = await supabase
     .from("clients")
     .select("*")
     .eq("id", id)
-    .eq("organisation_id", sessionUser?.organisation_id ?? "")
+    .eq("organisation_id", sessionUser.organisation_id)
     .single();
 
   if (error || !client) notFound();

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CarerEmarClient } from "@/components/carer/CarerEmarClient";
+import { londonDayStartIso } from "@/lib/dates";
 
 export default async function CarerEmarPage() {
   const supabase = await createClient();
@@ -10,7 +11,6 @@ export default async function CarerEmarPage() {
   const now = new Date();
   const thirtyMinsAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
-  // Only show eMAR for clients on an active/recent shift
   const { data: activeShifts } = await supabase
     .from("shifts")
     .select("id, client_ids, scheduled_start, scheduled_end, actual_end, status")
@@ -20,13 +20,7 @@ export default async function CarerEmarPage() {
 
   const accessibleClientIds: string[] = [];
   const activeShiftId = activeShifts?.find(shift => shift.status === "active")?.id ?? activeShifts?.[0]?.id ?? "";
-
-  // UK midnight — correct for both GMT (UTC+0) and BST (UTC+1)
-  const ukDateStr = now.toLocaleDateString("en-CA", { timeZone: "Europe/London" }); // "YYYY-MM-DD"
-  const isBST = now.toLocaleString("en-GB", { timeZone: "Europe/London", timeZoneName: "shortOffset" }).includes("GMT+1");
-  const ukMidnight = new Date(`${ukDateStr}T00:00:00.000Z`);
-  ukMidnight.setUTCHours(ukMidnight.getUTCHours() - (isBST ? 1 : 0));
-  let recordsSince = ukMidnight.toISOString();
+  let recordsSince = londonDayStartIso(now);
 
   activeShifts?.forEach(shift => {
     const ended = shift.actual_end || shift.scheduled_end;
@@ -49,7 +43,7 @@ export default async function CarerEmarPage() {
           <p className="text-xs text-cr-slate">Medication Administration Record</p>
         </div>
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-          <div className="text-4xl mb-4">💊</div>
+          <div className="text-4xl mb-4">Medication</div>
           <p className="font-semibold text-cr-charcoal">No active shift</p>
           <p className="text-sm text-cr-slate mt-2">
             eMAR is only accessible during an active shift or up to 30 minutes after a shift ends.

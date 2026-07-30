@@ -249,8 +249,10 @@ async function handleAddonPurchase(
     ).toString("hex");
     const { data: current } = await supabase.from("organisations").select("settings").eq("id", orgId).single();
     const settings = (current?.settings as Record<string, unknown>) ?? {};
+    const safeSettings = { ...settings };
+    delete safeSettings.api_key;
     await supabase.from("organisations").update({
-      settings: { ...settings, api_access_enabled: true, api_key_hash: keyHash, api_key_prefix: rawKey.slice(0, 12) },
+      settings: { ...safeSettings, api_access_enabled: true, api_key_hash: keyHash, api_key_prefix: rawKey.slice(0, 12) },
     }).eq("id", orgId);
 
     if (resend && org?.email) {
