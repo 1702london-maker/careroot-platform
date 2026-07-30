@@ -26,6 +26,17 @@ function writeQueue(items: OfflineQueueItem[]) {
   window.dispatchEvent(new CustomEvent("careroot:offline-queue"));
 }
 
+async function requestBackgroundSync() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const sync = registration as ServiceWorkerRegistration & { sync?: { register: (tag: string) => Promise<void> } };
+    await sync.sync?.register("careroot-offline-sync");
+  } catch {
+    // Background Sync is optional; normal online/mount flush remains the fallback.
+  }
+}
+
 export function getPendingSyncCount() {
   return readQueue().length;
 }
@@ -40,6 +51,7 @@ export function queueOfflineRequest(endpoint: string, body: Record<string, unkno
     attempts: 0,
   };
   writeQueue([...readQueue(), item]);
+  requestBackgroundSync();
   return item;
 }
 
@@ -105,9 +117,4 @@ export async function flushOfflineQueue() {
 
   writeQueue(remaining);
   return { synced, remaining: remaining.length };
-}
-
-export function registerOnlineFlushListener() {
-  if (typeof window === "undefined") return;
-  window.addEventListener("online", () => { flushOfflineQueue(); });
 }

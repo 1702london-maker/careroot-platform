@@ -10,7 +10,14 @@ export function OfflineFlushProvider() {
     window.addEventListener("online", handleOnline);
     // Also attempt flush on mount in case we're already online with pending items
     flushOfflineQueue();
-    return () => window.removeEventListener("online", handleOnline);
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === "CAREROOT_FLUSH_OFFLINE_QUEUE") flushOfflineQueue();
+    };
+    navigator.serviceWorker?.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      navigator.serviceWorker?.removeEventListener("message", handleMessage);
+    };
   }, []);
 
   return null;

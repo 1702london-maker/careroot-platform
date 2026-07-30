@@ -50,17 +50,17 @@ export default async function ClientProfilePage({ params }: Props) {
     { data: recentShiftLogs },
     { data: clientDocuments },
   ] = await Promise.all([
-    supabase.from("care_plans").select("*").eq("client_id", id).order("created_at", { ascending: false }),
-    supabase.from("medications").select("*").eq("client_id", id).eq("is_active", true).order("name"),
-    supabase.from("visits").select("*, users(first_name, last_name)").eq("client_id", id).order("scheduled_start", { ascending: false }).limit(20),
-    supabase.from("incidents").select("*").eq("client_id", id).order("reported_at", { ascending: false }).limit(10),
-    supabase.from("risk_assessments").select("*").eq("client_id", id).order("created_at", { ascending: false }).limit(1),
-    supabase.from("nutrition_profiles").select("*").eq("client_id", id).maybeSingle(),
-    supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-    supabase.from("family_access").select("*, users!family_access_user_id_fkey(first_name, last_name, email, phone)").eq("client_id", id),
-    supabase.from("body_map_injuries").select("*").eq("client_id", id).order("created_at"),
+    supabase.from("care_plans").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }),
+    supabase.from("medications").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).eq("is_active", true).order("name"),
+    supabase.from("visits").select("*, users(first_name, last_name)").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("scheduled_start", { ascending: false }).limit(20),
+    supabase.from("incidents").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("reported_at", { ascending: false }).limit(10),
+    supabase.from("risk_assessments").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }).limit(1),
+    supabase.from("nutrition_profiles").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).maybeSingle(),
+    supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("family_access").select("*, users!family_access_user_id_fkey(first_name, last_name, email, phone)").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id),
+    supabase.from("body_map_injuries").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at"),
     supabase.from("shift_logs").select("id, log_type, content, transcription, server_timestamp, within_approved_radius, users(first_name, last_name)").eq("client_id", id).order("server_timestamp", { ascending: false }).limit(10),
-    supabase.from("client_documents").select("*").eq("client_id", id).order("uploaded_at", { ascending: false }),
+    supabase.from("client_documents").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("uploaded_at", { ascending: false }),
   ]);
 
   const address = client.address as Record<string, string> | null;

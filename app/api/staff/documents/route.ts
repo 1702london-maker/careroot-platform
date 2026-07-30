@@ -45,6 +45,13 @@ export async function POST(req: NextRequest) {
   const filePath = `${user.organisation_id}/${staffId}/${crypto.randomUUID()}-${fileName}`;
   const bytes = Buffer.from(await file.arrayBuffer());
 
+  const { data: existingDocument } = await service
+    .from("staff_documents")
+    .select("file_path")
+    .eq("staff_id", staffId)
+    .eq("document_key", documentKey)
+    .maybeSingle();
+
   const { error: uploadError } = await service.storage
     .from("staff-documents")
     .upload(filePath, bytes, {
@@ -86,6 +93,11 @@ export async function POST(req: NextRequest) {
     console.error("staff document upsert error:", upsertError);
     await service.storage.from("staff-documents").remove([filePath]);
     return NextResponse.json({ error: "Failed to save document record" }, { status: 500 });
+  }
+
+  const oldFilePath = existingDocument?.file_path;
+  if (oldFilePath && oldFilePath !== filePath) {
+    await service.storage.from("staff-documents").remove([oldFilePath]);
   }
 
   return NextResponse.json({ document }, { status: 201 });

@@ -1,28 +1,64 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Download } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-function exportCSV(data: Record<string, unknown>[], filename: string) {
+type ReportRow = Record<string, string | number>;
+type ReportSection = { title: string; desc: string; rows: ReportRow[] };
+type CarerRow = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  created_at: string;
+  dbs_expiry: string | null;
+  right_to_work_verified: boolean | null;
+};
+
+function exportCSV(data: ReportRow[], filename: string) {
   if (!data.length) return;
   const headers = Object.keys(data[0]);
-  const csv = [headers.join(","), ...data.map((r) => headers.map((h) => `"${r[h] ?? ""}"`).join(","))].join("\n");
+  const csv = [headers.join(","), ...data.map((r) => headers.map((h) => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
   a.download = filename;
   a.click();
 }
 
-type CarerRow = { id: string; first_name: string; last_name: string; created_at: string };
-type HoursRow = { name: string; hours: number; visits: number; completion: number };
+function DataSection({ section }: { section: ReportSection }) {
+  const headers = Object.keys(section.rows[0] ?? { status: "" });
+  return (
+    <div className="mb-5 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-body text-lg font-semibold text-cr-charcoal">{section.title}</h3>
+          <p className="mt-0.5 text-xs text-cr-slate">{section.desc}</p>
+        </div>
+        <button
+          onClick={() => exportCSV(section.rows, `careroot-${section.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${new Date().toISOString().split("T")[0]}.csv`)}
+          className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 font-body text-xs font-medium transition-colors hover:border-cr-forest"
+        >
+          <Download size={12} /> Export
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full font-body text-sm">
+          <thead className="bg-cr-mint">
+            <tr>{headers.map((h) => <th key={h} className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-cr-slate">{h.replace(/_/g, " ")}</th>)}</tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {section.rows.map((row, i) => <tr key={i}>{headers.map((h) => <td key={h} className="px-3 py-2.5 text-cr-charcoal">{String(row[h] ?? "")}</td>)}</tr>)}
+            {!section.rows.length && <tr><td colSpan={headers.length} className="py-6 text-center text-xs text-cr-slate">No data</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export default function StaffReportsPage() {
   const supabase = createClient();
-  const [hoursData, setHoursData] = useState<HoursRow[]>([]);
-  const [burnoutData, setBurnoutData] = useState<{ name: string; hours: number; risk: string }[]>([]);
-  const [retentionData, setRetentionData] = useState<{ name: string; start_date: string; tenure_months: number }[]>([]);
+  const [sections, setSections] = useState<ReportSection[]>([]);
   const [dateRange, setDateRange] = useState("month");
 
   useEffect(() => {
@@ -34,176 +70,93 @@ export default function StaffReportsPage() {
       const now = new Date();
       const start = new Date(now.getFullYear(), now.getMonth() - (dateRange === "quarter" ? 3 : 1), 1).toISOString();
 
-      const [{ data: carers }, { data: visits }] = await Promise.all([
-        supabase.from("users").select("id, first_name, last_name, created_at").eq("organisation_id", u.organisation_id).eq("role", "carer").eq("is_active", true),
+      const [{ data: carers }, { data: visits }, { data: compliance }, { data: shiftLogs }] = await Promise.all([
+        supabase.from("users").select("id, first_name, last_name, created_at, dbs_expiry, right_to_work_verified").eq("organisation_id", u.organisation_id).eq("role", "carer").eq("is_active", true),
         supabase.from("visits").select("carer_id, status, actual_start, actual_end, scheduled_start").eq("organisation_id", u.organisation_id).gte("scheduled_start", start),
+        supabase.from("staff_compliance").select("staff_id, compliance_item, status, valid_until"),
+        supabase.from("shift_logs").select("staff_id, id").gte("server_timestamp", start),
       ]);
 
-      if (!carers || !visits) return;
-
-      // Hours worked per carer
-      const carerMap: Record<string, HoursRow> = {};
-      (carers as CarerRow[]).forEach((c) => {
-        carerMap[c.id] = { name: `${c.first_name} ${c.last_name}`, hours: 0, visits: 0, completion: 0 };
-      });
-
-      const scheduledCount: Record<string, number> = {};
-      visits.forEach((v) => {
-        if (!v.carer_id || !carerMap[v.carer_id]) return;
-        scheduledCount[v.carer_id] = (scheduledCount[v.carer_id] ?? 0) + 1;
-        if (v.status === "completed") {
-          carerMap[v.carer_id].visits++;
-          if (v.actual_start && v.actual_end) {
-            carerMap[v.carer_id].hours += (new Date(v.actual_end).getTime() - new Date(v.actual_start).getTime()) / 3600000;
+      const carerRows = (carers ?? []) as CarerRow[];
+      const scheduled: Record<string, number> = {};
+      const completed: Record<string, number> = {};
+      const hours: Record<string, number> = {};
+      (visits ?? []).forEach((visit) => {
+        if (!visit.carer_id) return;
+        scheduled[visit.carer_id] = (scheduled[visit.carer_id] ?? 0) + 1;
+        if (visit.status === "completed") {
+          completed[visit.carer_id] = (completed[visit.carer_id] ?? 0) + 1;
+          if (visit.actual_start && visit.actual_end) {
+            hours[visit.carer_id] = (hours[visit.carer_id] ?? 0) + (new Date(visit.actual_end).getTime() - new Date(visit.actual_start).getTime()) / 3600000;
           }
         }
       });
 
-      const hoursRows = Object.values(carerMap).map((r) => ({
-        ...r,
-        hours: Math.round(r.hours * 10) / 10,
-        completion: scheduledCount[Object.keys(carerMap).find((k) => carerMap[k] === r) ?? ""] ? Math.round((r.visits / (scheduledCount[Object.keys(carerMap).find((k) => carerMap[k] === r) ?? ""] || 1)) * 100) : 0,
-      })).sort((a, b) => b.hours - a.hours);
-      setHoursData(hoursRows);
+      const notes: Record<string, number> = {};
+      (shiftLogs ?? []).forEach((log) => {
+        if (log.staff_id) notes[log.staff_id] = (notes[log.staff_id] ?? 0) + 1;
+      });
 
-      // Burnout risk (simple: based on hours vs typical 37.5h contract)
-      setBurnoutData(hoursRows.map((r) => ({
-        name: r.name,
-        hours: r.hours,
-        risk: r.hours > 48 ? "high" : r.hours > 40 ? "medium" : "low",
-      })));
+      const name = (c: CarerRow) => `${c.first_name} ${c.last_name}`.trim();
+      const completionRate = (id: string) => scheduled[id] ? Math.round(((completed[id] ?? 0) / scheduled[id]) * 100) : 0;
+      const complianceFor = (id: string, matcher: (item: string) => boolean) => (compliance ?? []).filter((row) => row.staff_id === id && matcher(String(row.compliance_item)));
 
-      // Retention
-      const today = new Date();
-      setRetentionData((carers as CarerRow[]).map((c) => {
-        const start = new Date(c.created_at);
-        const months = Math.floor((today.getTime() - start.getTime()) / (30 * 24 * 3600000));
-        return { name: `${c.first_name} ${c.last_name}`, start_date: start.toLocaleDateString("en-GB"), tenure_months: months };
-      }).sort((a, b) => b.tenure_months - a.tenure_months));
+      setSections([
+        {
+          title: "Hours Worked",
+          desc: "Total hours delivered per carer in the selected period.",
+          rows: carerRows.map((c) => ({ carer: name(c), visits: completed[c.id] ?? 0, hours: Math.round((hours[c.id] ?? 0) * 10) / 10, completion_rate: `${completionRate(c.id)}%` })),
+        },
+        {
+          title: "Attendance Report",
+          desc: "Percentage of scheduled visits completed per carer.",
+          rows: carerRows.map((c) => ({ carer: name(c), scheduled_visits: scheduled[c.id] ?? 0, completed_visits: completed[c.id] ?? 0, attendance_rate: `${completionRate(c.id)}%` })),
+        },
+        {
+          title: "Training Completion",
+          desc: "Required training completion by carer.",
+          rows: carerRows.map((c) => {
+            const rows = complianceFor(c.id, (item) => item.includes("training"));
+            const current = rows.filter((row) => row.status === "current").length;
+            return { carer: name(c), training_items: rows.length, current_items: current, completion_rate: rows.length ? `${Math.round((current / rows.length) * 100)}%` : "No records" };
+          }),
+        },
+        {
+          title: "DBS Renewal",
+          desc: "Staff DBS certificate status with renewal reminders.",
+          rows: carerRows.map((c) => {
+            const days = c.dbs_expiry ? Math.ceil((new Date(c.dbs_expiry).getTime() - now.getTime()) / 86400000) : null;
+            return { carer: name(c), dbs_expiry: c.dbs_expiry ? new Date(c.dbs_expiry).toLocaleDateString("en-GB") : "Missing", status: days === null ? "missing" : days < 0 ? "expired" : days <= 60 ? "expiring soon" : "current" };
+          }),
+        },
+        {
+          title: "Carer Performance",
+          desc: "Visit completion, care-note output, and hours worked.",
+          rows: carerRows.map((c) => ({ carer: name(c), visit_completion: `${completionRate(c.id)}%`, notes_submitted: notes[c.id] ?? 0, hours_worked: Math.round((hours[c.id] ?? 0) * 10) / 10 })),
+        },
+        {
+          title: "Right to Work",
+          desc: "Right to work verification status by staff member.",
+          rows: carerRows.map((c) => ({ carer: name(c), status: c.right_to_work_verified ? "verified" : "missing" })),
+        },
+      ]);
     });
   }, [dateRange]);
 
   return (
     <div className="max-w-5xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl text-cr-charcoal">Staff Reports</h1>
-          <p className="text-sm text-cr-slate font-body mt-0.5">Hours worked, attendance, burnout risk, training, and retention.</p>
+          <p className="mt-0.5 font-body text-sm text-cr-slate">Hours, attendance, burnout indicators, training, DBS, and right to work.</p>
         </div>
         <div className="flex gap-2">
           {[["month", "This month"], ["quarter", "Last quarter"]].map(([v, l]) => (
-            <button key={v} onClick={() => setDateRange(v)} className={`text-xs font-body font-medium px-3 py-1.5 rounded-lg border transition-colors ${dateRange === v ? "bg-cr-forest text-white border-cr-forest" : "border-gray-200 text-cr-charcoal hover:border-cr-forest"}`}>{l}</button>
+            <button key={v} onClick={() => setDateRange(v)} className={`rounded-lg border px-3 py-1.5 font-body text-xs font-medium transition-colors ${dateRange === v ? "border-cr-forest bg-cr-forest text-white" : "border-gray-200 text-cr-charcoal hover:border-cr-forest"}`}>{l}</button>
           ))}
         </div>
       </div>
-
-      {/* Hours Worked */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-5">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="font-body font-semibold text-cr-charcoal text-lg">Hours Worked</h3>
-            <p className="text-xs text-cr-slate mt-0.5">Total hours delivered per carer in the selected period</p>
-          </div>
-          <button onClick={() => exportCSV(hoursData, `careroot-staff-hours-${new Date().toISOString().split("T")[0]}.csv`)} className="text-xs font-body font-medium border border-gray-200 rounded-lg px-3 py-1.5 hover:border-cr-forest transition-colors flex items-center gap-1.5"><Download size={12} /> Export</button>
-        </div>
-        {hoursData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={hoursData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8F5EE" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 11, fontFamily: "DM Sans" }} unit="h" />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontFamily: "DM Sans" }} width={130} />
-              <Tooltip contentStyle={{ fontFamily: "DM Sans", fontSize: 12 }} formatter={(v) => [`${Number(v ?? 0)}h`, "Hours"]} />
-              <Bar dataKey="hours" fill="#1A3C2E" name="Hours" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-48 flex items-center justify-center bg-cr-mint/30 rounded-lg">
-            <p className="text-sm text-cr-slate font-body">No active carers found or no visits in this period.</p>
-          </div>
-        )}
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm font-body">
-            <thead className="bg-cr-mint"><tr>{["Carer", "Visits", "Hours", "Completion Rate"].map((h) => <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-cr-slate uppercase tracking-wide">{h}</th>)}</tr></thead>
-            <tbody className="divide-y divide-gray-50">
-              {hoursData.map((r) => <tr key={r.name}><td className="px-3 py-2.5 font-medium text-cr-charcoal">{r.name}</td><td className="px-3 py-2.5 text-cr-slate">{r.visits}</td><td className="px-3 py-2.5 text-cr-charcoal">{r.hours}h</td><td className="px-3 py-2.5"><span className={`text-xs font-semibold ${r.completion >= 90 ? "text-cr-forest" : r.completion >= 70 ? "text-amber-600" : "text-cr-red"}`}>{r.completion}%</span></td></tr>)}
-              {!hoursData.length && <tr><td colSpan={4} className="text-center py-6 text-cr-slate text-xs">No data</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Burnout Risk */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-5">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="font-body font-semibold text-cr-charcoal text-lg">Burnout Risk</h3>
-            <p className="text-xs text-cr-slate mt-0.5">Traffic light based on hours worked vs standard contract (37.5h/week)</p>
-          </div>
-          <button onClick={() => exportCSV(burnoutData, `careroot-burnout-risk-${new Date().toISOString().split("T")[0]}.csv`)} className="text-xs font-body font-medium border border-gray-200 rounded-lg px-3 py-1.5 hover:border-cr-forest transition-colors flex items-center gap-1.5"><Download size={12} /> Export</button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm font-body">
-            <thead className="bg-cr-mint"><tr>{["Carer", "Hours This Period", "Burnout Risk", "Recommended Action"].map((h) => <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-cr-slate uppercase tracking-wide">{h}</th>)}</tr></thead>
-            <tbody className="divide-y divide-gray-50">
-              {burnoutData.map((r) => (
-                <tr key={r.name}>
-                  <td className="px-3 py-2.5 font-medium text-cr-charcoal">{r.name}</td>
-                  <td className="px-3 py-2.5 text-cr-charcoal">{r.hours}h</td>
-                  <td className="px-3 py-2.5">
-                    <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${r.risk === "high" ? "bg-red-100 text-red-700" : r.risk === "medium" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
-                      {r.risk.charAt(0).toUpperCase() + r.risk.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-cr-slate text-xs">{r.risk === "high" ? "Review workload — consider reducing hours" : r.risk === "medium" ? "Monitor — approaching overtime threshold" : "No action needed"}</td>
-                </tr>
-              ))}
-              {!burnoutData.length && <tr><td colSpan={4} className="text-center py-6 text-cr-slate text-xs">No data</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Staff Retention */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-5">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="font-body font-semibold text-cr-charcoal text-lg">Staff Retention</h3>
-            <p className="text-xs text-cr-slate mt-0.5">Active carers by start date and tenure</p>
-          </div>
-          <button onClick={() => exportCSV(retentionData, `careroot-staff-retention-${new Date().toISOString().split("T")[0]}.csv`)} className="text-xs font-body font-medium border border-gray-200 rounded-lg px-3 py-1.5 hover:border-cr-forest transition-colors flex items-center gap-1.5"><Download size={12} /> Export</button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm font-body">
-            <thead className="bg-cr-mint"><tr>{["Carer", "Start Date", "Tenure"].map((h) => <th key={h} className="px-3 py-2 text-left text-xs font-semibold text-cr-slate uppercase tracking-wide">{h}</th>)}</tr></thead>
-            <tbody className="divide-y divide-gray-50">
-              {retentionData.map((r) => <tr key={r.name}><td className="px-3 py-2.5 font-medium text-cr-charcoal">{r.name}</td><td className="px-3 py-2.5 text-cr-slate">{r.start_date}</td><td className="px-3 py-2.5 text-cr-charcoal">{r.tenure_months >= 12 ? `${Math.floor(r.tenure_months / 12)}y ${r.tenure_months % 12}m` : `${r.tenure_months}m`}</td></tr>)}
-              {!retentionData.length && <tr><td colSpan={3} className="text-center py-6 text-cr-slate text-xs">No active carers</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Remaining staff reports */}
-      {[
-        { title: "Attendance Report", desc: "Percentage of scheduled visits completed per carer" },
-        { title: "Training Completion", desc: "Required training completion by carer — compliance percentages" },
-        { title: "DBS Renewal", desc: "Staff DBS certificate status with renewal reminders" },
-        { title: "Carer Performance", desc: "Visit completion rate, note submission rate, and client sentiment" },
-        { title: "Right to Work", desc: "All staff right to work verification status and document expiry" },
-      ].map((r) => (
-        <div key={r.title} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-5">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h3 className="font-body font-semibold text-cr-charcoal text-lg">{r.title}</h3>
-              <p className="text-xs text-cr-slate mt-0.5">{r.desc}</p>
-            </div>
-            <button className="text-xs font-body font-medium border border-gray-200 rounded-lg px-3 py-1.5 opacity-50 flex items-center gap-1.5"><Download size={12} /> Export</button>
-          </div>
-          <div className="h-36 flex items-center justify-center bg-cr-mint/30 rounded-lg">
-            <p className="text-sm text-cr-slate font-body">Data populates as records are added to the system.</p>
-          </div>
-        </div>
-      ))}
+      {sections.map((section) => <DataSection key={section.title} section={section} />)}
     </div>
   );
 }

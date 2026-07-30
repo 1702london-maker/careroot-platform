@@ -59,3 +59,12 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+self.addEventListener("sync", (event) => {
+  if (event.tag !== "careroot-offline-sync") return;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      clients.forEach((client) => client.postMessage({ type: "CAREROOT_FLUSH_OFFLINE_QUEUE" }));
+    })
+  );
+});
+
