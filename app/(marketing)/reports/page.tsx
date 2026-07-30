@@ -29,7 +29,7 @@ const CATEGORIES = [
   { title: "Compliance Reports", icon: ShieldCheck, count: "10 reports", desc: "CQC evidence, complaint analysis, incident trends, DBS status" },
   { title: "Staff Reports", icon: Users, count: "8 reports", desc: "Hours worked, attendance, burnout risk, training completion" },
   { title: "Client Reports", icon: Heart, count: "7 reports", desc: "Care plan status, medication adherence, risk levels, appetite trends" },
-  { title: "Custom Reports", icon: Settings, count: "Coming soon", desc: "Combine any data points into a custom report with your own filters" },
+  { title: "Custom Reports", icon: Settings, count: "6 exports", desc: "Live export packs across clients, visits, staff, quality and finance" },
 ];
 
 const FEATURES = [
