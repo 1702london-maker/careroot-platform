@@ -22,11 +22,12 @@ export default async function ClientProfilePage({ params }: Props) {
 
   const { data: sessionUser } = await supabase
     .from("users")
-    .select("organisation_id")
+    .select("organisation_id, role")
     .eq("id", user.id)
     .single();
 
   if (!sessionUser?.organisation_id) notFound();
+  const canManageEmergencyAccess = ["org_admin", "superadmin"].includes(String(sessionUser.role));
 
   const { data: client, error } = await supabase
     .from("clients")
@@ -62,7 +63,9 @@ export default async function ClientProfilePage({ params }: Props) {
     supabase.from("incidents").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("reported_at", { ascending: false }).limit(10),
     supabase.from("risk_assessments").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }).limit(1),
     supabase.from("nutrition_profiles").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).maybeSingle(),
-    supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    canManageEmergencyAccess
+      ? supabase.from("emergency_access_tokens").select("token, pin").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }).limit(1).maybeSingle()
+      : Promise.resolve({ data: null }),
     supabase.from("family_access").select("*, users!family_access_user_id_fkey(first_name, last_name, email, phone)").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id),
     supabase.from("body_map_injuries").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at"),
     orgStaffIds.length > 0
@@ -207,6 +210,7 @@ export default async function ClientProfilePage({ params }: Props) {
         nutritionProfile={nutritionProfile}
         emergencyToken={emergencyToken?.token || null}
         emergencyPin={emergencyToken?.pin || null}
+        canManageEmergencyAccess={canManageEmergencyAccess}
         familyAccess={familyAccess || []}
         clientDocuments={clientDocuments || []}
       />

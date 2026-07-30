@@ -40,21 +40,23 @@ interface Props {
   nutritionProfile: Record<string, unknown> | null;
   emergencyToken: string | null;
   emergencyPin: string | null;
+  canManageEmergencyAccess?: boolean;
   familyAccess: Record<string, unknown>[];
   clientDocuments: Record<string, unknown>[];
 }
 
 export function ClientTabs({
   client, carePlans, medications, recentVisits, incidents,
-  riskAssessment, nutritionProfile, emergencyToken, emergencyPin, familyAccess, clientDocuments,
+  riskAssessment, nutritionProfile, emergencyToken, emergencyPin, canManageEmergencyAccess = false, familyAccess, clientDocuments,
 }: Props) {
   const [active, setActive] = useState("overview");
+  const tabs = canManageEmergencyAccess ? TABS : TABS.filter((tab) => tab.id !== "emergency");
 
   return (
     <div>
       {/* Tab bar */}
       <div className="flex overflow-x-auto border-b border-gray-200 mb-6 gap-0">
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActive(tab.id)}
@@ -80,7 +82,7 @@ export function ClientTabs({
       {active === "bodymap" && <ClientBodyMapTab client={client} bodyMapInjuries={(client.bodyMapInjuries ?? []) as Record<string, unknown>[]} />}
       {active === "documents" && <ClientDocumentsTab client={client} initialDocs={clientDocuments as never} />}
       {active === "family" && <ClientFamilyTab client={client} familyAccess={familyAccess as never} />}
-      {active === "emergency" && <ClientEmergencyTab client={client} emergencyToken={emergencyToken} emergencyPin={emergencyPin} />}
+      {active === "emergency" && canManageEmergencyAccess && <ClientEmergencyTab client={client} emergencyToken={emergencyToken} emergencyPin={emergencyPin} />}
       {active === "ai" && <ClientAITab client={client} />}
     </div>
   );

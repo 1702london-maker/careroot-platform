@@ -78,12 +78,18 @@ export async function POST(req: Request) {
     organisationId = client?.organisation_id ?? null;
     if (client) clientName = `${client.first_name} ${client.last_name}`;
 
+    if (!client?.gps_lat || !client?.gps_lng) {
+      return NextResponse.json({
+        error: "Client location is not set. Ask your manager to complete the client address/GPS record before location-verified care notes can be saved.",
+      }, { status: 409 });
+    }
+
     // Server-side approved-radius check (BUILD_SPEC E/B8) — never trust the client flag.
     radiusResult = withinApprovedRadius(
       gps_lat, gps_lng, client?.gps_lat, client?.gps_lng, client?.approved_radius_metres ?? 300
     );
 
-    if (client?.gps_lat && client?.gps_lng && radiusResult !== true) {
+    if (radiusResult !== true) {
       return NextResponse.json({
         error: radiusResult === false
           ? "You are outside the approved client radius. Careroot cannot save location-based care records away from the client. Contact your manager if this is incorrect."
