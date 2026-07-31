@@ -22,9 +22,11 @@ export default async function ClientDashboardPage({ params }: Props) {
 
   if (!access) notFound();
 
-  const clientRecord = Array.isArray(access.clients)
-    ? access.clients[0]
-    : access.clients;
+  const { data: clientRecord } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("id", clientId)
+    .single();
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
