@@ -22,6 +22,10 @@ export default async function ClientDashboardPage({ params }: Props) {
 
   if (!access) notFound();
 
+  const clientRecord = Array.isArray(access.clients)
+    ? access.clients[0]
+    : access.clients;
+
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
@@ -94,7 +98,7 @@ export default async function ClientDashboardPage({ params }: Props) {
 
   return (
     <ClientPortalClient
-      client={(access.clients ?? {}) as Record<string, unknown>}
+      client={(clientRecord ?? {}) as Record<string, unknown>}
       todayVisits={(todayVisits ?? []) as Record<string, unknown>[]}
       recentVisits={(recentVisits ?? []) as Record<string, unknown>[]}
       carePlan={(carePlan ?? null) as Record<string, unknown> | null}
