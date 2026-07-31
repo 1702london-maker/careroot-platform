@@ -25,7 +25,6 @@ type Props = {
   consentRecords: Record<string, unknown>[];
   sarRequests: Record<string, unknown>[];
   complaints: Record<string, unknown>[];
-  familyAccess: Record<string, unknown>[];
   userEmail: string | null;
 };
 
@@ -35,14 +34,15 @@ const navItems: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "medication", label: "Medication", icon: <Pill size={18} /> },
   { id: "history", label: "History", icon: <HeartPulse size={18} /> },
   { id: "rights", label: "My Rights", icon: <ShieldCheck size={18} /> },
-  { id: "team", label: "My Team", icon: <Users size={18} /> },
+  { id: "team", label: "Support", icon: <Users size={18} /> },
   { id: "preferences", label: "My Preferences", icon: <PenLine size={18} /> },
 ];
 
 function statusClass(status?: string) {
-  if (status === "completed" || status === "administered" || status === "given") return "bg-green-100 text-green-700";
-  if (status === "missed" || status === "refused" || status === "overdue") return "bg-red-100 text-red-700";
-  if (status === "in_progress" || status === "received" || status === "scheduled") return "bg-amber-100 text-amber-700";
+  const normalised = status?.toLowerCase().replaceAll(" ", "_");
+  if (normalised === "completed" || normalised === "administered" || normalised === "given") return "bg-green-100 text-green-700";
+  if (normalised === "missed" || normalised === "refused" || normalised === "overdue" || normalised === "to_review") return "bg-amber-100 text-amber-700";
+  if (normalised === "in_progress" || normalised === "received" || normalised === "scheduled" || normalised === "planned") return "bg-amber-100 text-amber-700";
   return "bg-gray-100 text-gray-600";
 }
 
@@ -66,13 +66,8 @@ export function ClientPortalClient(props: Props) {
     other_notes: "",
   });
 
-  const clientName = `${props.client.first_name ?? ""} ${props.client.last_name ?? ""}`.trim();
-  const assignedCarers = new Map<string, { first_name?: string; last_name?: string }>();
-  for (const visit of [...props.todayVisits, ...props.recentVisits]) {
-    const user = visit.users as { first_name?: string; last_name?: string; id?: string } | null;
-    const id = String(visit.carer_id ?? `${user?.first_name}-${user?.last_name}`);
-    if (user) assignedCarers.set(id, user);
-  }
+  const clientName = `${props.client.first_name ?? ""} ${props.client.last_name ?? ""}`.trim() || "My";
+  const displayName = clientName === "My" ? "My" : clientName;
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -142,8 +137,8 @@ export function ClientPortalClient(props: Props) {
         {/* Client identity */}
         <div className="px-6 py-4 border-b border-white/10">
           <p className="text-[10px] font-body font-semibold text-white/40 uppercase tracking-widest mb-1">Client Portal</p>
-          <p className="font-display text-base font-semibold text-white leading-snug">{clientName}</p>
-          <p className="text-xs font-body text-white/50 capitalize mt-0.5">{String(props.client.status ?? "active")} care record</p>
+            <p className="font-display text-base font-semibold text-white leading-snug">{displayName}</p>
+            <p className="text-xs font-body text-white/50 mt-0.5">Secure care portal</p>
         </div>
 
         {/* Nav */}
@@ -193,6 +188,7 @@ export function ClientPortalClient(props: Props) {
         </div>
         <button onClick={signOut} className="p-2 rounded-lg hover:bg-white/10">
           <LogOut size={16} />
+          <span className="sr-only">Sign out</span>
         </button>
       </header>
 
@@ -221,7 +217,7 @@ export function ClientPortalClient(props: Props) {
             <h1 className="font-display text-xl font-semibold text-cr-charcoal">
               {navItems.find((n) => n.id === tab)?.label}
             </h1>
-            <p className="text-xs font-body text-cr-slate mt-0.5">{clientName}&apos;s care portal</p>
+            <p className="text-xs font-body text-cr-slate mt-0.5">{displayName === "My" ? "My care portal" : `${displayName}'s care portal`}</p>
           </div>
         </div>
 
@@ -248,9 +244,13 @@ export function ClientPortalClient(props: Props) {
               <Panel title="Today&apos;s Care Visits">
                 <RecordList empty="No visits scheduled today.">
                   {props.todayVisits.map((visit) => {
-                    const carer = visit.users as { first_name?: string; last_name?: string } | null;
                     return (
-                      <Row key={String(visit.id)} title={formatDateTimeUK(String(visit.scheduled_start))} meta={carer ? `Carer: ${carer.first_name} ${carer.last_name}` : "Carer not yet assigned"} badge={String(visit.status ?? "scheduled")} />
+                      <Row
+                        key={String(visit.id)}
+                        title={formatDateTimeUK(String(visit.scheduled_start))}
+                        meta="Your care provider will confirm the visit team directly."
+                        badge={clientVisitStatus(String(visit.status ?? "scheduled"))}
+                      />
                     );
                   })}
                 </RecordList>
@@ -266,8 +266,7 @@ export function ClientPortalClient(props: Props) {
                   <>
                     <Info label="Status" value={String(props.carePlan.status ?? "draft")} />
                     <Info label="Review date" value={formatDateUK(String(props.carePlan.review_date ?? ""))} />
-                    <Info label="Authorised tasks" value={Array.isArray(props.carePlan.authorised_tasks) ? props.carePlan.authorised_tasks.join(", ") : String(props.carePlan.authorised_tasks ?? "Not recorded")} />
-                    <Info label="Excluded tasks" value={Array.isArray(props.carePlan.excluded_tasks) ? props.carePlan.excluded_tasks.join(", ") : String(props.carePlan.excluded_tasks ?? "None recorded")} />
+                    <Info label="What this means" value="Your current care plan is available to the care team. Your provider will discuss any changes, restrictions, or review points with you directly." />
                   </>
                 ) : <Empty text="No current care plan is available in the portal yet." />}
               </Panel>
@@ -305,7 +304,12 @@ export function ClientPortalClient(props: Props) {
               <Panel title="Recent Visits">
                 <RecordList empty="No visit history.">
                   {props.recentVisits.map((visit) => (
-                    <Row key={String(visit.id)} title={formatDateTimeUK(String(visit.scheduled_start))} meta={String(visit.ai_summary ?? visit.notes ?? "Care visit")} badge={String(visit.status ?? "scheduled")} />
+                    <Row
+                      key={String(visit.id)}
+                      title={formatDateTimeUK(String(visit.scheduled_start))}
+                      meta={clientVisitSummary(visit)}
+                      badge={clientVisitStatus(String(visit.status ?? "scheduled"))}
+                    />
                   ))}
                 </RecordList>
               </Panel>
@@ -474,25 +478,16 @@ export function ClientPortalClient(props: Props) {
             </section>
           )}
 
-          {/* MY TEAM */}
+          {/* SUPPORT */}
           {tab === "team" && (
             <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Panel title="Assigned Care Team">
-                <RecordList empty="No carers have visited yet.">
-                  {Array.from(assignedCarers.entries()).map(([id, carer]) => (
-                    <Row key={id} title={`${carer.first_name ?? ""} ${carer.last_name ?? ""}`.trim()} meta="Care team member" />
-                  ))}
-                </RecordList>
+              <Panel title="Your Care Provider">
+                <Info label="Care coordination" value="For questions about visits, carers, medication, nutrition, or your care plan, contact your care provider directly." />
+                <Info label="Privacy" value="For safety and confidentiality, this portal does not show internal staffing allocations or other people who may have portal access." />
               </Panel>
-              <Panel title="Family Members with Access">
-                <RecordList empty="No family members linked yet.">
-                  {props.familyAccess.map((row) => {
-                    const familyUser = row.users as Record<string, unknown> | null;
-                    return (
-                      <Row key={String(row.id)} title={`${familyUser?.first_name ?? ""} ${familyUser?.last_name ?? ""}`.trim()} meta={String(row.relationship ?? "Family")} badge={String(row.access_level ?? "standard")} />
-                    );
-                  })}
-                </RecordList>
+              <Panel title="Need Help?">
+                <Info label="Urgent concerns" value="If there is immediate danger, call emergency services. For care concerns, use My Rights to raise a concern with management." />
+                <Info label="Portal account" value="Use Sign out when you finish, especially on a shared phone, tablet, or computer." />
               </Panel>
             </section>
           )}
@@ -500,6 +495,23 @@ export function ClientPortalClient(props: Props) {
       </main>
     </div>
   );
+}
+
+function clientVisitStatus(status: string) {
+  if (status === "completed") return "Completed";
+  if (status === "cancelled") return "Cancelled";
+  if (status === "in_progress") return "In progress";
+  if (status === "missed" || status === "overdue") return "To review";
+  return "Planned";
+}
+
+function clientVisitSummary(visit: Record<string, unknown>) {
+  const status = String(visit.status ?? "scheduled");
+  if (status === "completed") return String(visit.ai_summary ?? "Care visit completed.");
+  if (status === "in_progress") return "Care visit is in progress.";
+  if (status === "cancelled") return "This visit was cancelled by your care provider.";
+  if (status === "missed" || status === "overdue") return "Your care provider is reviewing this visit record.";
+  return "Care visit planned.";
 }
 
 function StatCard({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {

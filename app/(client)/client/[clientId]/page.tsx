@@ -38,22 +38,21 @@ export default async function ClientDashboardPage({ params }: Props) {
     { data: consentRecords },
     { data: sarRequests },
     { data: complaints },
-    { data: familyAccess },
   ] = await Promise.all([
     supabase.from("visits")
-      .select("id, client_id, carer_id, scheduled_start, scheduled_end, actual_start, actual_end, status, notes, ai_summary, users(first_name, last_name)")
+      .select("id, client_id, scheduled_start, scheduled_end, actual_start, actual_end, status, ai_summary")
       .eq("client_id", clientId)
       .gte("scheduled_start", todayStart)
       .lt("scheduled_start", tomorrowStart)
       .order("scheduled_start", { ascending: true }),
     supabase.from("visits")
-      .select("id, client_id, carer_id, scheduled_start, scheduled_end, actual_start, actual_end, status, notes, ai_summary, users(first_name, last_name)")
+      .select("id, client_id, scheduled_start, scheduled_end, actual_start, actual_end, status, ai_summary")
       .eq("client_id", clientId)
       .gte("scheduled_start", thirtyDaysAgo)
       .order("scheduled_start", { ascending: false })
       .limit(30),
     supabase.from("care_plans")
-      .select("id, status, review_date, authorised_tasks, excluded_tasks, mood_vocabulary, trigger_vocabulary, created_at")
+      .select("id, status, review_date, created_at")
       .eq("client_id", clientId)
       .eq("is_current", true)
       .maybeSingle(),
@@ -91,10 +90,6 @@ export default async function ClientDashboardPage({ params }: Props) {
       .select("id, category, complaint_type, description, desired_outcome, status, manager_response, created_at")
       .eq("client_id", clientId)
       .order("created_at", { ascending: false }),
-    supabase.from("family_access")
-      .select("id, relationship, access_level, users(first_name, last_name)")
-      .eq("client_id", clientId)
-      .eq("is_active", true),
   ]);
 
   return (
@@ -110,7 +105,6 @@ export default async function ClientDashboardPage({ params }: Props) {
       consentRecords={(consentRecords ?? []) as Record<string, unknown>[]}
       sarRequests={(sarRequests ?? []) as Record<string, unknown>[]}
       complaints={(complaints ?? []) as Record<string, unknown>[]}
-      familyAccess={(familyAccess ?? []) as Record<string, unknown>[]}
       userEmail={user.email ?? null}
     />
   );
