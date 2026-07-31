@@ -29,6 +29,7 @@ type FamilyMember = {
 interface Props {
   client: Record<string, unknown>;
   familyAccess: FamilyMember[];
+  familyBriefings: Record<string, unknown>[];
 }
 
 const ACCESS_LEVEL_LABEL: Record<string, string> = {
@@ -52,7 +53,24 @@ const PERMISSION_FIELDS: { key: keyof FamilyMember; label: string }[] = [
   { key: "can_view_incidents", label: "Incidents" },
 ];
 
-export function ClientFamilyTab({ client, familyAccess }: Props) {
+function submissionSource(briefing: Record<string, unknown>) {
+  const source = String(briefing.generated_by ?? "").toLowerCase();
+  if (source === "family") return "Family / NOK";
+  if (source === "client") return "Client";
+  return "Provider";
+}
+
+function submissionContent(briefing: Record<string, unknown>) {
+  return String(briefing.content ?? briefing.briefing_text ?? "No detail recorded");
+}
+
+function submissionDate(briefing: Record<string, unknown>) {
+  const value = String(briefing.created_at ?? briefing.sent_at ?? "");
+  if (!value) return "Date not recorded";
+  return new Date(value).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+}
+
+export function ClientFamilyTab({ client, familyAccess, familyBriefings }: Props) {
   const supabase = createClient();
   const [members, setMembers] = useState<FamilyMember[]>(familyAccess);
   const [saving, setSaving] = useState<string | null>(null);
@@ -137,6 +155,36 @@ export function ClientFamilyTab({ client, familyAccess }: Props) {
 
   return (
     <div className="space-y-5">
+      <CRCard>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h3 className="font-semibold text-cr-charcoal text-sm mb-0.5">Client & NOK Submitted Updates</h3>
+            <p className="text-xs text-cr-slate">Review information submitted through the client and family portals, then update the official care plan, nutrition plan, medication record, or risk plan as needed.</p>
+          </div>
+          <CRBadge variant="amber" size="sm">{familyBriefings.length} to review</CRBadge>
+        </div>
+        {familyBriefings.length === 0 ? (
+          <p className="text-sm text-cr-slate">No client or family updates have been submitted yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {familyBriefings.map((briefing) => (
+              <div key={String(briefing.id)} className="rounded-xl border border-amber-100 bg-amber-50/40 p-4">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <CRBadge variant={submissionSource(briefing) === "Provider" ? "blue" : "amber"} size="sm">
+                      {submissionSource(briefing)}
+                    </CRBadge>
+                    <span className="text-xs text-cr-slate">{submissionDate(briefing)}</span>
+                  </div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">Manager review required</span>
+                </div>
+                <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed text-cr-charcoal">{submissionContent(briefing)}</pre>
+              </div>
+            ))}
+          </div>
+        )}
+      </CRCard>
+
       <CRCard>
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>

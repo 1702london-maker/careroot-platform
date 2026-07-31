@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const { data: access } = await supabase
       .from("family_access")
-      .select("id")
+      .select("id, organisation_id")
       .eq("user_id", user.id)
       .eq("client_id", client_id)
       .eq("is_active", true)
@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
     if (noteLines.length > 0) {
       const { error } = await supabase.from("family_briefings").insert({
         client_id,
+        organisation_id: access.organisation_id,
         content: `Family update submitted for manager review:\n\n${noteLines.join("\n\n")}`,
         generated_by: "family",
         created_at: new Date().toISOString(),

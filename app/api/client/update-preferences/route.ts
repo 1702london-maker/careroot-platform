@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     // Verify this user is the client or has client_access to this client
     const { data: access } = await supabase
       .from("client_access")
-      .select("id")
+      .select("id, organisation_id")
       .eq("user_id", user.id)
       .eq("client_id", client_id)
       .eq("is_active", true)
@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
 
     const { error } = await supabase.from("family_briefings").insert({
       client_id,
+      organisation_id: access.organisation_id,
       content: `Client self-reported update — please review and update care records:\n\n${lines.join("\n\n")}`,
       generated_by: "client",
       created_at: new Date().toISOString(),

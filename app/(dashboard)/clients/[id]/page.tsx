@@ -56,6 +56,7 @@ export default async function ClientProfilePage({ params }: Props) {
     { data: bodyMapInjuries },
     { data: recentShiftLogs },
     { data: clientDocuments },
+    { data: familyBriefings },
   ] = await Promise.all([
     supabase.from("care_plans").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }),
     supabase.from("medications").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).eq("is_active", true).order("name"),
@@ -72,6 +73,7 @@ export default async function ClientProfilePage({ params }: Props) {
       ? supabase.from("shift_logs").select("id, log_type, content, transcription, server_timestamp, within_approved_radius, users(first_name, last_name)").eq("client_id", id).in("staff_id", orgStaffIds).order("server_timestamp", { ascending: false }).limit(10)
       : Promise.resolve({ data: [] }),
     supabase.from("client_documents").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("uploaded_at", { ascending: false }),
+    supabase.from("family_briefings").select("*").eq("client_id", id).eq("organisation_id", sessionUser.organisation_id).order("created_at", { ascending: false }).limit(10),
   ]);
 
   const address = client.address as Record<string, string> | null;
@@ -212,6 +214,7 @@ export default async function ClientProfilePage({ params }: Props) {
         emergencyPin={emergencyToken?.pin || null}
         canManageEmergencyAccess={canManageEmergencyAccess}
         familyAccess={familyAccess || []}
+        familyBriefings={familyBriefings || []}
         clientDocuments={clientDocuments || []}
       />
     </div>
