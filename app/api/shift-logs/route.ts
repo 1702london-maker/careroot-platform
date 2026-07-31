@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   const [{ data: credential }, { data: shift }] = await Promise.all([
     supabase
       .from("shift_credentials")
-      .select("valid_until, invalidated_at")
+      .select("valid_from, valid_until, invalidated_at")
       .eq("shift_id", shift_id)
       .eq("staff_id", user.id)
       .order("created_at", { ascending: false })
