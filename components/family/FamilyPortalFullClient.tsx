@@ -48,10 +48,34 @@ function canShow(accessLevel: string, min?: string) {
 }
 
 function statusClass(status?: string) {
-  if (status === "completed" || status === "administered" || status === "given") return "bg-green-100 text-green-700";
-  if (status === "missed" || status === "refused" || status === "withdrawn") return "bg-red-100 text-red-700";
-  if (status === "scheduled" || status === "received" || status === "open") return "bg-amber-100 text-amber-700";
+  const normalised = status?.toLowerCase().replaceAll(" ", "_");
+  if (normalised === "completed" || normalised === "administered" || normalised === "given") return "bg-green-100 text-green-700";
+  if (normalised === "missed" || normalised === "refused" || normalised === "withdrawn" || normalised === "to_review") return "bg-amber-100 text-amber-700";
+  if (normalised === "scheduled" || normalised === "received" || normalised === "open" || normalised === "planned") return "bg-amber-100 text-amber-700";
   return "bg-gray-100 text-gray-600";
+}
+
+function accessLabel(accessLevel: string) {
+  if (accessLevel === "full") return "NOK / representative access";
+  if (accessLevel === "standard") return "Family access";
+  return `${accessLevel} access`;
+}
+
+function familyVisitStatus(status: string) {
+  if (status === "completed") return "Completed";
+  if (status === "cancelled") return "Cancelled";
+  if (status === "in_progress") return "In progress";
+  if (status === "missed" || status === "overdue") return "To review";
+  return "Planned";
+}
+
+function familyVisitSummary(visit: Record<string, unknown>) {
+  const status = String(visit.status ?? "scheduled");
+  if (status === "completed") return String(visit.ai_summary ?? "Care visit completed.");
+  if (status === "in_progress") return "Care visit is in progress.";
+  if (status === "cancelled") return "This visit was cancelled by the care provider.";
+  if (status === "missed" || status === "overdue") return "The care provider is reviewing this visit record.";
+  return "Care visit planned.";
 }
 
 export function FamilyPortalFullClient(props: Props) {
@@ -74,7 +98,7 @@ export function FamilyPortalFullClient(props: Props) {
     care_notes: "",
   });
 
-  const clientName = `${props.client.first_name ?? ""} ${props.client.last_name ?? ""}`.trim();
+  const clientName = `${props.client.first_name ?? ""} ${props.client.last_name ?? ""}`.trim() || "the client";
   const latestVisit = props.recentVisits[0];
   const medicationMisses = props.medicationRecords.filter((r) => ["refused", "missed", "unavailable"].includes(String(r.status))).length;
   const nutritionConcerns = props.nutritionRecords.filter((r) => Boolean(r.concerns)).length;
@@ -161,7 +185,7 @@ export function FamilyPortalFullClient(props: Props) {
         <div className="px-6 py-4 border-b border-white/10">
           <p className="text-[10px] font-body font-semibold text-white/40 uppercase tracking-widest mb-1">Family Portal</p>
           <p className="font-display text-base font-semibold text-white leading-snug">{clientName}</p>
-          <p className="text-xs font-body text-white/50 capitalize mt-0.5">{props.accessLevel} access</p>
+          <p className="text-xs font-body text-white/50 mt-0.5">{accessLabel(props.accessLevel)}</p>
         </div>
 
         {/* Nav */}
@@ -206,7 +230,7 @@ export function FamilyPortalFullClient(props: Props) {
           </div>
           <div>
             <p className="font-display text-base font-semibold leading-none">{clientName}</p>
-            <p className="text-[10px] text-white/50 capitalize">{props.accessLevel} access</p>
+            <p className="text-[10px] text-white/50">{accessLabel(props.accessLevel)}</p>
           </div>
         </div>
         <button onClick={signOut} className="p-2 rounded-lg hover:bg-white/10">
@@ -285,7 +309,12 @@ export function FamilyPortalFullClient(props: Props) {
             <Panel title="Visit History">
               <RecordList empty="No visits recorded yet.">
                 {props.recentVisits.map((visit) => (
-                  <Row key={String(visit.id)} title={formatDateTimeUK(String(visit.scheduled_start))} meta={String(visit.ai_summary ?? visit.notes ?? "Care visit")} badge={String(visit.status)} />
+                  <Row
+                    key={String(visit.id)}
+                    title={formatDateTimeUK(String(visit.scheduled_start))}
+                    meta={familyVisitSummary(visit)}
+                    badge={familyVisitStatus(String(visit.status ?? "scheduled"))}
+                  />
                 ))}
               </RecordList>
             </Panel>
@@ -298,8 +327,8 @@ export function FamilyPortalFullClient(props: Props) {
                 {props.carePlan ? (
                   <>
                     <Info label="Status" value={String(props.carePlan.status ?? "draft")} />
-                    <Info label="Authorised tasks" value={Array.isArray(props.carePlan.authorised_tasks) ? props.carePlan.authorised_tasks.join(", ") : String(props.carePlan.authorised_tasks ?? "Not recorded")} />
-                    <Info label="Excluded tasks" value={Array.isArray(props.carePlan.excluded_tasks) ? props.carePlan.excluded_tasks.join(", ") : String(props.carePlan.excluded_tasks ?? "None recorded")} />
+                    <Info label="Review date" value={formatDateUK(String(props.carePlan.review_date ?? ""))} />
+                    <Info label="What this means" value="The current care plan is available to the care team. The provider will discuss changes, restrictions, or review points directly with the client or authorised representative." />
                   </>
                 ) : <Empty text="No current care plan is available yet." />}
               </Panel>

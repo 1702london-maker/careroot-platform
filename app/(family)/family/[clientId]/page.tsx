@@ -20,6 +20,12 @@ export default async function FamilyClientPage({ params }: Props) {
 
   if (!access) notFound();
 
+  const { data: clientRecord } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("id", clientId)
+    .single();
+
   const accessLevel = String(access.access_level);
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -38,7 +44,7 @@ export default async function FamilyClientPage({ params }: Props) {
     { data: sarRequests },
   ] = await Promise.all([
     supabase.from("visits")
-      .select("id, scheduled_start, scheduled_end, actual_start, actual_end, status, notes, ai_summary, users(first_name, last_name)")
+      .select("id, scheduled_start, scheduled_end, actual_start, actual_end, status, ai_summary")
       .eq("client_id", clientId)
       .order("scheduled_start", { ascending: false })
       .limit(30),
@@ -56,7 +62,7 @@ export default async function FamilyClientPage({ params }: Props) {
       .limit(5),
     supabase.from("users").select("first_name, last_name, email, phone").eq("id", user.id).single(),
     supabase.from("care_plans")
-      .select("id, status, review_date, authorised_tasks, excluded_tasks, mood_vocabulary, trigger_vocabulary, created_at")
+      .select("id, status, review_date, created_at")
       .eq("client_id", clientId)
       .eq("is_current", true)
       .maybeSingle(),
@@ -95,7 +101,7 @@ export default async function FamilyClientPage({ params }: Props) {
 
   return (
     <FamilyPortalFullClient
-      client={(access.clients ?? {}) as Record<string, unknown>}
+      client={(clientRecord ?? {}) as Record<string, unknown>}
       accessLevel={accessLevel}
       accessId={access.id}
       familyUser={familyUser}

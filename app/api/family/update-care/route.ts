@@ -11,6 +11,9 @@ export async function POST(req: NextRequest) {
       care_notes,
       medications_summary,
       allergies,
+      daily_routine,
+      triggers,
+      care_preferences,
     } = await req.json();
     if (!client_id) return NextResponse.json({ error: "Missing client" }, { status: 400 });
 
@@ -33,6 +36,9 @@ export async function POST(req: NextRequest) {
     if (allergies) noteLines.push(`ALLERGIES:\n${allergies}`);
     if (food_timetable) noteLines.push(`MEAL TIMETABLE:\n${food_timetable}`);
     if (food_preferences) noteLines.push(`FOOD PREFERENCES:\n${food_preferences}`);
+    if (daily_routine) noteLines.push(`DAILY ROUTINE:\n${daily_routine}`);
+    if (triggers) noteLines.push(`TRIGGERS / THINGS TO AVOID:\n${triggers}`);
+    if (care_preferences) noteLines.push(`CARE PREFERENCES:\n${care_preferences}`);
     if (care_notes) noteLines.push(`FAMILY CARE NOTES:\n${care_notes}`);
 
     if (noteLines.length > 0) {
