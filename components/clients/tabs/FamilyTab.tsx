@@ -55,8 +55,11 @@ const PERMISSION_FIELDS: { key: keyof FamilyMember; label: string }[] = [
 
 function submissionSource(briefing: Record<string, unknown>) {
   const source = String(briefing.generated_by ?? "").toLowerCase();
+  const content = submissionContent(briefing).toLowerCase();
   if (source === "family") return "Family / NOK";
   if (source === "client") return "Client";
+  if (content.includes("family update") || content.includes("nok")) return "Family / NOK";
+  if (content.includes("client self-reported")) return "Client";
   return "Provider";
 }
 
