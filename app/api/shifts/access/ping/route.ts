@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   // Check credentials still valid
   const { data: credential } = await supabase
     .from("shift_credentials")
-    .select("id, valid_until, invalidated_at")
+    .select("id, valid_from, valid_until, invalidated_at")
     .eq("shift_id", shift_id)
     .eq("staff_id", user.id)
     .is("invalidated_at", null)
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     .limit(1)
     .single();
 
-  if (!credential || now > credential.valid_until) {
+  if (!credential || credential.invalidated_at || now < credential.valid_from || now > credential.valid_until) {
     // Auto-logout: credential expired
     await Promise.all([
       supabase.from("shifts").update({ actual_end: now, status: "completed" }).eq("id", shift_id),
