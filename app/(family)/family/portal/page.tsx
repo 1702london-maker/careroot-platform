@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Heart } from "lucide-react";
 
 export default async function FamilyPortalPage() {
@@ -42,12 +43,12 @@ export default async function FamilyPortalPage() {
             <li>You can then log in to view care updates, visit notes, and more</li>
           </ul>
         </div>
-        <a
+        <Link
           href="/family/login"
           className="mt-6 inline-block text-sm font-body text-cr-forest hover:text-cr-sage underline"
         >
           Sign out and return to login
-        </a>
+        </Link>
       </div>
     </div>
   );

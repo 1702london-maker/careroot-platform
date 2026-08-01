@@ -25,8 +25,15 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  const requestUrl = new URL(event.request.url);
+  const sameOrigin = requestUrl.origin === self.location.origin;
+
+  if (!sameOrigin) {
+    return;
+  }
+
   // Network first for API calls
-  if (event.request.url.includes("/api/")) {
+  if (requestUrl.pathname.startsWith("/api/")) {
     event.respondWith(
       fetch(event.request).catch(() =>
         new Response(JSON.stringify({ error: "offline" }), {

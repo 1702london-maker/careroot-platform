@@ -10,10 +10,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",
-    "@capacitor/android": "^8.4.1",
+    "@capacitor/android": "^8.5.0",
     "@capacitor/camera": "^8.2.0",
-    "@capacitor/cli": "^8.4.1",
-    "@capacitor/core": "^8.4.1",
+    "@capacitor/core": "^8.5.0",
     "@capacitor/filesystem": "^8.1.2",
     "@capacitor/push-notifications": "^8.1.1",
     "@capacitor/splash-screen": "^8.0.1",
@@ -32,7 +31,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.18.0",
-    "next": "14.2.35",
+    "next": "^15.5.22",
     "openai": "^6.42.0",
     "qrcode": "^1.5.4",
     "react": "^18",
@@ -46,13 +45,25 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
     "@types/node": "^20.19.43",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.2.35",
-    "postcss": "^8",
+    "eslint-config-next": "^15.5.22",
+    "postcss": "^8.5.18",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "overrides": {
+    "sharp": "0.35.0",
+    "tar": "7.5.22",
+    "brace-expansion": "5.0.8",
+    "next": {
+      "postcss": "8.5.18"
+    },
+    "uuid": "11.1.1",
+    "glob": "10.5.0",
+    "js-yaml": "4.3.0"
   }
 }

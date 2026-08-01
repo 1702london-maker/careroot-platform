@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { CRCard } from "@/components/ui/CRCard";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRAvatar } from "@/components/ui/CRAvatar";
@@ -701,9 +702,9 @@ export function StaffProfileClient({ staffMember, documents, training, supervisi
             <Banknote className="mx-auto mb-2 text-cr-slate opacity-40" size={32} />
             <p className="font-medium text-cr-charcoal">Payroll module</p>
             <p className="text-sm text-cr-slate mt-1">Hours, mileage, holiday entitlement and Bradford Factor tracker are managed in the Payroll section</p>
-            <a href="/payroll" className="cr-btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm mt-4">
+            <Link href="/payroll" className="cr-btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm mt-4">
               Go to Payroll
-            </a>
+            </Link>
           </div>
         </CRCard>
       )}

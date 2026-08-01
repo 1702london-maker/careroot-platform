@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { HeartPulse, Loader2 } from "lucide-react";
 
 const schema = z.object({
@@ -100,11 +101,11 @@ export default function ClientLoginPage() {
           <div className="mt-6 pt-5 border-t border-gray-100 flex flex-col gap-2 text-center">
             <p className="text-xs font-body text-cr-slate">
               Family member?{" "}
-              <a href="/family/login" className="text-cr-forest font-medium hover:underline">Use family portal</a>
+              <Link href="/family/login" className="text-cr-forest font-medium hover:underline">Use family portal</Link>
             </p>
             <p className="text-xs font-body text-cr-slate">
               Care staff?{" "}
-              <a href="/carer-login" className="text-cr-forest font-medium hover:underline">Staff login</a>
+              <Link href="/carer-login" className="text-cr-forest font-medium hover:underline">Staff login</Link>
             </p>
           </div>
         </div>
