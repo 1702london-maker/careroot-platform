@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSessionUser } from "@/lib/session-user";
 import { createServiceClient } from "@/lib/supabase/server";
+import { isSafeStoragePath } from "@/lib/storage-paths";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -14,7 +15,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const service = await createServiceClient();
   const { data: document } = await service
     .from("client_documents")
-    .select("id, organisation_id, file_path")
+    .select("id, organisation_id, client_id, file_path")
     .eq("id", id)
     .eq("organisation_id", user.organisation_id)
     .single();
@@ -34,7 +35,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Failed to delete document" }, { status: 500 });
   }
 
-  if (document.file_path) {
+  if (document.file_path && isSafeStoragePath(document.file_path, user.organisation_id, document.client_id)) {
     await service.storage.from("client-documents").remove([document.file_path]);
   }
 

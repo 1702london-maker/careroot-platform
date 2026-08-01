@@ -63,6 +63,19 @@ const ADDONS = [
   { key: "paper_migration",     icon: Archive,     label: "Paper Migration",         price: "£199",     desc: "We migrate your paper records to Careroot" },
 ];
 
+function isAllowedStripeUrl(value: unknown) {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && (
+      url.hostname === "checkout.stripe.com" ||
+      url.hostname === "billing.stripe.com"
+    );
+  } catch {
+    return false;
+  }
+}
+
 function BillingPageInner() {
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -123,7 +136,8 @@ function BillingPageInner() {
       });
       const { url, error } = await res.json();
       if (error) { showToast("error", error); return; }
-      window.location.href = url;
+      if (!isAllowedStripeUrl(url)) { showToast("error", "Invalid billing redirect returned."); return; }
+      window.location.assign(url);
     } catch {
       showToast("error", "Something went wrong. Please try again.");
     } finally {
@@ -141,7 +155,8 @@ function BillingPageInner() {
       });
       const { url, error } = await res.json();
       if (error) { showToast("error", error); return; }
-      window.location.href = url;
+      if (!isAllowedStripeUrl(url)) { showToast("error", "Invalid billing redirect returned."); return; }
+      window.location.assign(url);
     } catch {
       showToast("error", "Something went wrong. Please try again.");
     } finally {
@@ -155,7 +170,8 @@ function BillingPageInner() {
       const res = await fetch("/api/billing/portal", { method: "POST" });
       const { url, error } = await res.json();
       if (error) { showToast("error", error); return; }
-      window.location.href = url;
+      if (!isAllowedStripeUrl(url)) { showToast("error", "Invalid billing portal redirect returned."); return; }
+      window.location.assign(url);
     } catch {
       showToast("error", "Could not open billing portal.");
     } finally {

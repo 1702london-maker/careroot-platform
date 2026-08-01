@@ -61,6 +61,19 @@ const COMPARISON = [
   { feature: "GP Connect", seed: false, grow: false, scale: false, enterprise: "Soon" },
 ];
 
+function isAllowedStripeUrl(value: unknown) {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && (
+      url.hostname === "checkout.stripe.com" ||
+      url.hostname === "billing.stripe.com"
+    );
+  } catch {
+    return false;
+  }
+}
+
 function Cell({ value, plan }: { value: boolean | string; plan: string }) {
   if (value === true) return <><CheckCircle size={16} className="text-[#1A3C2E] mx-auto" /><span className="sr-only">Included in {plan}</span></>;
   if (value === false) return <><Minus size={16} className="text-gray-300 mx-auto" /><span className="sr-only">Not included in {plan}</span></>;
@@ -103,8 +116,8 @@ export default function PricingPage() {
         }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (isAllowedStripeUrl(data.url)) {
+        window.location.assign(data.url);
       }
     } finally {
       setLoading(null);

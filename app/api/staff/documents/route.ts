@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSessionUser } from "@/lib/session-user";
 import { createServiceClient } from "@/lib/supabase/server";
+import { buildStoragePath, isSafeStoragePath, safeStorageFileName } from "@/lib/storage-paths";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
-
-function safeFileName(name: string) {
-  return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 160);
-}
 
 export async function POST(req: NextRequest) {
   const { user, error } = await requireSessionUser(["org_admin", "manager", "coordinator"]);
@@ -41,8 +38,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Staff member not found for your organisation" }, { status: 404 });
   }
 
-  const fileName = safeFileName(file.name || "staff-document");
-  const filePath = `${user.organisation_id}/${staffId}/${crypto.randomUUID()}-${fileName}`;
+  const fileName = safeStorageFileName(file.name || "staff-document");
+  const filePath = buildStoragePath(user.organisation_id, staffId, `${crypto.randomUUID()}-${fileName}`);
   const bytes = Buffer.from(await file.arrayBuffer());
 
   const { data: existingDocument } = await service
@@ -96,7 +93,7 @@ export async function POST(req: NextRequest) {
   }
 
   const oldFilePath = existingDocument?.file_path;
-  if (oldFilePath && oldFilePath !== filePath) {
+  if (oldFilePath && oldFilePath !== filePath && isSafeStoragePath(oldFilePath, user.organisation_id, staffId)) {
     await service.storage.from("staff-documents").remove([oldFilePath]);
   }
 
