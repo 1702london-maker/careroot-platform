@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSessionUser } from "@/lib/session-user";
 import { createServiceClient } from "@/lib/supabase/server";
-import { buildStoragePath, safeStorageFileName } from "@/lib/storage-paths";
+import { buildStoragePath, safeStorageFileName, sanitizeStoragePath } from "@/lib/storage-paths";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -35,7 +35,11 @@ export async function POST(req: NextRequest) {
   }
 
   const fileName = safeStorageFileName(file.name || "client-document");
-  const filePath = buildStoragePath(user.organisation_id, clientId, `${crypto.randomUUID()}-${fileName}`);
+  const filePath = sanitizeStoragePath(
+    buildStoragePath(user.organisation_id, clientId, `${crypto.randomUUID()}-${fileName}`),
+    user.organisation_id,
+    clientId,
+  );
   const bytes = Buffer.from(await file.arrayBuffer());
 
   const { error: uploadError } = await service.storage
@@ -72,7 +76,9 @@ export async function POST(req: NextRequest) {
 
   if (insertError) {
     console.error("client document insert error:", insertError);
-    await service.storage.from("client-documents").remove([filePath]);
+    await service.storage.from("client-documents").remove([
+      sanitizeStoragePath(filePath, user.organisation_id, clientId),
+    ]);
     return NextResponse.json({ error: "Failed to save document record" }, { status: 500 });
   }
 
