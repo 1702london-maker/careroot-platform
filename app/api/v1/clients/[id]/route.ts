@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateAPIKey, successResponse, errorResponse, logAPICall } from "@/lib/api-auth";
+import { invalidIdResponse, isUuid } from "@/lib/route-params";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -8,6 +9,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!ctx) return NextResponse.json(errorResponse("UNAUTHORISED", "Invalid API key"), { status: 401 });
 
   const { id } = await params;
+  if (!isUuid(id)) return invalidIdResponse();
+
   const supabase = await createServiceClient();
 
   const [{ data: client, error }, { data: carePlans }] = await Promise.all([

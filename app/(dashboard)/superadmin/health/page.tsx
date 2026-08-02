@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import { Activity, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { CRBadge } from "@/components/ui/CRBadge";
 import { CRCard } from "@/components/ui/CRCard";
@@ -19,10 +17,21 @@ type CronRun = {
   result: Record<string, unknown> | null;
 };
 
-function readCronConfig(): CronConfig[] {
-  const raw = fs.readFileSync(path.join(process.cwd(), "vercel.json"), "utf8");
-  return JSON.parse(raw).crons ?? [];
-}
+const CRON_CONFIG: CronConfig[] = [
+  { path: "/api/cron/check-missed-visits", schedule: "0 9 * * *" },
+  { path: "/api/cron/check-dbs-expiry", schedule: "0 8 * * *" },
+  { path: "/api/cron/calculate-burnout-risk", schedule: "0 7 * * 1" },
+  { path: "/api/cron/cleanup-credentials", schedule: "0 2 * * *" },
+  { path: "/api/cron/weekly-reports-trigger", schedule: "0 6 * * 1" },
+  { path: "/api/cron/compliance-expiry-alerts", schedule: "0 8 * * 1" },
+  { path: "/api/cron/sar-deadline-alerts", schedule: "0 9 * * *" },
+  { path: "/api/cron/medication-escalation", schedule: "0 10 * * *" },
+  { path: "/api/cron/data-retention", schedule: "0 3 1 * *" },
+  { path: "/api/cron/credential-generation", schedule: "15 1 * * *" },
+  { path: "/api/cron/shift-access-expiry", schedule: "30 1 * * *" },
+  { path: "/api/cron/incident-wellbeing-check", schedule: "45 1 * * *" },
+  { path: "/api/cron/refresh-evidence-packs", schedule: "0 4 * * *" },
+];
 
 function jobNameFromPath(cronPath: string) {
   return cronPath.split("/").filter(Boolean).pop() ?? cronPath;
@@ -37,7 +46,7 @@ function badgeForStatus(status?: string): "green" | "red" | "amber" | "slate" {
 
 export default async function SuperadminHealthPage() {
   const supabase = await createClient();
-  const crons = readCronConfig();
+  const crons = CRON_CONFIG;
   const { data: recentRuns } = await supabase
     .from("cron_run_logs")
     .select("job_name, path, status, started_at, finished_at, duration_ms, error, result")

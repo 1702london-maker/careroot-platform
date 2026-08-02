@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { invalidIdResponse, isUuid } from "@/lib/route-params";
 import { createClient } from "@/lib/supabase/server";
 
 type LineItem = {
@@ -76,6 +77,8 @@ export async function GET(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  if (!isUuid(id)) return invalidIdResponse();
+
   const { data: userRecord } = await supabase
     .from("users").select("organisation_id, role").eq("id", user.id).single();
 

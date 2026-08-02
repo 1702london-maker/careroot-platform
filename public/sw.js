@@ -8,6 +8,14 @@ const PRECACHE = [
   "/manifest.json",
 ];
 
+function safeSameOriginUrl(request) {
+  const requestUrl = new URL(request.url);
+  if (requestUrl.origin !== self.location.origin || requestUrl.protocol !== "https:") {
+    return null;
+  }
+  return requestUrl;
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
@@ -25,17 +33,18 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  const requestUrl = new URL(event.request.url);
-  const sameOrigin = requestUrl.origin === self.location.origin;
+  const requestUrl = safeSameOriginUrl(event.request);
 
-  if (!sameOrigin) {
+  if (!requestUrl) {
     return;
   }
+
+  const safeRequest = new Request(requestUrl.href, event.request);
 
   // Network first for API calls
   if (requestUrl.pathname.startsWith("/api/")) {
     event.respondWith(
-      fetch(event.request).catch(() =>
+      fetch(safeRequest).catch(() =>
         new Response(JSON.stringify({ error: "offline" }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -46,13 +55,13 @@ self.addEventListener("fetch", (event) => {
 
   // Cache first for static assets
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    caches.match(safeRequest).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request)
+      return fetch(safeRequest)
         .then((response) => {
-          if (response.ok && event.request.method === "GET") {
+          if (response.ok && safeRequest.method === "GET") {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(safeRequest, clone));
           }
           return response;
         })

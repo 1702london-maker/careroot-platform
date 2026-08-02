@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSessionUser } from "@/lib/session-user";
 import { createServiceClient } from "@/lib/supabase/server";
+import { invalidIdResponse, isUuid } from "@/lib/route-params";
 import { isSafeStoragePath } from "@/lib/storage-paths";
 
 interface Params {
@@ -12,6 +13,8 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (error || !user) return error;
 
   const { id } = await params;
+  if (!isUuid(id)) return invalidIdResponse();
+
   const service = await createServiceClient();
   const { data: document } = await service
     .from("client_documents")
