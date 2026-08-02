@@ -14,6 +14,15 @@ export function safeStorageFileName(name: string) {
   return safeName && isSafeStoragePathPart(safeName) ? safeName : "document";
 }
 
+export function safeStorageFileNameFromPath(path: string) {
+  const parts = path.split("/");
+  const fileName = parts.at(-1) ?? "";
+  if (!isSafeStoragePathPart(fileName)) {
+    throw new Error("Unsafe storage file name");
+  }
+  return fileName;
+}
+
 export function buildStoragePath(...parts: string[]) {
   if (parts.some((part) => !isSafeStoragePathPart(part))) {
     throw new Error("Unsafe storage path segment");

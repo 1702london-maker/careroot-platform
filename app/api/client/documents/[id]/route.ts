@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSessionUser } from "@/lib/session-user";
 import { createServiceClient } from "@/lib/supabase/server";
 import { invalidIdResponse, isUuid } from "@/lib/route-params";
-import { sanitizeStoragePath } from "@/lib/storage-paths";
+import { buildStoragePath, safeStorageFileNameFromPath } from "@/lib/storage-paths";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -40,8 +40,10 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   if (document.file_path) {
     try {
+      const storageFileName = safeStorageFileNameFromPath(document.file_path);
+      const safeFilePath = buildStoragePath(user.organisation_id, document.client_id, storageFileName);
       await service.storage.from("client-documents").remove([
-        sanitizeStoragePath(document.file_path, user.organisation_id, document.client_id),
+        safeFilePath,
       ]);
     } catch (pathError) {
       console.error("unsafe client document path skipped:", pathError);

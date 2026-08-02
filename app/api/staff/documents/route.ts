@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSessionUser } from "@/lib/session-user";
 import { createServiceClient } from "@/lib/supabase/server";
-import { buildStoragePath, safeStorageFileName, sanitizeStoragePath } from "@/lib/storage-paths";
+import { isUuid } from "@/lib/route-params";
+import { buildStoragePath, safeStorageFileName, safeStorageFileNameFromPath } from "@/lib/storage-paths";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -22,6 +23,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "staff_id and file are required" }, { status: 400 });
   }
 
+  if (!isUuid(staffId) || !isUuid(user.organisation_id)) {
+    return NextResponse.json({ error: "Invalid document path scope" }, { status: 400 });
+  }
+
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json({ error: "File is too large. Maximum size is 50MB." }, { status: 400 });
   }
@@ -39,11 +44,8 @@ export async function POST(req: NextRequest) {
   }
 
   const fileName = safeStorageFileName(file.name || "staff-document");
-  const filePath = sanitizeStoragePath(
-    buildStoragePath(user.organisation_id, staffId, `${crypto.randomUUID()}-${fileName}`),
-    user.organisation_id,
-    staffId,
-  );
+  const storageFileName = `${crypto.randomUUID()}-${fileName}`;
+  const filePath = buildStoragePath(user.organisation_id, staff.id, storageFileName);
   const bytes = Buffer.from(await file.arrayBuffer());
 
   const { data: existingDocument } = await service
@@ -92,17 +94,17 @@ export async function POST(req: NextRequest) {
 
   if (upsertError) {
     console.error("staff document upsert error:", upsertError);
-    await service.storage.from("staff-documents").remove([
-      sanitizeStoragePath(filePath, user.organisation_id, staffId),
-    ]);
+    await service.storage.from("staff-documents").remove([filePath]);
     return NextResponse.json({ error: "Failed to save document record" }, { status: 500 });
   }
 
   const oldFilePath = existingDocument?.file_path;
   if (oldFilePath && oldFilePath !== filePath) {
     try {
+      const oldStorageFileName = safeStorageFileNameFromPath(oldFilePath);
+      const safeOldFilePath = buildStoragePath(user.organisation_id, staff.id, oldStorageFileName);
       await service.storage.from("staff-documents").remove([
-        sanitizeStoragePath(oldFilePath, user.organisation_id, staffId),
+        safeOldFilePath,
       ]);
     } catch (pathError) {
       console.error("unsafe old staff document path skipped:", pathError);
