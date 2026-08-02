@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   const fileName = safeStorageFileName(file.name || "client-document");
-  const storageFileName = `${crypto.randomUUID()}-${fileName}`;
+  const storageFileName = crypto.randomUUID();
   const filePath = buildStoragePath(user.organisation_id, client.id, storageFileName);
   const bytes = Buffer.from(await file.arrayBuffer());
 
