@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 const ALLOWED_FIELDS = new Set([
   "mood_score", "stress_level", "workload_rating", "support_needed",
@@ -7,6 +8,8 @@ const ALLOWED_FIELDS = new Set([
 ]);
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  if (!isUuid(params.id)) return invalidIdResponse();
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });

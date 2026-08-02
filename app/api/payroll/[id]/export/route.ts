@@ -1,7 +1,10 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  if (!isUuid(params.id)) return invalidIdResponse();
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new Response("Unauthorized", { status: 401 });

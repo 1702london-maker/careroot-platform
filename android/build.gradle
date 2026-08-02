@@ -25,6 +25,22 @@ allprojects {
     dependencyLocking {
         lockAllConfigurations()
     }
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'io.netty') {
+                details.useVersion '4.1.136.Final'
+                details.because 'Akido flagged older Netty HTTP/2 and handler transitive dependencies'
+            }
+            if (details.requested.group == 'com.google.protobuf' && details.requested.name in ['protobuf-java', 'protobuf-kotlin', 'protobuf-java-util']) {
+                details.useVersion '4.35.1'
+                details.because 'Akido flagged older protobuf transitive dependencies'
+            }
+            if (details.requested.group == 'org.jetbrains.kotlin' && details.requested.name in ['kotlin-stdlib', 'kotlin-stdlib-common', 'kotlin-stdlib-jdk7', 'kotlin-stdlib-jdk8']) {
+                details.useVersion '2.2.20'
+                details.because 'Akido flagged older Kotlin stdlib transitive dependencies'
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {
