@@ -3,9 +3,12 @@ import { createClient, createServiceClientSync } from "@/lib/supabase/server";
 import { getResend, FROM_EMAIL } from "@/lib/resend";
 import { applicationRejectedEmail } from "@/lib/emails";
 import { writeAuditLog } from "@/lib/platform-audit";
+import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!isUuid(id)) return invalidIdResponse();
+
   const body = await req.json().catch(() => ({}));
   const reason: string | undefined = typeof body?.reason === "string" ? body.reason : undefined;
 

@@ -3,6 +3,7 @@ import { createClient, createServiceClientSync } from "@/lib/supabase/server";
 import { getResend, FROM_EMAIL } from "@/lib/resend";
 import { applicationApprovedEmail } from "@/lib/emails";
 import { writeAuditLog } from "@/lib/platform-audit";
+import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 // Generate a readable but strong temporary password.
 function generateTempPassword(): string {
@@ -16,6 +17,7 @@ function generateTempPassword(): string {
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!isUuid(id)) return invalidIdResponse();
 
   // 1. Authenticate caller and confirm they are a superadmin.
   const authClient = await createClient();

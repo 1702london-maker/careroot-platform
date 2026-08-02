@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <permission
+        android:name="uk.careroot.app.permission.FILE_PROVIDER"
+        android:protectionLevel="signature" />
+
     <application
         android:allowBackup="false"
         android:fullBackupContent="false"
@@ -26,14 +30,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep link: careroot://carer -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="careroot" android:host="carer" />
-            </intent-filter>
-
             <!-- HTTPS deep link: careroot.co.uk/carer -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -48,6 +44,8 @@
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
+            android:readPermission="uk.careroot.app.permission.FILE_PROVIDER"
+            android:writePermission="uk.careroot.app.permission.FILE_PROVIDER"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

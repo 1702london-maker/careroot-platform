@@ -1,5 +1,16 @@
-const CACHE_NAME = "careroot-v6";
+const CACHE_NAME = "careroot-v7";
 const OFFLINE_URL = "/carer/offline";
+const ALLOWED_FETCH_PREFIXES = [
+  "/api/",
+  "/_next/static/",
+  "/carer",
+  "/dashboard",
+  "/login",
+  "/manifest.json",
+  "/favicon",
+  "/icon-",
+  "/icons/",
+];
 
 const PRECACHE = [
   "/",
@@ -8,12 +19,26 @@ const PRECACHE = [
   "/manifest.json",
 ];
 
-function safeSameOriginUrl(request) {
-  const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== self.location.origin || requestUrl.protocol !== "https:") {
+function safeSameOriginPath(request) {
+  const originPrefix = `${self.location.origin}/`;
+  if (!request.url.startsWith(originPrefix)) {
     return null;
   }
-  return requestUrl;
+
+  const path = request.url.slice(self.location.origin.length);
+  const lowerPath = path.toLowerCase();
+  if (
+    !path.startsWith("/") ||
+    path.startsWith("//") ||
+    path.includes("\\") ||
+    lowerPath.includes("%5c") ||
+    lowerPath.includes("%2f%2f") ||
+    !ALLOWED_FETCH_PREFIXES.some((prefix) => path === prefix || path.startsWith(prefix))
+  ) {
+    return null;
+  }
+
+  return path;
 }
 
 self.addEventListener("install", (event) => {
@@ -33,16 +58,16 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  const requestUrl = safeSameOriginUrl(event.request);
+  const requestPath = safeSameOriginPath(event.request);
 
-  if (!requestUrl) {
+  if (!requestPath) {
     return;
   }
 
-  const safeRequest = new Request(requestUrl.href, event.request);
+  const safeRequest = new Request(`${self.location.origin}${requestPath}`, event.request);
 
   // Network first for API calls
-  if (requestUrl.pathname.startsWith("/api/")) {
+  if (requestPath.startsWith("/api/")) {
     event.respondWith(
       fetch(safeRequest).catch(() =>
         new Response(JSON.stringify({ error: "offline" }), {

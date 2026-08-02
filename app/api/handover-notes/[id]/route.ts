@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  if (!isUuid(params.id)) return invalidIdResponse();
+  const { id } = params;
+  if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -19,7 +20,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { data: handover } = await supabase
     .from("handover_notes")
     .select("id, outgoing_staff_id, incoming_staff_id, client_id, shift_id")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!handover) return NextResponse.json({ error: "Handover not found" }, { status: 404 });
@@ -62,7 +63,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: "Unsupported handover update" }, { status: 400 });
   }
 
-  const { data, error } = await supabase.from("handover_notes").update(updates).eq("id", params.id).select().single();
+  const { data, error } = await supabase.from("handover_notes").update(updates).eq("id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ handover: data });
 }

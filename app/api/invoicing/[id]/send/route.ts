@@ -8,7 +8,8 @@ function escapeHtml(str: string): string {
 }
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!isUuid(params.id)) return invalidIdResponse();
+  const { id } = params;
+  if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { data: inv } = await supabase
     .from("invoices")
     .select("*, clients(first_name, last_name), invoice_line_items(*)")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("organisation_id", caller.organisation_id)
     .single();
 
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       </div>`,
   });
 
-  await supabase.from("invoices").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", params.id);
+  await supabase.from("invoices").update({ status: "sent", sent_at: new Date().toISOString() }).eq("id", id);
 
   return Response.json({ success: true });
 }

@@ -4,7 +4,8 @@ import { writeAuditLog } from "@/lib/platform-audit";
 import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  if (!isUuid(params.id)) return invalidIdResponse();
+  const { id } = params;
+  if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -27,7 +28,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (data_provided_at) update.data_provided_at = data_provided_at;
   if (status === "completed" && !data_provided_at) update.data_provided_at = new Date().toISOString();
 
-  const { error } = await supabase.from("sar_requests").update(update).eq("id", params.id).eq("organisation_id", caller!.organisation_id);
+  const { error } = await supabase.from("sar_requests").update(update).eq("id", id).eq("organisation_id", caller!.organisation_id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   await writeAuditLog(supabase, {
     organisationId: caller!.organisation_id,
@@ -36,7 +37,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     actorRole: caller?.role,
     action: "sar.updated",
     entityType: "sar_requests",
-    entityId: params.id,
+    entityId: id,
     metadata: update,
     req,
   });

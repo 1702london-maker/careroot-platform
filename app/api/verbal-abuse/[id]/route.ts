@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  if (!isUuid(params.id)) return invalidIdResponse();
+  const { id } = params;
+  if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -24,7 +25,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { data, error } = await supabase
     .from("verbal_abuse_reports")
     .update(safe)
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("organisation_id", caller.organisation_id)
     .select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

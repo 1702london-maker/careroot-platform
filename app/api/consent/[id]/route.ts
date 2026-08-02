@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  if (!isUuid(params.id)) return invalidIdResponse();
+  const { id } = params;
+  if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -22,7 +23,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (!granted && !withdrawn_at) update.withdrawn_at = new Date().toISOString();
   if (notes !== undefined) update.notes = notes;
 
-  const { error } = await supabase.from("consent_records").update(update).eq("id", params.id).eq("organisation_id", caller!.organisation_id);
+  const { error } = await supabase.from("consent_records").update(update).eq("id", id).eq("organisation_id", caller!.organisation_id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

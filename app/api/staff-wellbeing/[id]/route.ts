@@ -8,7 +8,8 @@ const ALLOWED_FIELDS = new Set([
 ]);
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  if (!isUuid(params.id)) return invalidIdResponse();
+  const { id } = params;
+  if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -34,7 +35,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { data: existing } = await supabase
     .from("staff_wellbeing_checks")
     .select("id, staff:users!staff_id(organisation_id)")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   const staff = Array.isArray(existing?.staff) ? existing?.staff[0] : existing?.staff;
   if (!existing || (caller?.role !== "superadmin" && staff?.organisation_id !== caller?.organisation_id)) {
@@ -44,7 +45,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { data, error } = await supabase
     .from("staff_wellbeing_checks")
     .update(update)
-    .eq("id", params.id)
+    .eq("id", id)
     .select()
     .single();
 

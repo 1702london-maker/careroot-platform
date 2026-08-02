@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!isUuid(params.id)) return invalidIdResponse();
+  const { id } = params;
+  if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -12,10 +13,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const { data: userRecord } = await supabase.from("users").select("organisation_id").eq("id", user.id).single();
   const orgId = userRecord?.organisation_id;
 
-  const { data: run } = await supabase.from("payroll_runs").select("*, organisations(name)").eq("id", params.id).eq("organisation_id", orgId).single();
+  const { data: run } = await supabase.from("payroll_runs").select("*, organisations(name)").eq("id", id).eq("organisation_id", orgId).single();
   if (!run) return new Response("Not found", { status: 404 });
 
-  const { data: summaries } = await supabase.from("payroll_carer_summary").select("*, users!payroll_carer_summary_carer_id_fkey(first_name, last_name)").eq("payroll_run_id", params.id);
+  const { data: summaries } = await supabase.from("payroll_carer_summary").select("*, users!payroll_carer_summary_carer_id_fkey(first_name, last_name)").eq("payroll_run_id", id);
 
   const orgName = ((run as { organisations?: { name?: string } }).organisations?.name ?? "careroot").toLowerCase().replace(/\s+/g, "-");
   const filename = `${orgName}-payroll-${run.period_start}-${run.period_end}.csv`;
