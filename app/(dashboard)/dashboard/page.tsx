@@ -471,7 +471,7 @@ export default async function DashboardPage() {
                 { label: "Schedule Visit", href: "/rota", icon: <Calendar size={14} /> },
                 { label: "Log Incident", href: "/clients", icon: <AlertTriangle size={14} /> },
                 { label: "View Compliance", href: "/compliance", icon: <Shield size={14} /> },
-                { label: "Generate Report", href: "/reports", icon: <FileText size={14} /> },
+                { label: "Generate Report", href: "/reports/dashboard", icon: <FileText size={14} /> },
               ].map((a) => (
                 <Link
                   key={a.href}

@@ -31,7 +31,7 @@ export default async function DashboardLayout({
   }
 
   if (["carer", "senior_carer"].includes(userRecord?.role)) {
-    redirect("/carer/home");
+    redirect("/carer");
   }
 
   const org = userRecord?.organisations as Record<string, string> | null;

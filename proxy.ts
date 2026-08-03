@@ -160,7 +160,7 @@ export async function proxy(request: NextRequest) {
       dashboardRoots.some((p) => pathname.startsWith(p)) &&
       ["carer", "senior_carer"].includes(role ?? "")
     ) {
-      return safeRedirect(request, "/carer/home", csp);
+      return safeRedirect(request, "/carer", csp);
     }
 
     if (
