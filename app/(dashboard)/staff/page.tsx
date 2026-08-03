@@ -63,8 +63,7 @@ export default async function StaffPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {staff.map((member) => (
-            <Link key={member.id} href={`/staff/${member.id}`}>
-            <CRCard hover>
+            <CRCard key={member.id} hover>
               <div className="flex items-center gap-3 mb-3">
                 <CRAvatar
                   src={member.avatar_url}
@@ -92,9 +91,11 @@ export default async function StaffPage() {
                     <Phone size={12} /> {member.phone}
                   </a>
                 )}
+                <Link href={`/staff/${member.id}`} className="inline-flex text-xs font-semibold text-cr-forest hover:text-cr-sage">
+                  View profile
+                </Link>
               </div>
             </CRCard>
-            </Link>
           ))}
         </div>
       )}

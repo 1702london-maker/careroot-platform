@@ -71,7 +71,7 @@ export default function ClientReportsPage() {
 
       const orgClientIds = (clients ?? []).map((c) => c.id);
 
-      const [{ data: visits }, { data: meds }, { data: nutrition }, { data: carePlans }, { data: incidents }, { data: emergencies }] = await Promise.all([
+      const [{ data: visits }, { data: meds }, { data: nutrition }, { data: carePlans }, { data: incidents }] = await Promise.all([
         supabase.from("visits").select("client_id, status, scheduled_start").eq("organisation_id", u.organisation_id).gte("scheduled_start", since),
         orgClientIds.length > 0
           ? supabase.from("medication_records").select("client_id, status, created_at").in("client_id", orgClientIds).gte("created_at", since)
@@ -81,7 +81,6 @@ export default function ClientReportsPage() {
           : Promise.resolve({ data: [] }),
         supabase.from("care_plans").select("client_id, status, review_date, updated_at").eq("organisation_id", u.organisation_id),
         supabase.from("incidents").select("client_id, severity, status, reported_at").eq("organisation_id", u.organisation_id).gte("reported_at", since),
-        supabase.from("emergency_events").select("client_id, status, created_at").eq("organisation_id", u.organisation_id).gte("created_at", since),
       ]);
 
       const clientRows = (clients ?? []) as ClientRow[];
@@ -105,7 +104,7 @@ export default function ClientReportsPage() {
       const medGiven = countByClient(meds, (row) => ["given", "administered", "taken"].includes(String(row.status)));
       const nutritionConcerns = countByClient(nutrition, (row) => Boolean(row.concerns) || ["little", "none"].includes(String(row.consumed)));
       const incidentCounts = countByClient(incidents);
-      const emergencyCounts = countByClient(emergencies);
+      const emergencyCounts = countByClient(incidents, (row) => ["critical", "high", "emergency"].includes(String(row.severity).toLowerCase()));
 
       setSections([
         {

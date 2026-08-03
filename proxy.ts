@@ -5,25 +5,33 @@ function createNonce() {
   return Buffer.from(crypto.randomUUID()).toString("base64");
 }
 
-function createCsp(nonce: string) {
-  return [
+function createCsp(isLocalhost = false) {
+  const directives = [
     "default-src 'self'",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
     "object-src 'none'",
-    `script-src 'self' 'nonce-${nonce}' https://js.stripe.com`,
-    `script-src-elem 'self' 'nonce-${nonce}' https://js.stripe.com`,
-    `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
-    `style-src-elem 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
+    // Static cached pages cannot safely pair per-request CSP nonces with
+    // prerendered inline Next bootstrap scripts. Keep sources locked down and
+    // allow the framework/Stripe inline bootstrap code needed for hydration.
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+    "script-src-elem 'self' 'unsafe-inline' https://js.stripe.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in",
     "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://api.openai.com https://api.stripe.com",
     "frame-src https://js.stripe.com https://hooks.stripe.com",
     "manifest-src 'self'",
     "worker-src 'self' blob:",
-    "upgrade-insecure-requests",
-  ].join("; ");
+  ];
+
+  if (!isLocalhost) {
+    directives.push("upgrade-insecure-requests");
+  }
+
+  return directives.join("; ");
 }
 
 function applyCsp(response: NextResponse, csp: string) {
@@ -85,7 +93,7 @@ const PUBLIC_EXACT_ONLY = ["/reports", "/gp-connect"];
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const nonce = createNonce();
-  const csp = createCsp(nonce);
+  const csp = createCsp(["localhost", "127.0.0.1"].includes(request.nextUrl.hostname));
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);

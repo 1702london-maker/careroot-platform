@@ -11,8 +11,6 @@ type CarerRow = {
   first_name: string;
   last_name: string;
   created_at: string;
-  dbs_expiry: string | null;
-  right_to_work_verified: boolean | null;
 };
 
 function exportCSV(data: ReportRow[], filename: string) {
@@ -73,16 +71,17 @@ export default function StaffReportsPage() {
       // Fetch carers first so their IDs can scope shift_logs (no org_id column on shift_logs)
       const { data: carers } = await supabase
         .from("users")
-        .select("id, first_name, last_name, created_at, dbs_expiry, right_to_work_verified")
+        .select("id, first_name, last_name, created_at")
         .eq("organisation_id", u.organisation_id)
-        .eq("role", "carer")
-        .eq("is_active", true);
+        .eq("role", "carer");
 
       const carerIds = (carers ?? []).map((c: CarerRow) => c.id);
 
       const [{ data: visits }, { data: compliance }, { data: shiftLogs }] = await Promise.all([
         supabase.from("visits").select("carer_id, status, actual_start, actual_end, scheduled_start").eq("organisation_id", u.organisation_id).gte("scheduled_start", start),
-        supabase.from("staff_compliance").select("staff_id, compliance_item, status, valid_until").eq("organisation_id", u.organisation_id),
+        carerIds.length > 0
+          ? supabase.from("staff_compliance").select("staff_id, compliance_item, status, valid_until").in("staff_id", carerIds)
+          : Promise.resolve({ data: [] }),
         carerIds.length > 0
           ? supabase.from("shift_logs").select("staff_id, id").gte("server_timestamp", start).in("staff_id", carerIds)
           : Promise.resolve({ data: [] }),
@@ -136,8 +135,13 @@ export default function StaffReportsPage() {
           title: "DBS Renewal",
           desc: "Staff DBS certificate status with renewal reminders.",
           rows: carerRows.map((c) => {
-            const days = c.dbs_expiry ? Math.ceil((new Date(c.dbs_expiry).getTime() - now.getTime()) / 86400000) : null;
-            return { carer: name(c), dbs_expiry: c.dbs_expiry ? new Date(c.dbs_expiry).toLocaleDateString("en-GB") : "Missing", status: days === null ? "missing" : days < 0 ? "expired" : days <= 60 ? "expiring soon" : "current" };
+            const dbsRows = complianceFor(c.id, (item) => item.toLowerCase().includes("dbs"));
+            const nextExpiry = dbsRows
+              .map((row) => row.valid_until)
+              .filter(Boolean)
+              .sort()[0];
+            const days = nextExpiry ? Math.ceil((new Date(nextExpiry).getTime() - now.getTime()) / 86400000) : null;
+            return { carer: name(c), dbs_expiry: nextExpiry ? new Date(nextExpiry).toLocaleDateString("en-GB") : "Missing", status: days === null ? "missing" : days < 0 ? "expired" : days <= 60 ? "expiring soon" : "current" };
           }),
         },
         {
@@ -148,7 +152,10 @@ export default function StaffReportsPage() {
         {
           title: "Right to Work",
           desc: "Right to work verification status by staff member.",
-          rows: carerRows.map((c) => ({ carer: name(c), status: c.right_to_work_verified ? "verified" : "missing" })),
+          rows: carerRows.map((c) => {
+            const rows = complianceFor(c.id, (item) => item.toLowerCase().includes("right to work"));
+            return { carer: name(c), status: rows.some((row) => row.status === "current" || row.status === "verified") ? "verified" : "missing" };
+          }),
         },
       ]);
     });
