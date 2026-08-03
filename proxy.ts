@@ -31,6 +31,30 @@ function applyCsp(response: NextResponse, csp: string) {
   return response;
 }
 
+const ALLOWED_REDIRECT_HOSTS = new Set([
+  "careroot.co.uk",
+  "www.careroot.co.uk",
+  "careroot.care",
+  "localhost",
+  "127.0.0.1",
+]);
+
+function getSafeOrigin(request: NextRequest) {
+  const host = request.nextUrl.hostname.toLowerCase();
+  if (ALLOWED_REDIRECT_HOSTS.has(host)) {
+    return request.nextUrl.origin;
+  }
+  return "https://www.careroot.co.uk";
+}
+
+function safeRedirect(request: NextRequest, pathname: string, csp: string, params?: Record<string, string>) {
+  const target = new URL(pathname, getSafeOrigin(request));
+  for (const [key, value] of Object.entries(params ?? {})) {
+    target.searchParams.set(key, value);
+  }
+  return applyCsp(NextResponse.redirect(target), csp);
+}
+
 const PUBLIC_PATHS = [
   "/",
   "/features",
@@ -81,10 +105,7 @@ export async function proxy(request: NextRequest) {
     PUBLIC_EXACT_ONLY.some((p) => pathname === p);
 
   if (!user && !isPublicPath) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("redirectTo", pathname);
-    return applyCsp(NextResponse.redirect(url), csp);
+    return safeRedirect(request, "/login", csp, { redirectTo: pathname });
   }
 
   if (
@@ -114,17 +135,11 @@ export async function proxy(request: NextRequest) {
     const role = profile?.role as string | undefined;
 
     if (pathname.startsWith("/superadmin/") && role !== "superadmin") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      url.search = "";
-      return applyCsp(NextResponse.redirect(url), csp);
+      return safeRedirect(request, "/dashboard", csp);
     }
 
     if (pathname.startsWith("/carer") && !["carer", "senior_carer"].includes(role ?? "")) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      url.search = "";
-      return applyCsp(NextResponse.redirect(url), csp);
+      return safeRedirect(request, "/dashboard", csp);
     }
 
     const dashboardRoots = [
@@ -145,20 +160,14 @@ export async function proxy(request: NextRequest) {
       dashboardRoots.some((p) => pathname.startsWith(p)) &&
       ["carer", "senior_carer"].includes(role ?? "")
     ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/carer/home";
-      url.search = "";
-      return applyCsp(NextResponse.redirect(url), csp);
+      return safeRedirect(request, "/carer/home", csp);
     }
 
     if (
       (pathname.startsWith("/family/dashboard") || pathname.startsWith("/family/client")) &&
       !["family_member", "org_admin", "superadmin"].includes(role ?? "")
     ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      url.search = "";
-      return applyCsp(NextResponse.redirect(url), csp);
+      return safeRedirect(request, "/dashboard", csp);
     }
   }
 
