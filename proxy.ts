@@ -58,7 +58,7 @@ const PUBLIC_PATHS = [
 
 const PUBLIC_EXACT_ONLY = ["/reports", "/gp-connect"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const nonce = createNonce();
   const csp = createCsp(nonce);
