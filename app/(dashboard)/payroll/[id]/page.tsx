@@ -3,7 +3,8 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
 
-export default async function PayrollDetailPage({ params }: { params: { id: string } }) {
+export default async function PayrollDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -11,10 +12,10 @@ export default async function PayrollDetailPage({ params }: { params: { id: stri
   const { data: userRecord } = await supabase.from("users").select("organisation_id").eq("id", user.id).single();
   const orgId = userRecord?.organisation_id;
 
-  const { data: run } = await supabase.from("payroll_runs").select("*").eq("id", params.id).eq("organisation_id", orgId).single();
+  const { data: run } = await supabase.from("payroll_runs").select("*").eq("id", id).eq("organisation_id", orgId).single();
   if (!run) notFound();
 
-  const { data: summaries } = await supabase.from("payroll_carer_summary").select("*, users!payroll_carer_summary_carer_id_fkey(first_name, last_name)").eq("payroll_run_id", params.id);
+  const { data: summaries } = await supabase.from("payroll_carer_summary").select("*, users!payroll_carer_summary_carer_id_fkey(first_name, last_name)").eq("payroll_run_id", id);
 
   const statusMap: Record<string, string> = { draft: "bg-gray-100 text-gray-600", processing: "bg-amber-100 text-amber-700", approved: "bg-blue-100 text-blue-700", exported: "bg-cr-mint text-cr-forest", paid: "bg-green-100 text-green-700" };
 

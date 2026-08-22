@@ -189,8 +189,8 @@ export default async function ClientProfilePage({ params }: Props) {
                       <span>by {staff ? `${staff.first_name} ${staff.last_name}` : "staff"}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <CRBadge variant="info">{String(log.log_type).replace(/_/g, " ")}</CRBadge>
-                      {log.within_approved_radius === true && <CRBadge variant="success">Location verified</CRBadge>}
+                      <CRBadge variant="blue">{String(log.log_type).replace(/_/g, " ")}</CRBadge>
+                      {log.within_approved_radius === true && <CRBadge variant="green">Location verified</CRBadge>}
                     </div>
                   </div>
                   <p className="text-sm font-body leading-relaxed text-cr-charcoal">{log.content}</p>

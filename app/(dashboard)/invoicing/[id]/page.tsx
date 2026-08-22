@@ -8,7 +8,8 @@ function fmtGBP(n: number) {
   return `£${Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
 }
 
-export default async function InvoiceDetailPage({ params }: { params: { id: string } }) {
+export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -19,7 +20,7 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
   const { data: inv } = await supabase
     .from("invoices")
     .select("*, clients(first_name, last_name, address), invoice_line_items(*)")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("organisation_id", orgId)
     .single();
 

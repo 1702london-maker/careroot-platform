@@ -2,14 +2,15 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { ShiftHub } from "@/components/carer/ShiftHub";
 
-export default async function ShiftPage({ params }: { params: { id: string } }) {
+export default async function ShiftPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   const { data: shift } = await supabase
     .from("shifts")
     .select(`id, scheduled_start, scheduled_end, actual_start, actual_end, status, client_ids, organisation_id, service_lines(id, name, code)`)
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("staff_id", user!.id)
     .single();
 

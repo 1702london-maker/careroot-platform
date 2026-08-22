@@ -8,8 +8,8 @@ const ALLOWED_FIELDS = new Set([
   "referral_agency", "referral_date",
 ]);
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();

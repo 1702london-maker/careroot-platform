@@ -84,6 +84,11 @@ export default function ClientReportsPage() {
       ]);
 
       const clientRows = (clients ?? []) as ClientRow[];
+      const visitRows = (visits ?? []) as Array<{ client_id: string | null; status: string | null }>;
+      const medicationRows = (meds ?? []) as Array<{ client_id: string | null; status: string | null }>;
+      const nutritionRows = (nutrition ?? []) as Array<{ client_id: string | null; consumed: string | null; concerns: string | null }>;
+      const carePlanRows = (carePlans ?? []) as Array<{ client_id: string | null; status: string | null; review_date: string | null }>;
+      const incidentRows = (incidents ?? []) as Array<{ client_id: string | null; severity: string | null; status: string | null }>;
       const name = (id: string) => {
         const c = clientRows.find((client) => client.id === id);
         return c ? `${c.first_name} ${c.last_name}`.trim() : "Unknown client";
@@ -98,13 +103,13 @@ export default function ClientReportsPage() {
         return counts;
       };
 
-      const scheduled = countByClient(visits);
-      const completed = countByClient(visits, (row) => row.status === "completed");
-      const medTotal = countByClient(meds);
-      const medGiven = countByClient(meds, (row) => ["given", "administered", "taken"].includes(String(row.status)));
-      const nutritionConcerns = countByClient(nutrition, (row) => Boolean(row.concerns) || ["little", "none"].includes(String(row.consumed)));
-      const incidentCounts = countByClient(incidents);
-      const emergencyCounts = countByClient(incidents, (row) => ["critical", "high", "emergency"].includes(String(row.severity).toLowerCase()));
+      const scheduled = countByClient(visitRows);
+      const completed = countByClient(visitRows, (row) => row.status === "completed");
+      const medTotal = countByClient(medicationRows);
+      const medGiven = countByClient(medicationRows, (row) => ["given", "administered", "taken"].includes(String(row.status)));
+      const nutritionConcerns = countByClient(nutritionRows, (row) => Boolean(row.concerns) || ["little", "none"].includes(String(row.consumed)));
+      const incidentCounts = countByClient(incidentRows);
+      const emergencyCounts = countByClient(incidentRows, (row) => ["critical", "high", "emergency"].includes(String(row.severity).toLowerCase()));
 
       setSections([
         {
@@ -130,7 +135,7 @@ export default function ClientReportsPage() {
         {
           title: "Care Plan Review Status",
           desc: "Plans due or overdue for review.",
-          rows: (carePlans ?? []).filter((p) => p.client_id && clientIds.has(p.client_id)).map((p) => ({ client: name(p.client_id), status: p.status ?? "draft", review_date: p.review_date ? new Date(p.review_date).toLocaleDateString("en-GB") : "Not set" })),
+          rows: carePlanRows.filter((p) => p.client_id && clientIds.has(p.client_id)).map((p) => ({ client: name(p.client_id as string), status: p.status ?? "draft", review_date: p.review_date ? new Date(p.review_date).toLocaleDateString("en-GB") : "Not set" })),
         },
         {
           title: "Incident Summary",

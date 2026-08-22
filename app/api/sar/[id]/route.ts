@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 import { writeAuditLog } from "@/lib/platform-audit";
 import { invalidIdResponse, isUuid } from "@/lib/route-params";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   if (!isUuid(id)) return invalidIdResponse();
 
   const supabase = await createClient();

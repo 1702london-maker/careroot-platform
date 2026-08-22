@@ -19,8 +19,12 @@ interface PatientData {
   last_updated: string;
 }
 
-export default function EmergencyAccessPage({ params }: { params: { token: string } }) {
-  const { token } = params;
+export default function EmergencyAccessPage({ params }: { params: Promise<{ token: string }> }) {
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    params.then(({ token }) => setToken(token));
+  }, [params]);
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [attempts, setAttempts] = useState(0);

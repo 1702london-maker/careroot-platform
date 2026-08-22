@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   }
 
   const imei = device_id.replace(/\s/g, "");
-  const { error, count } = await supabase
+  const { data: updatedDevices, error } = await supabase
     .from("registered_devices")
     .update({
       push_token,
@@ -25,11 +25,11 @@ export async function POST(req: Request) {
     .eq("staff_id", user.id)
     .eq("is_active", true)
     .eq("imei", imei)
-    .select("id", { count: "exact" });
+    .select("id");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  if (!count || count === 0) {
+  if (!updatedDevices?.length) {
     return NextResponse.json(
       { error: "No active registered device found. Ask your manager to approve your Careroot Device ID before push notifications can be enabled." },
       { status: 404 }
